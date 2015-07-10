@@ -1,0 +1,6 @@
+auto v = [2, 1, "Hi", 5.5]
+auto r = v.find("Hi");
+
+assert_equal("Hi", r.front())
+auto r2 = v.find(2, `<`);
+assert_equal(1, r2.front());

@@ -1,0 +1,6 @@
+S9 LIB  (adjoin object list)  ==>  list
+
+Add an element to a set.
+
+(adjoin 'x '(a b c))  ==>  (x a b c)
+(adjoin 'c '(a b c))  ==>  (a b c)

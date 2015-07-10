@@ -1,0 +1,6 @@
+S9 EXT  (sys:unlock string)  ==>  unspecific
+
+Remove the lock file (string-append STRING ".lock"). If the
+file does not exist, do nothing.
+
+(sys:unlock "foo")  ==>  unspecific

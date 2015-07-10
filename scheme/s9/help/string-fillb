@@ -1,0 +1,4 @@
+R4RS 6.7  (string-fill! string char)  ==>  unspecific
+
+Stores CHAR in every element of the given STRING and returns an
+unspecified value.

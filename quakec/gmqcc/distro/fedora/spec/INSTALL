@@ -1,0 +1,31 @@
+File is constantly updated!
+
+Since Fedora 19 we have this package in main repos. Please use it!
+
+For install gmqcc do this:
+# yum install gmqcc
+
+For install qcvm do this:
+# yum install qcvm
+
+For install gmqpak do this:
+# yum install gmqpak
+
+To use the spec files in this fedora directory you need the core
+development tools , building enviroment for the user, and
+the directory structure for it. If you don't already have these, issue
+the following commands.
+
+# yum groupinstall "Development Tools"
+# yum install rpmdevtools
+$ rm -rf ~/rpmbuild
+$ rpmdev-setuptree
+
+Prepare and build the RPMs.
+
+$ cp gmqcc.spec ~/rpmbuild/SPECS/
+$ wget https://github.com/graphitemaster/gmqcc/archive/0.3.5.tar.gz -o ~/rpmbuild/SOURCES/gmqcc-0.3.5.tar.gz
+$ rpmbuild -ba ~/rpmbuild/SPECS/gmqcc.spec
+
+Now we have RPMs in ~/rpmbuild/RPMS/ and you can install it via yum.
+

@@ -1,0 +1,32 @@
+S9 LIB  (help)                     ==>  unspecific
+        (help symbol | string)     ==>  unspecific
+        (apropos)                  ==>  list
+        (apropos symbol | string)  ==>  list
+
+        (load-from-library "help.scm")
+
+Display the synopsis of the given procedure or keyword. When
+SYMBOL is described in R4RS, produce its R4RS entry, otherwise
+display a S9FES-specific summary. When no argument is passed
+to HELP, it explains itself.
+
+APROPOS returns a list of all procedure names for which help
+pages exist. When an argument is passed to APROPOS, its output
+is limited to topics whose name contains the argument.
+
+The *LINES-PER-PAGE* variable controls the number of lines
+to be printed by HELP before prompting. Set to #F for continuous
+printing.
+
+(help 'symbol?)  ==>  unspecific
+
+Output: R4RS 6.4  (symbol? object)  ==>  boolean
+
+        Returns #T if OBJECT is a symbol, otherwise returns #F.
+
+        (symbol? 'foo)          ==>  #t
+        (symbol? (car '(a b)))  ==>  #t
+        (symbol? "bar")         ==>  #f
+        (symbol? 'nil)          ==>  #t
+        (symbol? '())           ==>  #f
+        (symbol? #f)            ==>  #f

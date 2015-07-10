@@ -1,0 +1,203 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+type pos = Lexer.pos
+
+type constant {
+	Int : int;
+	Char : char;
+	Bool : bool;
+	Float : string;
+	String : string;
+	Ident : string;
+	Constr : string;
+	Module : (string list , constant);
+}
+
+type keyword {
+	Var;
+	If;
+	Else;
+	Function;
+	Try;
+	Catch;
+	Type;
+	Match;
+	Then;
+	When;
+	While;
+	Exception;
+}
+
+type token {
+	Eof;
+	Semicolon;
+	Dot;
+	Comma;
+	Quote;
+	BraceOpen;
+	BraceClose;
+	ParentOpen : bool;
+	ParentClose;
+	BracketOpen;
+	BracketClose;
+	Arrow;
+	Vertical;
+	StreamOpen;
+	StreamClose;
+	Const : constant;
+	Keyword : keyword;
+	Binop : string;
+	Comment : string;
+	CommentLine : string;
+}
+
+type type_path {
+	EType : (type_path option , string list , string);
+	EPoly : string;
+	ETuple : type_path list;
+	EArrow : (type_path , type_path);
+}
+
+type type_decl {
+	EAbstract;
+	EAlias : type_path;
+	ERecord : (string , bool , type_path) list;
+	EUnion : (string , type_path option) list;
+}
+
+type arg {
+	ATyped : (arg , type_path);
+	ANamed : string;
+	ATuple : arg list;
+}
+
+type pattern;
+type expr;
+type stream_item;
+
+type pattern_decl {
+	PIdent : string;
+	PConst : constant;
+	PTuple : pattern list;
+	PRecord : ((string , pattern) list, int);
+	PConstr : (string list , string , pattern option);
+	PAlias : (string , pattern);
+	PTyped : (pattern , type_path);
+	PStream : (stream_item list , int);
+}
+
+type stream_item {
+	SPattern : pattern;
+	SExpr : (string list , expr);
+	SMagicExpr : (pattern , int);
+}
+
+type expr_decl {
+	EConst : constant;
+	EBlock : expr list;
+	EField : (expr , string);
+	ECall : (expr , expr list);
+	EArray : (expr , expr);
+	EVar : ((string , type_path option) list , expr);
+	EIf : (expr , expr , expr option);
+	EFunction : (bool , string option , arg list , expr , type_path option);
+	EBinop : (string , expr , expr);
+	EUnop : (string , expr);
+	ETypeAnnot : (expr , type_path);
+	ETupleDecl : expr list;
+	ETypeDecl : (string list , string , type_decl);
+	EErrorDecl : (string , type_path option);
+	ERecordDecl : (string , expr) list;
+	EMatch : (expr , (pattern list , expr option , expr) list);
+	ETry : (expr , (pattern list , expr option , expr) list);
+	ETupleGet : (expr , int);
+	EApply : (expr , expr list);
+	EWhile : (expr , expr);
+}
+
+type pattern = (pattern_decl , pos)
+type expr = (expr_decl , pos)
+
+var pos = snd;
+
+function rec s_constant(c) {
+	match c {
+	| Int i -> string i
+	| Float s -> s
+	| Bool b -> if b then "true" else "false"
+	| Char c -> "\"" + String.escape_char c + "\""
+	| String s -> "\"" + String.escape s + "\""
+	| Ident s -> s
+	| Constr s -> s
+	| Module (l,c) -> String.concat "." l + "." + s_constant c
+	}
+}
+
+function s_path(path,n) {
+	match path {
+	| [] -> n
+	| _ -> String.concat "." path + "." + n
+	}
+}
+
+function s_keyword(k) {
+	match k {
+	| Var -> "var"
+	| If -> "if"
+	| Else -> "else"
+	| Function -> "function"
+	| Try -> "try"
+	| Catch -> "catch"
+	| Type -> "type"
+	| Match -> "match"
+	| Then -> "then"
+	| When -> "when"
+	| While -> "while"
+	| Exception -> "exception"
+	}
+}
+
+function s_token(t) {
+	match t {
+	| Eof -> "<eof>"
+	| Semicolon -> ";"
+	| Dot -> "."
+	| Comma -> ","
+	| Quote -> "'"
+	| BraceOpen -> "{"
+	| BraceClose -> "}"
+	| ParentOpen _ -> "("
+	| ParentClose -> ")"
+	| BracketOpen -> "["
+	| BracketClose -> "]"
+	| StreamOpen -> "[<"
+	| StreamClose -> ">]"
+	| Arrow -> "->"
+	| Vertical -> "|"
+	| Const c -> s_constant c
+	| Keyword k -> s_keyword k
+	| Binop s -> s
+	| Comment s -> "/*" + s + "*--"
+	| CommentLine s -> "//" + s
+	}
+}

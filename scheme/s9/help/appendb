@@ -1,0 +1,13 @@
+S9 LIB  (append! list ...)         ==>  unspecific
+        (append! list ... object)  ==>  unspecific
+
+APPEND! is like APPEND, but appends the LISTs destructively.
+It destroys all but the last object passed to it and returns
+an unspecific value. The append!ed list will be stored in the
+first LIST, which should be bound to a symbol or it will not
+be accessible after the operation. The first LIST may not be
+'().
+
+(let ((a (list 1 2 3)))
+  (append! a (list 4 5 6) 'end)
+  a)                             ==>  (1 2 3 4 5 6 . end)

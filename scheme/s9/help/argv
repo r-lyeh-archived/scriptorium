@@ -1,0 +1,7 @@
+S9fES  (argv integer)  ==>  string | #f
+
+Return the value of the command line argument at the given position.
+If the there are less than INTEGER+1 arguments, return #F. The first
+argument is at position 0.
+
+(argv 0)  ==>  "first-argument"

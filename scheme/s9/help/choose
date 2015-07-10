@@ -1,0 +1,10 @@
+S9 LIB  (choose integer1 integer2)  ==>  integer
+
+Return the binomial coefficient ("n choose k") of INTEGER1 (n)
+and INTEGER2 (k), i.e. the number of unique k-tuples that can be
+choosen without repetition from a set of n elements. INTEGER2 (k)
+must be positive.
+
+(choose 23 1)  ==>  23
+(choose 23 2)  ==>  253
+(choose 23 3)  ==>  1771

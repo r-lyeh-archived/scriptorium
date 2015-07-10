@@ -1,0 +1,9 @@
+S9 LIB  (cdf real)  ==>  real
+
+        (load-from-library "cdf.scm")
+
+Compute the quantile of the given standard deviation (cumulative
+distribution function). Results will get flaky beyond 5th standard
+deviation; see ERF for details.
+
+(cdf 0)  ==>  0.5

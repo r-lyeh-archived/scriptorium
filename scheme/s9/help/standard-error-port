@@ -1,0 +1,17 @@
+S9 LIB  (standard-error-port)                ==>  #<output-port>
+        (call-with-stderr procedure^1)       ==>  object
+        (with-output-to-stderr procedure^0)  ==>  unspecific
+
+        (load-from-library "standard-error.scm")
+
+STANDARD-ERROR returns an output-file for accessing the Unix
+standard error file descriptor (stderr). CALL-WITH-STDERR passes
+that output-file to a unary procedure, which may use it for writing
+data to stderr. WITH-OUTPUT-TO-STDERR temporarily sets the current
+output port) to the stderr descriptor while running the given nullary
+procedure. CALL-WITH-STDERR returns the value returned by PROCEDURE^1.
+
+(call-with-stderr
+  (lambda (stderr)
+    (display "Something went wrong!" stderr)
+    (newline stderr)))                       ==> unspecific

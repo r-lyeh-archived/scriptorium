@@ -1,0 +1,238 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+neko("
+	@make = function(s) {
+		if( s == null )
+			return @Core.@empty;
+		return @Core.@cons(s[0],@make(s[1]));
+	}
+
+	@rmake = function(s,x) {
+		if( s == null )
+			return x;
+		return @rmake(s[1],@Core.@cons(s[0],x));
+	}
+
+	$exports.@rmake = function(s) { @rmake(s,@Core.@empty) };
+	$exports.@make = @make;
+");
+
+function rec length(l) {
+	match l {
+	| [] -> 0
+	| _ :: l -> 1 + length l
+	}
+}
+
+function hd(l) {
+	match l {
+	| [] -> invalid_arg()
+	| x :: _ -> x
+	}
+}
+
+function tl(l) {
+	match l {
+	| [] -> invalid_arg()
+	| _ :: l -> l
+	}
+}
+
+function rec map(f,l) {
+	match l {
+	| [] -> []
+	| x :: l -> f(x) :: map f l
+	}
+}
+
+function rec iter(f,l) {
+	match l {
+	| [] -> ()
+	| x :: l -> f x; iter f l
+	}
+}
+
+function rec iter2(f,l1,l2) {
+	match l1 {
+	| [] ->
+		match l2 {
+		| [] -> ()
+		| _ -> invalid_arg()
+		}
+	| x1 :: l1 ->
+		match l2 {
+		| [] -> invalid_arg()
+		| x2 :: l2 ->
+			f x1 x2;
+			iter2 f l1 l2
+		}
+	}
+}
+
+function rec split(l) {
+	match l {
+	| [] -> ([] , [])
+	| (a,b) :: l ->
+		var la , lb = split l;
+		(a :: la, b :: lb)
+	}
+}
+
+function rec exists(f,l) {
+	match l {
+	| [] -> false
+	| x :: l -> if f x then true else exists f l
+	}
+}
+
+function rec mem(v,l) {
+	match l {
+	| [] -> false
+	| x :: l -> if x == v then true else mem v l
+	}
+}
+
+function rec assoc(k,l) {
+	match l {
+	| [] -> throw Not_found
+	| (k2,v) :: l -> if k == k2 then v else assoc k l
+	}
+}
+
+function rec phys(k,l) {
+	match l {
+	| [] -> throw Not_found
+	| (k2,v) :: l -> if k === k2 then v else phys k l
+	}
+}
+
+function rec find(f,l) {
+	match l {
+	| [] -> throw Not_found
+	| k :: l -> if f k then k else find f l
+	}
+}
+
+function rec rev_rec(l,acc) {
+	match l {
+	| [] -> acc
+	| x :: l -> rev_rec l (x :: acc)
+	}
+}
+
+function rev(l) {
+	rev_rec l []
+}
+
+function rec fold(f,acc,l) {
+	match l {
+    | [] -> acc
+	| x :: l -> fold f (f acc x) l
+	}
+}
+
+function rec append(l1,l2) {
+	match l1 {
+	| [] -> l2
+	| x :: l1 -> x :: append l1 l2
+	}
+}
+
+function rec concat(ll) {
+	function rec loop(ll,acc) {
+		match ll {
+		| [] -> acc
+		| l :: ll ->
+			loop ll (append acc l)
+		}
+	};
+	loop ll []
+}
+
+function rec chop(n,l) {
+	if n == 0 then
+		l
+	else match l {
+		| [] -> invalid_arg()
+		| _ :: l -> chop (n -1) l
+	}
+}
+
+function rec all(f,l) {
+	match l {
+	| [] -> true
+	| x :: l ->
+		if f x then all(f,l) else false
+	}
+}
+
+function rec none(f,l) {
+	match l {
+	| [] -> true
+	| x :: l ->
+		if f x then false else none(f,l)
+	}
+}
+
+function nth(l,n) {
+	function rec loop(l,n) {
+		match l {
+		| [] -> invalid_arg()
+		| x :: l ->
+			if n == 0 then x else loop l (n-1)
+		}
+	}
+	if n < 0 then invalid_arg();
+	loop l n
+}
+
+function rec filter(f,l) {
+	match l {
+	| [] -> []
+	| x :: l ->	if f x then x :: filter f l else filter f l
+	}
+}
+
+function array(l) {
+	match l {
+	| [] -> Array.create()
+	| x :: l ->
+		var a = Array.make (1+ List.length l) x;
+		function rec loop(p,l) {
+			match l {
+			| [] -> ()
+			| x :: l ->
+				a.[p] := x;
+				loop (p + 1) l
+			}
+		};
+		loop 1 l;
+		a
+	}
+}
+
+function sort(cmp,l) {
+	var a = array l;
+	Array.sort cmp a;
+	Array.list a
+}

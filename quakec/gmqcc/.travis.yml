@@ -1,0 +1,14 @@
+language: c
+compiler:
+  - gcc
+  - clang
+# Change this to your needs
+script: make && make check
+notifications:
+    irc:
+        channels:
+          - "irc.freenode.org#gmqcc"
+        template:
+          - "[%{commit} : %{author}] %{message}"
+          - "%{build_url}"
+        skip_join: true

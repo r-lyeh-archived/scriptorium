@@ -1,0 +1,10 @@
+S9 LIB  (ndf real)   ==>  real
+        (ndf* real)  ==>  real
+
+        (load-from-library "ndf.scm")
+
+Compute the probability density at the given standard deviation
+(normal distribution function). Assuming a standard normal
+distribution.
+
+  (ndf 0)  ==>  0.4

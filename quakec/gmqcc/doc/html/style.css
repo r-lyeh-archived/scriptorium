@@ -1,0 +1,92 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+body {
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    margin: 0;
+    line-height: 1.8em;
+    -webkit-font-smoothing: antialiased;
+    background: #CDC9C9;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color:#232323;
+  margin:36px 0 10px;
+}
+
+.head-ltitle, .head-rtitle, .head-vol {
+    font: bold 0.8em Arial, Helvectia, sans-serif;
+}
+
+.head-vol {
+    visibility: hidden;
+}
+
+.name {
+    font: bold 0.8em Monospace, serif;
+}
+
+.ftype {
+    font: normal 1em Monospace, serif;
+}
+
+h1 {
+    color: #c30000;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+    line-height: 1.3;
+    font: normal 1.4em Arvo, Monaco, sans-serif;
+	/*font: bold 1.4em Arial, Helvetica, sans-serif*/
+}
+
+.section {
+	margin-bottom: 1em;
+	margin-top: 1em;
+	padding-left: 1em;
+	border-top: 1px #cccccc solid;
+	font: normal 0.9em Arial, Helvetica, sans-serif;
+	text-align: justify;
+	border: 0;
+	padding-bottom: 1em;
+	border-bottom: 1px solid #f0e0e0;
+}
+
+.list-tag {
+    padding-left: 1em;
+}
+
+pre {
+    border: 1px dashed #ffffff;
+    background: #ddd8d8;
+}
+
+.flag {
+    font: normal 1em Monospace, serif;
+}
+
+a {
+  color:#C30000;
+  font-weight:200;
+  text-decoration:none;
+}
+
+a:hover {
+	text-decoration: underline;
+}

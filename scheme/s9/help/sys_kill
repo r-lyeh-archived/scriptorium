@@ -1,0 +1,19 @@
+S9 EXT  (sys:kill integer1 integer2)    ==>  unspecific
+        (sys:kill integer)              ==>  unspecific
+        (sys:notify integer1 integer2)  ==>  unspecific
+        (sys:notify integer)            ==>  unspecific
+
+Send signal INTEGER2 to process INTEGER1. When no signal is
+specified SYS:SIGTERM is sent. SYS:NOTIFY is a more nonviolent
+alias for this procedure.
+
+The following symbolic signal names may be used in the place of
+INTEGER2: sys:sighup, sys:sigint, sys:sigquit, sys:sigill,
+sys:sigtrap, sys:sigabrt, sys:sigemt, sys:sigfpe, sys:sigkill,
+sys:sigbus, sys:sigsegv, sys:sigsys, sys:sigpipe, sys:sigalrm,
+sys:sigterm.
+
+When a signal is sent to the S9 process, the result of these
+procedures is undefined.
+
+(sys:notify (sys:getpid) sys:sigterm)  ==>  undefined

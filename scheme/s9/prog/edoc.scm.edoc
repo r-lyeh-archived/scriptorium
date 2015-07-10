@@ -1,0 +1,1538 @@
+#! /usr/local/bin/s9 -f
+
+#|edoc code|#
+
+; edoc -- embedded documentation processor
+; By Nils M Holm, 2010,2012,2014
+; Placed in the Public Domain
+
+#|edoc------------------------------------------------------------------
+\1{EDOC}
+\2{An Embedded Documentation Processor}
+
+EDOC is a text processor that renders Scheme and C programs with
+embedded documentation in EDOC format to HTML. This file is an EDOC
+document and the program implementing EDOC at the same time. When
+run in a Scheme system, it processes EDOC documents, and when passed
+to EDOC, it results in the documentation for the program, including
+its own syntax-highlighted source code.
+
+To convert this file to HTML, run
+\b{edoc.scm.edoc -l scheme -o edoc.html edoc.scm.edoc}
+
+To extract the pure Scheme code, run
+\b{edoc.scm.edoc -l scheme -o edoc.scm -s edoc.scm.edoc}
+
+However, the program can also be run with the EDOC sections in place.
+
+\2{EDOC Format}
+Embedded documentation is enclosed by a line starting with the string
+"#|edoc" (in Scheme) or "/*edoc" (in C). Its ends with a line ending in
+"code|#" (Scheme) or "code*/" (C). Lines of the forms
+
+\b{
+"#|edoc ... code|#"
+"/*edoc ... code*/"
+}
+
+(without the quotes) are ignored completely, but may be used to set the
+language type at the beginning of a file. Lines of the form
+
+\b{
+"#|edoc reset code|#"
+"/*edoc reset code*/"
+}
+
+are also ignored but in addition they reset the language type, so
+they can be used to compile bilingual files.
+
+A trailing backslash may be used to concatenate subsequent lines:
+
+\b{
+foo\\
+bar
+}
+
+parses as \k{foobar}.
+
+Embedded documentation may contain the following commands. \v{Mode}s may
+contain \v{attributes}, but not vice versa. Attributes must begin and
+end in the same line. Neither \v{mode}s nor \v{attribute}s may be nested.
+The following \v{mode}s exist:
+
+\b{
+\\q{edoc-text\=}              quoted text        <BLOCKQUOTE>
+\\b{edoc-text\=}              block text         <PRE>
+\\u{edoc-text\=}              unsorted list      <UL>
+\\o{edoc-text\=}              ordered list       <OL>
+\\0{edoc-text file-name\=}    new part           <H1>
+\\1{edoc-text\=}              new chapter        <H1>
+\\2{edoc-text\=}              new section        <H2>
+\\3{edoc-text\=}              new subsection     <H3>
+\\i{file\=}                   image              <IMG src="file">
+}
+
+These \v{attribute}s exist:
+
+\b{
+\\a{text\=}         anchor               <A name=text></A>
+\\r{text url\=}     reference            <A href=url>text</A>
+\\s{text\=}         small                <SMALL>
+\\v{text\=}         variable             <VAR>
+\\k{text\=}         keyword              <CODE>
+\\e{text\=}         emphasis             <EM>
+\\E{text\=}         strong emphasis      <STRONG>
+\\h{text\=}         highlight            <B>
+\\l{text\=}         list element         <LI>
+\\x{text name\=}    index entry          <A name=name>text</A>
+\\X{text name\=}    code index entry     <A name=name><CODE>text</CODE></A>
+\\n{text\=}         non-printing index   <A name="text"></A>
+\\V{text name\=}    variable index entry <A name=name><CODE>text</CODE></A>
+\\_{text\=}         subscript            <SUB>
+\\^{text\=}         superscript          <SUP>
+\\\\               literal backslash    literal
+\\=c              literal character    literal
+}
+
+Setting the \v{name} in \\x, \\X, and \\V to \k{*} duplicates the
+preceding text, e.g.: \\x{foo *\=} equals \\x{foo foo\=}. Omitting
+the \v{name} in \\x, \\X, and \\V will generate an index entry that
+uses \v{text} as \v{name} and will not be visible in the text.
+The \v{name} part of an index entry is what will appear in the index
+and its \v{text} is what will be highlighted in the content. The
+\\n attribute can be used to create multi-word index entries that
+are invisible in the content.
+
+The CSS2 style sheets "scheme.css" and "ccode.css" contain the
+default styles for syntax highlighting. The "edoc.css" style
+sheet may be used to define other markup.
+
+\e{Note}: EDOC handles only subsets of R4RS Scheme and C89 properly.
+\e{Caveat utilitor!}
+
+\2{Synopsis}\a{synopsis}
+
+\b{
+edoc [-iswL] [-b file] [-l lang] [-o file] [-t text] [-x name] [file ...]
+
+Render programs with embedded edoc sections in HTML
+
+-b file  make file headings link back to 'file'
+-i       generate index file (INDEX)
+-l lang  source language is lang (scheme, ccode)
+-o file  write output to the given file
+-s       strip edoc sections, output raw code
+-t text  content of the HTML TITLE tag
+-w       overwrite output files (default: keep)
+-x name  extract section with given file name
+-E file  insert epilogue 'file' at end of output
+-P file  insert prologue 'file' at beginning of output
+-L       generate Lout output (experimental!)
+}
+
+\2{The EDOC Source Code}
+
+First load some required procedures. "when.scm" contains the \k{when}
+syntax (single-branch \k{if} with multiple statements in the body),
+"setters.scm" provides some convenience procedures, such as \k{inc!}
+and \k{dec!} (for incrementing and decrementing variables).
+
+------------------------------------------------------------------code|#
+
+(load-from-library "when.scm")
+(load-from-library "setters.scm")
+
+#|edoc------------------------------------------------------------------
+
+\k{String-scan} returns the position of a character in a string (or
+\k{#f}). \k{String-translate} replaces characters in strings.
+
+------------------------------------------------------------------code|#
+
+(load-from-library "string-scan.scm")
+(load-from-library "string-translate.scm")
+
+#|edoc------------------------------------------------------------------
+
+\k{Display*} is a multi-argument version of \k{display}. \k{Read-line}
+reads a line from an input port.
+
+------------------------------------------------------------------code|#
+
+(load-from-library "displaystar.scm")
+(load-from-library "read-line.scm")
+
+#|edoc------------------------------------------------------------------
+
+\k{Scm2html} and \k{c2html} render Scheme and C code in HTML (or Lout)
+with syntax highlighting. They are used to render embedded code.
+\k{Htmlify-char} and \k{loutify-char} translate "dangerous" characters
+into harmless sequences, e.g. "&" to "&amp;" in HTML and "/" into ""/""
+in Lout.
+
+------------------------------------------------------------------code|#
+
+(load-from-library "scm2html.scm")
+(load-from-library "c2html.scm")
+(load-from-library "htmlify-char.scm")
+(load-from-library "loutify-char.scm")
+
+#|edoc------------------------------------------------------------------
+
+\k{Append-to-output-file} is like \k{open-output-file}, but appends
+output to an existing file instead of truncating it.
+"standard-error.scm" contains the \k{with-output-to-stderr} procedure,
+which redirects the current output port to stderr.
+
+------------------------------------------------------------------code|#
+
+(load-from-library "append-to-output-file.scm")
+(load-from-library "standard-error.scm")
+
+#|edoc------------------------------------------------------------------
+
+\k{Parse-options!} parses command line options automatically.
+The \k{option} procedure, which is contained in the same package,
+sets up an option for parsing and \k{opt-val} returns the value of
+an option, which is either a value taken from the command line or
+a default specified in \k{option}.
+
+------------------------------------------------------------------code|#
+
+(load-from-library "parse-optionsb.scm")
+
+#|edoc------------------------------------------------------------------
+
+A hash table is used to generate unique index tags.
+
+------------------------------------------------------------------code|#
+
+(load-from-library "hash-table.scm")
+
+#|edoc------------------------------------------------------------------
+
+\k{*Language*} is the language to process. Must be either \k{'ccode} or
+\k{'scheme}. \k{*Title*} is the title of a resulting HTML document
+(default is the file name). \k{*File-name*} holds the file name of the
+current input file. \k{*Extracting*} is set to \k{#t} when extracting a
+section (see \k{-x} option).
+
+------------------------------------------------------------------code|#
+
+(define *language*    #f)
+(define *title*       #f)
+(define *file-name*   #f)
+(define *extracting*  #f)
+
+#|edoc------------------------------------------------------------------
+
+\k{*Output-port*} is the current output port and \k{*to-file*} is the
+name of the file currently being written. \k{*Ndx-port*} is the port
+of the index file.
+
+------------------------------------------------------------------code|#
+
+(define *output-port* (current-output-port))
+(define *to-file*     #f)
+(define *ndx-port*    #f)
+
+#|edoc------------------------------------------------------------------
+
+\k{*Line-no*} will be incremented when reading a new line.
+
+------------------------------------------------------------------code|#
+
+(define *line-no* 0)
+
+#|edoc------------------------------------------------------------------
+
+\k{*Index-tags*} contains all index tags contained by a document. Since
+multiple entries with the same name may exist, tags have a unique number
+appended to them. This table keeps track of the unique suffixes.
+
+------------------------------------------------------------------code|#
+
+(define *index-tags* (make-hash-table))
+
+#|edoc------------------------------------------------------------------
+
+Command line options have one of these formats:
+
+\b{
+(option opt-char #t | #f)
+(option opt-char 'string "default" | #f)}
+
+\v{Opt-char} is the option character. When \k{'string} is present, the
+option takes an argument. The last element in \k{option} is the default
+value of that option.
+
+\k{Options} is a list of all options.
+
+See the \r{synopsis #synopsis} for explanation of the
+individual options.
+
+------------------------------------------------------------------code|#
+
+(define show-help     (option #\h #f))
+(define backlink      (option #\b 'string #f))
+(define make-index    (option #\i #f))
+(define language      (option #\l 'string #f))
+(define output-file   (option #\o 'string #f))
+(define strip-doc     (option #\s #f))
+(define title         (option #\t 'string ""))
+(define extract       (option #\x 'string #f))
+(define lout          (option #\L #f))
+(define overwrite     (option #\w #f))
+(define prologue-file (option #\P 'string #f))
+(define epilogue-file (option #\E 'string #f))
+(define options       `(,show-help
+                        ,backlink
+                        ,make-index
+                        ,language
+                        ,output-file
+                        ,strip-doc
+                        ,title
+                        ,extract
+                        ,overwrite
+                        ,prologue-file
+                        ,epilogue-file
+                        ,lout))
+
+#|edoc------------------------------------------------------------------
+
+Print an error message with an optional argument to stderr and exit.
+
+------------------------------------------------------------------code|#
+
+(define (edoc-error msg . arg)
+  (with-output-to-stderr
+    (lambda ()
+      (display* "edoc: "
+                *line-no*
+                ": error: "
+                msg
+                (if (null? arg) "" ": ")
+                (if (null? arg) "" (car arg))
+                #\newline)
+      (sys:exit 1))))
+
+#|edoc------------------------------------------------------------------
+
+Set \k{*language*}. This will be done each time an EDOC section is
+found. Once the language is set, it cannot be changed unless it is
+reset to \k{#f} first.
+
+------------------------------------------------------------------code|#
+
+(define (set-language! x)
+  (if (and *language*
+           (not (eq? x *language*)))
+      (edoc-error "conflicting language specification" x))
+  (set! *language* x))
+
+#|edoc------------------------------------------------------------------
+
+Print a sequence of objects to the current output file. This is the
+principal output procedure of EDOC.
+
+------------------------------------------------------------------code|#
+
+(define (pr . items)
+  (for-each (lambda (x)
+              (display x *output-port*))
+            items))
+
+#|edoc------------------------------------------------------------------
+
+Close current output file.
+
+------------------------------------------------------------------code|#
+
+(define (close-file)
+  (if *to-file*
+      (close-output-port *output-port*)))
+
+#|edoc------------------------------------------------------------------
+
+Move to next output file by closing the old one and then opening the
+one specified in \v{name}. If the \v{overwrite} option is true, delete
+the new output file before opening it for output.
+
+------------------------------------------------------------------code|#
+
+(define (next-output-file name)
+  (close-file)
+  (if (and (opt-val overwrite)
+           (file-exists? name))
+      (delete-file name))
+  (set! *output-port* (open-output-file name))
+  (set! *to-file* name))
+
+#|edoc------------------------------------------------------------------
+
+Copy the file named \v{file} to the current output file.
+
+------------------------------------------------------------------code|#
+
+(define (copy-file file)
+  (if (not (file-exists? file))
+      (edoc-error "file not found" file))
+  (with-input-from-file
+    file
+    (lambda ()
+      (let copy ((c (read-char)))
+        (cond ((not (eof-object? c))
+                (write-char c *output-port*)
+                (copy (read-char))))))))
+
+#|edoc------------------------------------------------------------------
+
+Emit the HTML and Lout prologues, respectively. The title of an HTML
+file will be the file name or, if specified on the command line, a
+user-defined title. When both are present, they will be separated
+by a colon, file name first.
+
+------------------------------------------------------------------code|#
+
+(define (html-prologue)
+  (for-each
+    pr
+    `("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\""
+                                                        #\newline
+       "  \"http://www.w3.org/TR/html4/loose.dtd\">"    #\newline
+       "<HTML>"                                         #\newline
+       "<HEAD>"                                         #\newline
+       "<TITLE>"
+       ,(if *file-name* *file-name* "")
+       ,(if (and *title* *file-name*) " : " "")
+       ,(if *title* *title* "")
+       "</TITLE>"                                       #\newline
+       "<LINK rel=\"stylesheet\" type=\"text/css\""
+       " href=\"edoc.css\">"                            #\newline
+       "<LINK rel=\"stylesheet\" type=\"text/css\""
+       " href=\"scheme.css\">"                          #\newline
+       "<LINK rel=\"stylesheet\" type=\"text/css\""
+       " href=\"ccode.css\">"                           #\newline
+       "</HEAD>"                                        #\newline
+       "<BODY>"                                         #\newline
+       #\newline)))
+
+(define (lout-prologue)
+  (for-each
+    pr
+    `("@Include { S9Book }"                #\newline
+      "@Use { @BookSetup"                  #\newline
+      "    @DocumentHeight { 27.9c}"       #\newline
+      "    @DocumentWidth { 21c}"          #\newline
+      "    @TopMargin { 1.5c }"            #\newline
+      "    @BottomMargin { 0.5c }"         #\newline
+      "    @InnerMargin{ 2.5c }"           #\newline
+      "    @OuterMargin { 1.5c }"          #\newline
+      "    @Spacing { 1.25fx }"            #\newline
+      "    @SkipPageNos { 1 2 3 }"         #\newline
+      "    @BaseFont { Times Roman 11p }"  #\newline
+      "}"                                  #\newline
+      "@Document"                          #\newline
+      "//"                                 #\newline
+      "@Text @Begin"                       #\newline
+      #\newline)))
+
+#|edoc------------------------------------------------------------------
+
+Write a prologue to an output file. This procedure will be called for
+each output file generated by EDOC.
+
+When stripping documentation (\k{-s} option) and emitting pure code,
+a warning message of the form
+
+\b{DO NOT EDIT THIS FILE! EDIT filename INSTEAD.}
+
+will be placed in a comment at the top of the output file.
+
+When the desired section has not yet been reached while extracting a
+section (\k{-x}), do nothing. Otherwise print a Lout or HTML prologue,
+depending on the \k{-L} option.
+
+Finally, if a "prologue file" was specified on the command line
+(\k{-P}), copy that file to the output file.
+
+------------------------------------------------------------------code|#
+
+(define (prologue lang)
+  (cond
+    ((opt-val strip-doc)
+      (pr (if (eq? lang 'scheme)
+              "; DO NOT EDIT THIS FILE!"
+              "/* DO NOT EDIT THIS FILE!")
+          (if *file-name*
+              (string-append " EDIT \"" *file-name* "\" INSTEAD.")
+              "")
+          (if (eq? lang 'ccode) " */" "")
+          #\newline))
+    ((and (opt-val extract)
+          (not *extracting*)))
+    ((opt-val lout)
+      (lout-prologue))
+    (else
+      (html-prologue)))
+  (if (and (not (opt-val extract))
+           (opt-val prologue-file))
+      (copy-file (opt-val prologue-file))))
+
+#|edoc------------------------------------------------------------------
+
+Emit the HTML and Lout epilogues, respectively.
+
+------------------------------------------------------------------code|#
+
+(define (html-epilogue)
+  (for-each
+    pr
+    '(""         #\newline
+      "</BODY>"  #\newline
+      "</HTML>"  #\newline)))
+
+(define (lout-epilogue)
+  (for-each
+    pr
+    '("@End @Text"  #\newline
+      #\newline)))
+
+#|edoc------------------------------------------------------------------
+
+Write an epilogue to an output file. This procedure will be called for
+each output file generated by EDOC. It will only be generated, if the
+program does not run in extract mode (\k{-x}) or the section to extract
+has been reached.
+
+The epilogue consists of the content of an epilogue file (if \k{-E} was
+specified) and the HTML or Lout epilogue, respectively.
+
+When the desired section has been extracted in extract mode, the
+\k{epilogue} procedure will end program execution after writing the
+epilogue.
+
+------------------------------------------------------------------code|#
+
+(define (epilogue)
+  (if (and (not (opt-val extract))
+           (opt-val epilogue-file))
+      (copy-file (opt-val epilogue-file)))
+  (if (and (not (opt-val strip-doc))
+           (or (not (opt-val extract))
+               *extracting*))
+      (if (opt-val lout)
+          (lout-epilogue)
+          (html-epilogue)))
+  (if (opt-val extract)
+      (if *extracting*
+          (sys:exit)
+          (set! *extracting* #t))))
+
+#|edoc------------------------------------------------------------------
+
+These are symbolic representation for all \e{modes} and \e{attributes}
+of EDOC.
+
+------------------------------------------------------------------code|#
+
+(define mode-text    'text)
+(define mode-quote   'quote)    ; \q
+(define mode-block   'block)    ; \b
+(define mode-ulist   'ulist)    ; \u
+(define mode-olist   'olist)    ; \o
+(define mode-hd0     'hd0)      ; \0
+(define mode-hd1     'hd1)      ; \1
+(define mode-hd2     'hd2)      ; \2
+(define mode-hd3     'hd3)      ; \3
+(define mode-image   'image)    ; \i
+(define attr-literal 'literal)  ; \=
+(define attr-anchor  'anchor)   ; \a
+(define attr-ref     'ref)      ; \r
+(define attr-var     'var)      ; \v
+(define attr-keyword 'keyword)  ; \k
+(define attr-emph    'emph)     ; \e
+(define attr-strong  'strong)   ; \E
+(define attr-highlt  'highlt)   ; \h
+(define attr-elem    'element)  ; \l
+(define attr-index   'index)    ; \x
+(define attr-cindex  'cindex)   ; \X
+(define attr-nindex  'nindex)   ; \n
+(define attr-vindex  'vindex)   ; \V
+(define attr-small   'small)    ; \s
+(define attr-sub     'sub)      ; \_
+(define attr-super   'super)    ; \^
+
+#|edoc------------------------------------------------------------------
+
+\k{Mode} is the current mode, \k{attr} is the current attribute. \k{#F}
+means that no mode/attribute is currently in effect.
+
+------------------------------------------------------------------code|#
+
+(define mode #f)
+(define attr #f)
+
+#|edoc------------------------------------------------------------------
+
+The \k{html-reset-attr!} and \k{lout-set-attr!} procedures terminate
+the HTML and Lout notations used for rendering attributes. For example,
+when the \k{\\k} (keyword) attribute is in effect (\k{attr} is set to
+\k{attr-keyword}), then \k{html-reset-attr!} would output \k{</CODE>}.
+
+\k{Reset-attr!} uses either of the above to reset the current
+attribute, depending on the output language selected, and sets \k{attr}
+to \k{#f}.
+
+------------------------------------------------------------------code|#
+
+(define (html-reset-attr!)
+  (cond ((eq? attr attr-elem)    (pr "</LI>"))
+        ((eq? attr attr-emph)    (pr "</EM>"))
+        ((eq? attr attr-strong)  (pr "</STRONG>"))
+        ((eq? attr attr-highlt)  (pr "</B>"))
+        ((eq? attr attr-keyword) (pr "</CODE>"))
+        ((eq? attr attr-anchor)  (pr "\"></A>"))
+        ((eq? attr attr-ref)     (pr "</A>"))
+        ((eq? attr attr-var)     (pr "</VAR>"))
+        ((eq? attr attr-small)   (pr "</SMALL>"))
+        ((eq? attr attr-sub)     (pr "</SUB>"))
+        ((eq? attr attr-super)   (pr "</SUP>"))
+        ((eq? attr attr-index)   (pr "</A>"))
+        ((eq? attr attr-cindex)  (pr "</CODE></A>"))
+        ((eq? attr attr-vindex)  (pr "</VAR></A>"))
+        ((eq? attr attr-nindex)  (pr "</A>"))))
+
+(define (lout-reset-attr!)
+  (cond ((eq? attr attr-elem)    (pr "} @Br"))
+        ((eq? attr attr-emph)    (pr "}}"))
+        ((eq? attr attr-strong)  (pr "}}"))
+        ((eq? attr attr-highlt)  (pr "}}"))
+        ((eq? attr attr-keyword) (pr "}}"))
+        ((eq? attr attr-anchor)  (pr "}}"))
+        ((eq? attr attr-ref)     (pr "}"))
+        ((eq? attr attr-var)     (pr "}}"))
+        ((eq? attr attr-small)   (pr "}}"))
+        ((eq? attr attr-sub)     (pr "}}"))
+        ((eq? attr attr-super)   (pr "}}"))
+        ((eq? attr attr-index)   (pr "}}"))
+        ((eq? attr attr-cindex)  (pr "}}}"))
+        ((eq? attr attr-vindex)  (pr "}}}"))
+        ((eq? attr attr-nindex)  (pr "}}"))))
+
+(define (reset-attr!)
+  (if (opt-val lout)
+      (lout-reset-attr!)
+      (html-reset-attr!))
+  (set! attr #f))
+
+#|edoc------------------------------------------------------------------
+
+\k{Html-set-attr!} and \k{lout-set-attr!} print the corresponding HTML
+or Lout command for rendering that attribute.
+
+------------------------------------------------------------------code|#
+
+(define (html-set-attr! x)
+  (cond ((eq? x attr-elem)    (pr "<LI>"))
+        ((eq? x attr-emph)    (pr "<EM>"))
+        ((eq? x attr-strong)  (pr "<STRONG>"))
+        ((eq? x attr-highlt)  (pr "<B>"))
+        ((eq? x attr-keyword) (pr "<CODE>"))
+        ((eq? x attr-anchor)  (pr "<A name=\""))
+        ((eq? x attr-ref)     (pr "<A href=\""))
+        ((eq? x attr-var)     (pr "<VAR>"))
+        ((eq? x attr-small)   (pr "<SMALL>"))
+        ((eq? x attr-sub)     (pr "<SUB>"))
+        ((eq? x attr-super)   (pr "<SUP>"))
+        ((eq? x attr-index)   (pr "<A name=\""))
+        ((eq? x attr-cindex)  (pr "<A name=\""))
+        ((eq? x attr-vindex)  (pr "<A name=\""))
+        ((eq? x attr-nindex)  (pr "<A name=\""))))
+
+(define (lout-set-attr! x)
+  (cond ((eq? x attr-elem)    (pr "{@Dash "))
+        ((eq? x attr-emph)    (pr "{@I{"))
+        ((eq? x attr-strong)  (pr "{@B{"))
+        ((eq? x attr-highlt)  (pr "{@B{"))
+        ((eq? x attr-keyword) (pr "{@T{"))
+        ((eq? x attr-anchor)  (pr "{@PageMark{"))
+        ((eq? x attr-ref)     (pr "{"))
+        ((eq? x attr-var)     (pr "{@I{"))
+        ((eq? x attr-small)   (pr "{@Small{"))
+        ((eq? x attr-sub)     (pr "{@Sub{"))
+        ((eq? x attr-super)   (pr "{@Sup{"))
+        ((eq? x attr-index)   (pr "{}{@X{\""))
+        ((eq? x attr-cindex)  (pr "{}{@X{\""))
+        ((eq? x attr-vindex)  (pr "{}{@X{\""))
+        ((eq? x attr-nindex)  (pr "{}{@X{\""))))
+
+#|edoc------------------------------------------------------------------
+
+\k{Set-attr!} first resets the current attribute (if one is in effect)
+and then sets \k{attr} the given one. It also emits the proper HTML or
+Lout sequence for rendering that attribute.
+
+When no mode is in effect, \k{set-attr!} selects \e{text} mode, thereby
+beginning a new paragraph.
+
+------------------------------------------------------------------code|#
+
+(define (set-attr! x)
+  (if (not mode)
+      (set-mode! mode-text))
+  (reset-attr!)
+  (if (opt-val lout)
+      (lout-set-attr! x)
+      (html-set-attr! x))
+  (set! attr x))
+
+#|edoc------------------------------------------------------------------
+
+\k{Html-reset-mode!} and \k{lout-reset-mode!} are like their
+counterparts for resetting attributes, but they emit markup
+for ending modes instead.
+
+------------------------------------------------------------------code|#
+
+(define (html-reset-mode!)
+  (cond ((eq? mode mode-block) (pr "</PRE>"))
+        ((eq? mode mode-olist) (pr "</OL>"))
+        ((eq? mode mode-ulist) (pr "</UL>"))
+        ((eq? mode mode-hd0)   (pr "</H1>"))
+        ((eq? mode mode-hd1)   (pr "</H1>"))
+        ((eq? mode mode-hd2)   (pr "</H2>"))
+        ((eq? mode mode-hd3)   (pr "</H3>"))
+        ((eq? mode mode-image) (pr ".png\">"))
+        ((eq? mode mode-quote) (pr "</BLOCKQUOTE>"))
+        ((eq? mode mode-text)  (pr "</P>"))))
+
+(define (lout-reset-mode!)
+  (cond ((eq? mode mode-block) (pr "}//" #\newline))
+        ((eq? mode mode-olist) (pr "}//" #\newline))
+        ((eq? mode mode-ulist) (pr "}//" #\newline))
+        ((eq? mode mode-hd0)   (pr "}//" #\newline))
+        ((eq? mode mode-hd1)   (pr "}//" #\newline))
+        ((eq? mode mode-hd2)   (pr "}//" #\newline))
+        ((eq? mode mode-hd3)   (pr "}//" #\newline))
+        ((eq? mode mode-image)   (pr ".eps}}//"))
+        ((eq? mode mode-quote) (pr "}//" #\newline))
+        ((eq? mode mode-text)  (pr "}//" #\newline))))
+
+#|edoc------------------------------------------------------------------
+
+\k{Reset-mode!} resets a mode. When resetting part (\k{\\0}) mode with
+the backlink (\k{-b}) option active, it also prints the end-of-anchor
+tag of the back link.
+
+------------------------------------------------------------------code|#
+
+(define (reset-mode!)
+  (if (and (eq? mode mode-hd0)
+           (opt-val backlink))
+      (pr "</A>"))
+  (if (opt-val lout)
+      (lout-reset-mode!)
+      (html-reset-mode!))
+  (set! mode #f))
+
+#|edoc------------------------------------------------------------------
+
+\k{Html-set-mode!}, \k{lout-set-mode!}, and \k{set-mode!} are like
+their counterparts for setting attributes, but they emit markup for
+beginning modes instead.
+
+------------------------------------------------------------------code|#
+
+(define (html-set-mode! x)
+  (cond ((eq? x mode-block) (pr "<PRE>"))
+        ((eq? x mode-ulist) (pr "<UL>"))
+        ((eq? x mode-olist) (pr "<OL>"))
+        ((eq? x mode-hd0)   (pr ""))
+        ((eq? x mode-hd1)   (pr "<H1>"))
+        ((eq? x mode-hd2)   (pr "<H2>"))
+        ((eq? x mode-hd3)   (pr "<H3>"))
+        ((eq? x mode-image) (pr "<IMG src=\""))
+        ((eq? x mode-quote) (pr "<BLOCKQUOTE>"))
+        ((eq? x mode-text)  (pr "<P>"))))
+
+(define (lout-set-mode! x)
+  (cond ((eq? x mode-block) (pr "@Pre{"))
+        ((eq? x mode-ulist) (pr "@Pa{"))
+        ((eq? x mode-olist) (pr "@Pa{"))
+        ((eq? x mode-hd0)   (pr "// @Sp // @Chapter{"))
+        ((eq? x mode-hd1)   (pr "// @Sp // @Chapter{"))
+        ((eq? x mode-hd2)   (pr "// @Pa // @Section{"))
+        ((eq? x mode-hd3)   (pr "// @Pa // @SubSection{"))
+        ((eq? x mode-image) (pr "//1f {@IncludeGraphic{"))
+        ((eq? x mode-quote) (pr "@Pa @I{"))
+        ((eq? x mode-text)  (pr "@Pa{"))))
+
+(define (set-mode! x)
+  (reset-mode!)
+  (if (opt-val lout)
+      (lout-set-mode! x)
+      (html-set-mode! x))
+  (set! mode x))
+
+#|edoc------------------------------------------------------------------
+
+\2{Rendering EDOC}
+
+When in block (\k{\\b}) mode, emit the given number (\v{nnl}) of newline
+characters. Otherwise, reset the current mode.
+
+Normally, an empty line is used to end a mode, but in block mode, any
+number of empty lines may appear as content of the mode, so \k{do-break}
+simply emits the given number of newlines and stays in block mode.
+
+------------------------------------------------------------------code|#
+
+(define (do-break nnl)
+  (if (eq? mode mode-block)
+      (do ((i 0 (+ 1 i)))
+          ((= i nnl))
+        (pr #\newline))
+      (begin (set-mode! #f)
+             (pr #\newline))))
+
+#|edoc------------------------------------------------------------------
+
+Convert a character to a non-code sequence in the given output language,
+e.g. convert ">" to "&gt;" in HTML.
+
+------------------------------------------------------------------code|#
+
+(define (escape-char c)
+  (if (opt-val lout)
+      (loutify-char c)
+      (htmlify-char c)))
+
+#|edoc------------------------------------------------------------------
+
+Replace blanks in Lout strings with \={&Ns\=} sequences, were \v{N}
+is the number of subsequent blanks, e.g.
+
+\b{(loutify-spaces "  foo   bar ")  ==>  \
+"\={&2s\=}foo\={%3s\=}bar\={&1s\=}"}
+
+------------------------------------------------------------------code|#
+
+(define (loutify-spaces s)
+  (let ((k (string-length s))
+        (make-spaces
+          (lambda (n r)
+            (if (positive? n)
+                (cons (string-append "{&" (number->string n) "s}")
+                      r)
+                r))))
+    (let loop ((i 0)
+               (r '())
+               (n 0))
+      (cond ((= i k)
+              (apply string-append (reverse! (make-spaces n r))))
+            ((char=? #\space (string-ref s i))
+              (loop (+ 1 i) r (+ 1 n)))
+            ((positive? n)
+              (loop i
+                    (make-spaces n r)
+                    0))
+            (else
+              (loop (+ 1 i) (cons (substring s i (+ 1 i)) r) 0))))))
+
+#|edoc------------------------------------------------------------------
+
+Escape all "dangerous" characters (like "<" in HTML) in the given
+string and, if output format is Lout and current mode is block (\k{\\b})
+mode, also convert subsequent spaces to Lout format (so they will not
+collapse in output).
+
+------------------------------------------------------------------code|#
+
+(define (list->escaped-string a)
+  (let ((s (apply string-append (map escape-char a))))
+    (if (and (opt-val lout)
+             (eq? mode mode-block))
+        (loutify-spaces s)
+        s)))
+
+#|edoc------------------------------------------------------------------
+
+\k{*Nested*} is the number of nested commands currently being processed.
+This number cannot exceed 2 (one mode, one attribute).
+
+\k{*Output*} is a stack (yes, really!) holding not-yet-written
+characters. It is an output buffer that is used to extract or delete
+information belatedly after emitting it.
+
+\k{*Printref*} holds a visible reference marker used only in printed
+documents (in HTML, a hyperlink would be used).
+
+------------------------------------------------------------------code|#
+
+(define *nested*   0)
+(define *output*   '())
+(define *printref* #f)
+
+#|edoc------------------------------------------------------------------
+
+\k{Flush} commits the output buffer to the output file.
+
+------------------------------------------------------------------code|#
+
+(define (flush)
+  (pr (list->escaped-string (reverse! *output*)))
+  (set! *output* '()))
+
+#|edoc------------------------------------------------------------------
+
+Extract a reference from the output buffer. The last word in the buffer
+is the reference, so all character up to the first blank are extracted
+from \k{*output*}. The blank is discarded and the other characters are
+returned as a string. The reference is also deleted from \k{*output*}.
+
+When the \v{require-blank} argument is \k{#f}, extract the complete
+buffer.
+
+\k{Extract-ref!} escapes dangerous characters in the extracted string.
+
+------------------------------------------------------------------code|#
+
+(define (extract-ref! require-blank)
+  (let loop ((o *output*)
+             (u '()))
+    (cond ((null? o)
+            (if require-blank
+                (edoc-error "missing blank in \\r{} or \\0{}"))
+                (begin (set! *output* '())
+                       (list->string u)))
+          ((char=? (car o) #\space)
+            (set! *output* (cdr o))
+            (list->escaped-string u))
+          (else
+            (loop (cdr o) (cons (car o) u))))))
+
+#|edoc------------------------------------------------------------------
+
+Extract the content of \k{*output*} without printing it. Do not escape
+any characters.
+
+------------------------------------------------------------------code|#
+
+(define (command-text)
+  (let loop ((o *output*)
+             (u '()))
+    (cond ((null? o)
+            (list->string u))
+          (else
+            (loop (cdr o) (cons (car o) u))))))
+
+#|edoc------------------------------------------------------------------
+
+Close the index file, if currently open.
+
+------------------------------------------------------------------code|#
+
+(define (close-ndx)
+  (if *ndx-port*
+      (begin (close-output-port *ndx-port*)
+             (set! *ndx-port* #f))))
+
+#|edoc------------------------------------------------------------------
+
+Append an index entry to the index file. Reopen the index file, if it
+is not open. \v{File} is the current output file, \v{tag} is the tag
+used to locate references to the entry, \v{text} is the text that will
+print in the index, and \v{ctag} is a two-element list containing the
+markup for the text. Each entry will have the following format:
+
+\b{file <tab> tag <tab> (car ctag) text (cadr ctag) <newline>}
+
+When no output file is known, the "file" part will be empty.
+
+------------------------------------------------------------------code|#
+
+(define (write-ndx file tag text ctag)
+  (let ((TAB (integer->char 9)))
+    (if (opt-val make-index)
+        (begin
+          (if (not *ndx-port*)
+              (set! *ndx-port* (append-to-output-file "INDEX")))
+          (display* *ndx-port*
+                    (if file file "")
+                    TAB
+                    tag
+                    TAB
+                    (car ctag)
+                    text
+                    (cadr ctag)
+                    #\newline)))))
+
+#|edoc------------------------------------------------------------------
+
+Generate a unique tag name. Because reference tags would appear
+multiple times when creating multiple entries for the same keyword,
+this function appends a unique numeric suffix to each tag, e.g.:
+\k{frobnitz} would become \k{frobnitz:1}, \k{frobnitz:2}, etc.
+
+A hash table is used to map tags to suffixes.
+
+------------------------------------------------------------------code|#
+
+(define (unique-tag tag)
+  (let ((id (cond ((hash-table-ref *index-tags* tag)
+                    => (lambda (v)
+                         (let ((v (+ 1 (car v))))
+                           (hash-table-set! *index-tags* tag v)
+                           v)))
+                  (else
+                    (hash-table-set! *index-tags* tag 0)
+                    0))))
+    (string-append tag ":" (number->string id))))
+
+#|edoc------------------------------------------------------------------
+
+Create a printable reference (for Lout output). When the tag \v{s}
+is an URL (starting with "http:"), then the entire URL is included:
+
+\b{[url]}
+
+Otherwise the reference is assumed to point to a local anchor and a
+Lout \k{@PageOf} command will be used to insert a page number:
+
+\b{[page page-number]}
+
+When a tag contains a "#" character, everything in front of the "#" is
+dropped. (Two chars are skipped starting at "#", because "#" is quoted
+at this point.)
+
+------------------------------------------------------------------code|#
+
+(define (make-print-ref s)
+  (if (and (> (string-length s) 7)
+           (string-ci=? "http:" (substring s 0 5)))
+      (string-append " [" s "]")
+      (let* ((k (string-scan #\# s))
+             (s (if k
+                    (substring s (+ 2 k) (string-length s))
+                    s)))
+        (string-append " [page @PageOf{\"" s "\"}]"))))
+
+#|edoc------------------------------------------------------------------
+
+Remove dangerous characters from tags by replacing them with less
+suspicious characters.
+
+\E{Note: This approach may cause overlaps. To be improved.}
+
+------------------------------------------------------------------code|#
+
+(define (htmlname s)
+  (string-translate s "#<>&" "_LGA"))
+
+#|edoc------------------------------------------------------------------
+
+The \k{finish-command} procedure commits the output generated by a
+command (mode or attribute) and resets the attribute, if one is in
+effect, and the mode otherwise.
+
+It also does the post-processing of the reference (\k{\\r}) and index
+(\k{\\x}, \k{\\X}, \k{\\V}, \k{\\n}) attributes as well as of the
+part (\k{\\0}) mode.
+
+When a reference attribute is processed, a printable reference is
+generated in Lout mode and the begin anchor tag is finished in
+HTML mode (by emitting the \k{">} part).
+
+Index entries are processed by extracting the tag symbol (\v{sym}) from
+\k{*output*}. When the symbol is "*", the characters preceding the
+"*" (the command text, \v{text}) will be used for a tag. If the text
+is empty, there is only one word in the index entry, and the entry
+will not be visible in the content.
+
+For \k{\\0} mode, this procedure switches to the next file, including
+generation of epilogues, prologues, etc. In Lout mode, \k{\\0} is equal
+to \k{\\1}.
+
+------------------------------------------------------------------code|#
+
+(define (finish-command)
+  (dec! *nested*)
+  (cond ((eq? attr attr-ref)
+          (set! *printref* #f)
+          (if (opt-val lout)
+              (set! *printref* (make-print-ref (extract-ref! #t)))
+              (begin (pr (extract-ref! #t))
+                     (pr "\">"))))
+        ((or (eq? attr attr-cindex)
+             (eq? attr attr-vindex)
+             (eq? attr attr-index)
+             (eq? attr attr-nindex))
+          (let* ((sym  (if (eq? attr attr-nindex)
+                           (let ((o *output*))
+                             (set! *output* '())
+                             (list->escaped-string (reverse! o)))
+                           (extract-ref! #f)))
+                 (star (string=? sym "*"))
+                 (ctag (cond ((eq? attr attr-cindex)
+                               (if (opt-val lout)
+                                   '("@T{" "}")
+                                   '("<CODE>" "</CODE>")))
+                             ((eq? attr attr-vindex)
+                               (if (opt-val lout)
+                                   '("@I{" "}")
+                                   '("<VAR>" "</VAR>")))
+                             (else '("" ""))))
+                 (text  (command-text))
+                 (text  (if (string=? text "")
+                            sym
+                            text))
+                 (u-sym (unique-tag (if star text sym))))
+            (write-ndx *to-file* (htmlname u-sym) text ctag)
+            (if (opt-val lout)
+                (pr (htmlname u-sym) "\"}{" (car ctag))
+                (pr (htmlname u-sym) "\">" (car ctag)))
+            (if star
+                (flush))))
+        ((eq? mode mode-hd0)
+          (cond ((opt-val lout)
+                  (extract-ref! #t))
+                (else
+                  (close-ndx)
+                  (epilogue)
+                  (next-output-file (extract-ref! #t))
+                  (prologue *language*)
+                  (pr "<H1>")
+                  (if (opt-val backlink)
+                      (pr "<A href=\""
+                          (opt-val backlink)
+                          "\">"))))))
+  (flush)
+  (if *printref*
+      (begin (pr *printref*)
+             (set! *printref* #f)))
+  (if attr
+      (reset-attr!)
+      (reset-mode!)))
+
+#|edoc------------------------------------------------------------------
+
+The \k{render} procedure renders one line (in \v{s}) of EDOC markup.
+
+The \v{nnl} argument holds the number of newlines seen before the
+current line. Newlines terminate all modes except for block (\k{\\b})
+mode. This is done in \k{do-break}.
+
+\k{Render} pushes all characters of \v{s} to the output stack unless
+a "\\" character is found, which switches the procedure to command
+mode. In command mode, all commands take effect immediately by setting
+a new mode or attribute.
+
+The output of a command is only committed when a "\=}" character
+delimiting the command is found or the end of \v{s} has been reached.
+When the end of a command is found, the \k{finish-command} procedure
+(above) is invoked to finish any pending actions associated with
+commands.
+
+------------------------------------------------------------------code|#
+
+(define (render s nnl)
+  (define in-command  #f)
+  (if (> nnl 0)
+      (do-break nnl))
+  (let loop ((s (string->list s)))
+    (cond ((negative? *nested*)
+            (edoc-error "unmatched closing brace"))
+          ((> *nested* 2)
+            (edoc-error "too many nested commands"))
+          ((null? s)
+            (flush)
+            (reset-attr!))
+          ((and (not in-command)
+                (char=? #\\ (car s)))
+            (set! in-command #t)
+            (loop (cdr s)))
+          ((char=? #\} (car s))
+            (finish-command)
+            (loop (cdr s)))
+          (in-command
+            (flush)
+            (set! in-command #f)
+            (cond ((char=? #\\ (car s))
+                    (pr (escape-char #\\))
+                    (loop (cdr s)))
+                  ((pair? (cdr s))
+                    (inc! *nested*)
+                    (let ((k (car s)))
+                      (case k
+                            ((#\b) (set-mode! mode-block))
+                            ((#\e) (set-attr! attr-emph))
+                            ((#\E) (set-attr! attr-strong))
+                            ((#\h) (set-attr! attr-highlt))
+                            ((#\k) (set-attr! attr-keyword))
+                            ((#\l) (set-attr! attr-elem))
+                            ((#\o) (set-mode! mode-olist))
+                            ((#\q) (set-mode! mode-quote))
+                            ((#\a) (set-attr! attr-anchor))
+                            ((#\r) (set-attr! attr-ref))
+                            ((#\s) (set-attr! attr-small))
+                            ((#\u) (set-mode! mode-ulist))
+                            ((#\v) (set-attr! attr-var))
+                            ((#\x) (set-attr! attr-index))
+                            ((#\X) (set-attr! attr-cindex))
+                            ((#\n) (set-attr! attr-nindex))
+                            ((#\V) (set-attr! attr-vindex))
+                            ((#\_) (set-attr! attr-sub))
+                            ((#\^) (set-attr! attr-super))
+                            ((#\0) (set-mode! mode-hd0))
+                            ((#\1) (set-mode! mode-hd1))
+                            ((#\2) (set-mode! mode-hd2))
+                            ((#\3) (set-mode! mode-hd3))
+                            ((#\i) (set-mode! mode-image))
+                            ((#\=) (dec! *nested*)
+                                   (pr (escape-char (cadr s))))
+                            (else  (edoc-error "unknown command" k)))
+                      (loop (cddr s))))
+                  (else
+                    (loop (cdr s)))))
+          (else
+            (if (not mode)
+                (set-mode! mode-text))
+            (push! (car s) *output*)
+            (loop (cdr s))))))
+
+#|edoc------------------------------------------------------------------
+
+The \k{edoc-start?} and \k{edoc-end?} procedures check whether a line
+starts or ends an EDOC (markup) section. Both, the C (\k{/*edoc}) and
+Scheme (\k{#|edoc}) start markers are accepted, but only the end marker
+(\k{code|#} or \k{code*/}) of the selected language will work. This
+allows to auto-select the source language based on the first EDOC start
+marker found in a file.
+
+------------------------------------------------------------------code|#
+
+(define (edoc-start? s)
+  (and (< 5 (string-length s))
+       (or (string=? "#|edoc" (substring s 0 6))
+           (string=? "/*edoc" (substring s 0 6)))))
+
+(define (edoc-end? s)
+  (let ((k (string-length s))
+        (d (if (eq? *language* 'scheme)
+               "code|#"
+               "code*/")))
+    (and (> k 5)
+         (string=? d (substring s (- k 6) k)))))
+
+#|edoc------------------------------------------------------------------
+
+The \k{*read-buffer*} is a hack to allow to inject a start section
+marker when extracting a section. When it is non-nil, output will be
+taken from the buffer. This is done in \k{buffered-read-line}. When
+the read buffer is empty, \k{buffered-read-line} just reads a file from
+the current input file.
+
+------------------------------------------------------------------code|#
+
+(define *read-buffer* '())
+
+(define (buffered-read-line)
+  (if (null? *read-buffer*)
+      (begin (inc! *line-no*)
+             (read-line))
+      (pop! *read-buffer*)))
+
+#|edoc------------------------------------------------------------------
+
+The \k{edoc} procedure renders an entire EDOC (markup) section. An
+EDOC section begins with an EDOC start marker and ends with an EDOC
+end marker or the end of the file.
+
+In strip mode (\k{-s}), no output is generated and the EDOC section
+is simply removed from the output.
+
+While generating output, empty lines are simply ignored (but counted)
+and later the number of blank lines is passed to \k{render}, which
+decides what to do with them.
+
+When a line ends with a "\\" character, a new line a read and appended
+to the current line. Even more than two lines may be joined this way.
+
+All non-empty (or joined) lines will be passed to \k{render} for final
+rendering.
+
+------------------------------------------------------------------code|#
+
+(define (edoc)
+  (let loop ((line (buffered-read-line))
+             (nnl  0))
+    (cond ((or (eof-object? line)
+               (edoc-end? line))
+            (reset-mode!)
+            (if (not (zero? *nested*))
+                (edoc-error "missing closing brace at end of edoc section"))
+            (set! *nested* 0)
+            (if (not (opt-val strip-doc))
+                (pr #\newline)))
+          ((string=? "" line)
+            (loop (buffered-read-line) (+ 1 nnl)))
+          ((opt-val strip-doc)
+            (loop (buffered-read-line) 0))
+          ((let ((k (string-length line)))
+             (and (positive? k)
+                  (char=? #\\ (string-ref line (- k 1)))
+                  (not (and (> k 1)
+                            (char=? #\\ (string-ref line (- k 2)))))))
+             (let ((k   (string-length line))
+                   (new (buffered-read-line)))
+               (if (string? new)
+                   (loop (string-append (substring line 0 (- k 1)) new) 0)
+                   (loop (substring line 0 (- k 1)) 0))))
+          (else
+            (render line nnl)
+            (pr #\newline)
+            (loop (buffered-read-line) 0)))))
+
+#|edoc------------------------------------------------------------------
+
+Skip to a specific section (\v{tag}) in order to extract it using the
+\k{-x} command line option. The \v{tag} is the last word in a \k{\\0}
+mode.
+
+The \k{skip-to-section} procedure expects the part (\k{\\0}) marking the
+section to begin at a fresh line directly under an EDOC start marker
+(because it will insert that marker before returning control to the
+caller).
+
+\E{This procedure is a kludge!}
+
+------------------------------------------------------------------code|#
+
+(define (skip-to-section tag)
+  (if (not *language*)
+      (edoc-error "language must be specified with -x"))
+  (let ((kt (string-length tag)))
+    (let loop ((line (read-line)))
+      (let ((kl (if (eof-object? line)
+                    0
+                    (string-length line))))
+        (inc! *line-no*)
+        (cond ((eof-object? line)
+                (edoc-error "no such section" tag))
+              ((and (>= kl (+ 4 kt))
+                    (string=? "\\0{" (substring line 0 3))
+                    (string=? tag (substring line (- kl kt 1) (- kl 1))))
+                (set! *read-buffer*
+                      (list (if (eq? *language* 'scheme)
+                                "#|edoc"
+                                "/*edoc")
+                            line)))
+              (else
+                (loop (read-line))))))))
+
+#|edoc------------------------------------------------------------------
+
+The \k{code} procedure renders an entire EDOC document, including any
+embedded EDOC sections. In extract (\k{-x}) mode, it first skips to the
+section to extract before it starts rendering.
+
+\k{Code} chooses a procedure for syntax-highlighting source code based
+on the \k{*language*} setting. This will be either \k{scm2html} or
+\k{c2html}. These procedures accept a line of code to be highlighted
+and a set of arguments, which is best looked up in their respective
+descriptions. They return a list containing the highlighting attributes
+currently in effect and a string containing HTML or Lout formatting
+instructions.
+
+Because highlighting attributes may have to be preserved between
+individual lines, the attributes returned by a formatting procedures
+will be passed along when the next line is formatted. Between calls,
+the attributes are kept in the \v{attr} variable.
+
+Like \k{edoc}, \k{code} collects empty lines and outputs them only when
+they are part of a code block. It ignores them when they appear between
+code blocks and EDOC sections.
+
+\k{Code} ignores lines containing both an EDOC start and end marker.
+In addition it resets the language to \k{#f}, if such a line contains
+the word "reset" immediately after the start marker.
+
+When a start marker without an end marker is found, the procedure
+terminates the current code block and switches to EDOC mode by calling
+\k{edoc}.
+
+\k{Code} emits a prologue (via \k{prologue}) before outputting either
+code or EDOC text. It uses the \v{init} variable to indicate that it
+still needs to initialize output with a prologue.
+
+The \k{cont} variable indicates that code already has been output (so
+the next line of code will \e{continue} code output). It is used to
+avoid generating empty code containers. It is only set right before
+emitting the first line of a code block.
+
+The \v{out} variable is used to store a line of highlighted output
+before emitting it. In strip mode (\k{-s}), it contains a line of
+raw (non-highlighted) code.
+
+When the end of the input file is reached, \k{code} closes all pending
+containers, writes an epilogue, and exits.
+
+------------------------------------------------------------------code|#
+
+(define (code)
+  (if (opt-val extract)
+      (skip-to-section (opt-val extract)))
+  (let ((gen (if (eq? *language* 'scheme)
+                 scm2html
+                 c2html)))
+    (let ((out   #f)
+          (attr  '(#f #f #f 0 ()))
+          (cont  #f)
+          (init  #t))
+      (let loop ((nnl 0))
+        (let ((line (buffered-read-line)))
+          (cond ((eof-object? line)
+                  (pr (gen 'terminate: attr
+                           'lout-mode: (opt-val lout))
+                      #\newline)
+                  (set! attr '(#f #f #f 0 ()))
+                  (if cont
+                      (begin (if (not (opt-val strip-doc))
+                                 (if (opt-val lout)
+                                     (pr "}" #\newline)
+                                     (pr "</PRE>" #\newline)))
+                             (close-ndx)))
+                  (epilogue))
+                ((string=? "" line)
+                  (loop (+ 1 nnl)))
+                ((edoc-start? line)
+                  (set-language! (if (char=? #\# (string-ref line 0))
+                                     'scheme
+                                     'ccode))
+                  (cond ((edoc-end? line)
+                          (if (string-ci=? "reset" (substring line 7 12))
+                              (set! *language* #f))
+                          (loop 0))
+                        (else
+                          (pr (gen 'terminate: attr
+                                   'lout-mode: (opt-val lout)))
+                          (set! attr '(#f #f #f 0 ()))
+                          (if (and cont (not (opt-val strip-doc)))
+                              (if (opt-val lout)
+                                  (pr "}//" #\newline)
+                                  (pr "</PRE>" #\newline)))
+                          (set! cont #f)
+                          (if init
+                              (prologue *language*))
+                          (set! init #f)
+                          (edoc)
+                          (loop 0))))
+                (else
+                  (if init
+                      (prologue *language*))
+                  (set! init #f)
+                  (when (not cont)
+                        (cond ((opt-val strip-doc))
+                              ((opt-val lout)
+                                (pr "@Code{"))
+                              (else
+                                (pr "<PRE class="
+                                    *language*
+                                    ">")))
+                        (set! cont #t))
+                  (cond ((opt-val strip-doc))
+                        ((eq? *language* 'scheme)
+                          (set! out (scm2html 'mark-s9-procs: #t
+                                              'mark-s9-extns: #t
+                                              'tilde-quotes: #t
+                                              'input-string: line
+                                              'initial-style: attr
+                                              'lout-mode: (opt-val lout))))
+                        ((eq? *language* 'ccode)
+                          (set! out (c2html 'input-string: line
+                                            'initial-style: attr
+                                            'lout-mode: (opt-val lout))))
+                        (else
+                          (edoc-error "cannot figure out source language")))
+                  (do ((i 0 (+ 1 i)))
+                        ((= i nnl))
+                    (pr #\newline))
+                  (cond (out
+                          (set! attr (car out))
+                          (pr (cadr out) #\newline))
+                        (else
+                          (pr line #\newline)))
+                  (loop 0))))))))
+
+#|edoc------------------------------------------------------------------
+
+Print command line usage.
+
+------------------------------------------------------------------code|#
+
+(define (usage)
+  (display* "Usage: edoc [-iswL] [-b file] [-l lang] [-o file] [-t title]"
+            " [-x name]"
+            #\newline
+            "            [-E file] [-P file] [file ...]"
+            #\newline))
+
+#|edoc------------------------------------------------------------------
+
+\3{Main Program}
+
+The main program parses the command line options using
+\k{parse-options!}. It accepts the options defined at the beginning of
+the program. It then initializes some global variables with option
+values and opens an output file, it an \k{-o} option was given.
+
+After that, there are three options. When \k{-h} was specified on the
+command line, a long usage test prints and the program exits.
+
+When no files where specified on the command line, input is taken from
+the standard input port. Otherwise, input is redirected from each given
+file in sequence.
+
+The list of files (\v{files}) specified after all options on the
+command line is returned by \k{parse-options!} after parsing.
+
+------------------------------------------------------------------code|#
+
+(let ((files (parse-options! (sys:command-line) options usage)))
+  (if (opt-val language)
+      (set! *language* (string->symbol (opt-val language))))
+  (if (opt-val output-file)
+      (next-output-file (opt-val output-file)))
+  (if (opt-val title)
+      (set! *title* (opt-val title)))
+  (cond ((opt-val show-help)
+          (display-usage
+            `(""
+              ,usage
+              ""
+              "Render programs with embedded edoc sections in HTML."
+              ""
+              "-b file  make headings links back to 'file'"
+              "-i       generate index file (INDEX)"
+              "-l lang  source language is lang (scheme, ccode)"
+              "-o file  write output to the given file"
+              "-s       strip edoc sections, output raw code"
+              "-t text  content of the HTML TITLE tag"
+              "-w       overwrite output files (default: keep)"
+              "-x name  extract section with given file name"
+              "-E file  insert epilogue 'file' at end of output"
+              "-P file  insert prologue 'file' at beginning of output"
+              "-L       generate Lout output (experimental!)"
+              ""))
+          (sys:exit 0))
+        ((null? files)
+          (code))
+        (else
+          (for-each (lambda (file)
+                      (with-input-from-file
+                        file
+                        (lambda ()
+                          (set! *file-name* file)
+                          (code))))
+                    files))))

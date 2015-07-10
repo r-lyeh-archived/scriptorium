@@ -1,0 +1,6 @@
+R4RS 6.5.5  (exact? number)    ==>  boolean
+            (inexact? number)  ==>  boolean
+
+These numerical predicates provide tests for the exactness of a
+quantity. For any Scheme number, precisely one of these predicates
+is true.

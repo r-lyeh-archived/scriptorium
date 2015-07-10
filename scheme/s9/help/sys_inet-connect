@@ -1,0 +1,23 @@
+S9 EXT  (sys:inet-connect string1 string2)  ==>  integer
+
+Create a fresh client socket and connect it to host STRING1,
+service STRING2. Return a file descriptor for accessing the
+new socket.
+
+; Fetch HTML page "url" from HTTP server "host", port "port"
+;
+(define (http-fetch host url port)
+  (let* ((s   (sys:inet-connect host port))
+         (in  (sys:make-input-port s))
+         (out (sys:make-output-port s)))
+    (display* out "GET http://" host "/" url " HTTP/1.0" #\newline #\newline)
+    (sys:flush out)
+    (let in-loop ((line (read-line in))
+                  (page '()))
+      (cond ((eof-object? line)
+              (close-input-port in)
+              (close-output-port out)
+              (reverse page))
+            (else
+              (in-loop (read-line in)
+                       (cons line page)))))))

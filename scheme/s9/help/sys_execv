@@ -1,0 +1,8 @@
+S9 EXT  (sys:execv string list)  ==>  undefined
+
+Replace the calling process with a process loaded from the
+executable file named in STRING. LIST must be a list of strings.
+The strings contained in LIST will be passed as arguments to the
+new process. SYS:EXECV does not return.
+
+(sys:execv "/bin/ls" '("-l"))

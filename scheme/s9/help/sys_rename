@@ -1,0 +1,5 @@
+S9 EXT  (sys:rename string1 string2)  ==>  unspecific
+
+Change the name of directory entry STRING1 to STRING2.
+
+(sys:rename "old-name" "new-name")  ==>  unspecific

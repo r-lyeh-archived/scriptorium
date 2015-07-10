@@ -1,0 +1,26 @@
+R4RS 6.5.6  (number->string number)          ==>  string
+            (number->string number integer)  ==>  string
+
+INTEGER must be a radix of either 2, 8, 10, or 16. If omitted, it
+defaults to 10. The procedure NUMBER->STRING takes a number and a
+radix and returns as a string an external representation of the
+given number in the given radix such that
+
+(let ((number number)
+      (radix radix))
+  (eqv? number
+        (string->number (number->string number radix)
+                        radix)))
+
+is true. It is an error if no possible result makes this expression
+true.
+
+If NUMBER is inexact, the radix is 10, and the above expression can
+be satisfied by a result that contains a decimal point, then the
+result contains a decimal point and is expressed using the minimum
+number of digits (exclusive of exponent and trailing zeros) needed
+to make the above expression true; otherwise the format of the result
+is unspecified.
+
+The result returned by NUMBER->STRING never contains an explicit
+radix prefix.

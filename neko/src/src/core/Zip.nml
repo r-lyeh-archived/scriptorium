@@ -1,0 +1,116 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+type in;
+type out;
+
+type flush {
+	NO;
+	SYNC;
+	FULL;
+	FINISH;
+	BLOCK;
+}
+
+type result {
+	done : bool;
+	read : int;
+	write : int;
+}
+
+function init() {
+	neko("
+		@set_flush_mode = $loader.loadprim('zlib@set_flush_mode',2);
+		@inflate_init = $loader.loadprim('zlib@inflate_init',1);
+		@deflate_buffer = $loader.loadprim('zlib@deflate_buffer',5);
+		@inflate_buffer = $loader.loadprim('zlib@inflate_buffer',5);
+		@deflate_init = $loader.loadprim('zlib@deflate_init',1);
+		@deflate_bound = $loader.loadprim('zlib@deflate_bound',2);
+		@deflate_end = $loader.loadprim('zlib@deflate_end',1);
+		@inflate_end = $loader.loadprim('zlib@inflate_end',1);
+	");
+}
+
+function __result(x) {
+	{ done = neko "x.done"; read = neko "x.read"; write = neko "x.write" }
+}
+
+function output(v:int) : out {
+	neko("@deflate_init")(v);
+}
+
+function output_bound(o:out,size:int) : int {
+	neko("@deflate_bound")(o,size);
+}
+
+function output_end(o:out) : void {
+	neko("@deflate_end")(o);
+}
+
+function output_buffer(o:out,in:string,ipos:int,out:string,opos:int) {
+	__result(neko "@deflate_buffer(o,in,ipos,out,opos)");
+}
+
+function input( n : int option ) : in {
+	neko("@inflate_init")(match n { None -> neko "null" | Some i -> i })
+}
+
+function input_buffer(i:in,in:string,ipos:int,out:string,opos:int) {
+	__result(neko "@inflate_buffer(i,in,ipos,out,opos)");
+}
+
+function input_end(i:in) : void {
+	neko("@inflate_end")(i);
+}
+
+function output_set_flush_mode(o:out,f:flush) : void {
+	neko("@set_flush_mode")(o,string f);
+}
+
+function input_set_flush_mode(i:in,f:flush) : void {
+	neko("@set_flush_mode")(i,string f);
+}
+
+function compress(str,level) {
+	var c = output level;
+	output_set_flush_mode c FINISH;
+	var out = String.create (output_bound c (String.length str));
+	var r = output_buffer c str 0 out 0;
+	output_end c;
+	if !r.done || r.read != String.length str then throw Error("Compression failed");
+	String.sub out 0 r.write;
+}
+
+function uncompress(str) {
+	var u = input None;
+	var tmp = String.create (1 << 16); // 64K
+	var b = Buffer.create();
+	input_set_flush_mode u SYNC;
+	function rec loop(pos) {
+		var r = input_buffer u str pos tmp 0;
+		Buffer.add_sub b tmp 0 r.write;
+		if !r.done then loop(pos + r.read);
+	}
+	loop(0);
+	input_end u;
+	Buffer.string b;
+}

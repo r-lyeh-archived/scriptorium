@@ -1,0 +1,16 @@
+R4RS 6.10.2  (peek-char)             ==>  char | eof-object
+             (peek-char input-port)  ==>  char | eof-object
+
+Returns the next character available from the input port, without
+updating the port to point to the following character. If no more
+characters are available, an end of file object is returned.
+INPUT-PORT may be omitted, in which case it defaults to the value
+returned by CURRENT-INPUT-PORT.
+
+Note: The value returned by a call to PEEK-CHAR is the same as the
+value that would have been returned by a call to READ-CHAR with the
+same port. The only difference is that the very next call to READ-CHAR
+or PEEK-CHAR on that port will return the value returned by the
+preceding call to PEEK-CHAR. In particular, a call to PEEK-CHAR on
+an interactive port will hang waiting for input whenever a call to
+READ-CHAR would have hung.

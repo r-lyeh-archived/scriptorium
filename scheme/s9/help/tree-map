@@ -1,0 +1,14 @@
+S9 LIB  (tree-map procedure1 procedure2 pair)  ==>  pair
+
+Apply PROCEDURE2 to each node of the tree rooted at PAIR
+to which the predicate PROCEDURE1 applies. Return a fresh
+tree.
+
+(tree-map number? list '((a . 1) (b . 2)))
+  ==>  ((a . (1)) (b . (2)))
+(tree-map (lambda (x) (and (pair? x)
+                           (string? (car x))
+                           (string? (cdr x))))
+          (lambda (x) (string-append (car x) (cdr x)))
+          '(("foo" . "bar") ("bar" . "baz")))
+  ==>  ("foobar" "barbaz")

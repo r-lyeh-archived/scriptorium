@@ -1,0 +1,13 @@
+R4RS 6.10.4  (load string)  ==>  unspecific
+
+STRING should be a file name naming an existing file containing
+Scheme source code. The LOAD procedure reads expressions and
+definitions from the file and evaluates them sequentially. It is
+unspecified whether the results of the expressions are printed.
+The LOAD procedure does not affect the values returned by
+CURRENT-INPUT-PORT and CURRENT-OUTPUT-PORT. LOAD returns an
+unspecified value.
+
+Rationale: For portability, LOAD must operate on source files. Its
+operation on other kinds of files necessarily varies among
+implementations.

@@ -1,0 +1,6 @@
+R4RS 6.8  (vector object ...)  ==>  vector
+
+Returns a newly allocated vector whose elements contain the given
+arguments. Analogous to LIST.
+
+(vector 'a 'b 'c)  ==>  #(a b c)

@@ -1,0 +1,12 @@
+     |-----handy-ruler------------------------------------------------------|
+gmqcc: gmqcc (Quake C compiler)
+gmqcc:
+gmqcc: A modern written-from-scratch compiler for the QuakeC language with
+gmqcc: support for many common features found in other QC compilers.
+gmqcc: Additionally contains a standalone QCVM executor, and a tool to deal
+gmqcc: with .pak archive files.
+gmqcc:
+gmqcc:
+gmqcc: github page:
+gmqcc:   http://github.com/graphitemaster/gmqcc
+gmqcc:

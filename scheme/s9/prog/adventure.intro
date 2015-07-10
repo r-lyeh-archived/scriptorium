@@ -1,0 +1,19 @@
+<IMG src="MASCOT.png" alt="Scheme 9 Mascot">
+
+<P>S9fES is a mature, portable, and comprehensible public-domain
+interpreter for R4RS Scheme offering</P>
+
+<UL>
+ <LI>support for low-level Unix programming</LI>
+ <LI>cursor addressing with Curses</LI>
+ <LI>decimal-based real number arithmetics</LI>
+ <LI>basic networking procedures</LI>
+ <LI>loads of useful library functions</LI>
+</UL>
+
+<P>So you want to get access to the latest S9fES source code?</P>
+
+<P>Your mission is to get access to the terminal room of a
+<DEL>cold, faceless concrete block</DEL><INS>wellspring
+of creativity</INS> (a.k.a. college) and steal the code!
+</P>

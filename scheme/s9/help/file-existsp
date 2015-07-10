@@ -1,0 +1,4 @@
+S9fES  (file-exists? string)  ==>  boolean
+
+Return #T if the file specifed in the STRING argument exists and
+otherwise return #F.

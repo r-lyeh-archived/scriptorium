@@ -1,0 +1,5 @@
+S9 LIB  (explode symbol)  ==>  list
+
+Explode a symbol into a list of single-character symbols.
+
+(explode 'supernova)  ==>  (s u p e r n o v a)

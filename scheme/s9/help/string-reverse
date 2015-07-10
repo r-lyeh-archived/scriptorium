@@ -1,0 +1,10 @@
+S9 LIB  (string-reverse string)   ==>  string
+        (string-reverse! string)  ==>  unspecific
+
+Create a fresh string and fill it with the characters of
+STRING, but in reverse order. STRING-REVERSE! reverses the
+characters of STRING in situ, overwriting the original
+string.
+
+(string-reverse "rats live on no evil star")
+            ==> "rats live on no evil star"

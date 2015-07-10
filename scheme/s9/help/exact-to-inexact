@@ -1,0 +1,10 @@
+R4RS 6.5.5  (exact->inexact number)  ==>  number
+            (inexact->exact number)  ==>  number
+
+EXACT->INEXACT returns an inexact representation of NUMBER. The
+value returned is the inexact number that is numerically closest
+to the argument.
+
+INEXACT->EXACT returns an exact representation of NUMBER. The
+value returned is the exact number that is numerically closest
+to the argument.

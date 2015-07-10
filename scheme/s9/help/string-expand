@@ -1,0 +1,9 @@
+S9 LIB  (string-expand string)          ==>  string
+        (string-expand string integer)  ==>  string
+
+Expand horizontal tabulation (HT, ASCII 9, aka "TAB") characters
+in STRING to spaces. Return a new string. When INTEGER is specified,
+expand each TAB to INTEGER spaces at maximum (default = 8).
+
+(let ((tab (integer->char 9)))
+  (string-expand (string #\x tab #\y)))  ==>  "x       y"

@@ -1,0 +1,123 @@
+R4RS 6.2  (eqv? object1 object2)  ==>  boolean
+
+The EQV? procedure defines a useful equivalence relation on objects.
+Briefly, it returns #T if OBJECT1 and OBJECT2 should normally be
+regarded as the same object. This relation is left slightly open
+to interpretation, but the following partial specification of EQV?
+holds for all implementations of Scheme.
+
+The EQV? procedure returns #T if:
+
+- OBJECT1 and OBJECT2 are both #T or both #F.
+- OBJECT1 and OBJECT2 are both symbols and
+  (string=? (symbol->string OBJECT1)
+            (symbol->string OBJECT2))  ==>  #t
+
+Note: This assumes that neither OBJECT1 nor OBJECT2 is an "uninterned
+symbol" as alluded to in section 6.4 Symbols. This report does not
+presume to specify the behavior of EQV? on implementation-dependent
+extensions.
+
+- OBJECT1 and OBJECT2 are both numbers, are numerically equal
+  (see =, section see section 6.5 Numbers), and are either both exact
+  or both inexact.
+- OBJECT1 and OBJECT2 are both characters and are the same
+  character according to the char=? procedure (section see
+  section 6.6 Characters).
+- both OBJECT1 and OBJECT2 are the empty list.
+- OBJECT1 and OBJECT2 are pairs, vectors, or strings that denote
+  the same locations in the store (section see section 3.5 Storage
+  model).
+- OBJECT1 and OBJECT2 are procedures whose location tags are
+  equal (section see section 4.1.4 lambda expressions).
+
+The EQV? procedure returns #F if:
+
+- one of OBJECT1 and OBJECT2 is an exact number but the other is an
+  inexact number.
+- OBJECT1 and OBJECT2 are of different types (section see section
+  3.4 Disjointness of types).
+- one of OBJECT1 and OBJECT2 is #T but the other is #F.
+- OBJECT1 and OBJECT2 are symbols but
+  (string=? (symbol->string OBJECT1)
+            (symbol->string OBJECT2))  ==>  #f
+- OBJECT1 and OBJECT2 are numbers for which the = procedure
+  returns #F.
+- OBJECT1 and OBJECT2 are characters for which the char=? procedure
+  returns #F.
+- one of OBJECT1 and OBJECT2 is the empty list but the other is not.
+- OBJECT1 and OBJECT2 are pairs, vectors, or strings that denote
+  distinct locations.
+- OBJECT1 and OBJECT2 are procedures that would behave differently
+  (return a different value or have different side effects)
+  for some arguments.
+
+(eqv? 'a 'a)                  ==>  #t
+(eqv? 'a 'b)                  ==>  #f
+(eqv? 2 2)                    ==>  #t
+(eqv? '() '())                ==>  #t
+(eqv? 100000000 100000000)    ==>  #t
+(eqv? (cons 1 2) (cons 1 2))  ==>  #f
+(eqv? (lambda () 1)
+      (lambda () 2))          ==>  #f
+(eqv? #f 'nil)                ==>  #f
+(let ((p (lambda (x) x)))
+  (eqv? p p))                 ==>  #t
+
+The following examples illustrate cases in which the above rules
+do not fully specify the behavior of EQV?. All that can be said
+about such cases is that the value returned by EQV? must be a
+boolean.
+
+(eqv? "" "")           ==>  unspecified
+(eqv? '#() '#())       ==>  unspecified
+(eqv? (lambda (x) x)
+      (lambda (x) x))  ==>  unspecified
+(eqv? (lambda (x) x)
+      (lambda (y) y))  ==>  unspecified
+
+The next set of examples shows the use of EQV? with procedures that
+have local state. Gen-counter must return a distinct procedure every
+time, since each procedure has its own internal counter. Gen-loser,
+however, returns equivalent procedures each time, since the local
+state does not affect the value or side effects of the procedures.
+
+(define (gen-counter)
+  (let ((n 0))
+    (lambda () (set! n (+ n 1)) n)))
+(let ((g (gen-counter)))
+  (eqv? g g))                         ==>  #t
+  (eqv? (gen-counter) (gen-counter))  ==>  #f
+
+(define (gen-loser)
+  (let ((n 0))
+    (lambda () (set! n (+ n 1)) 27)))
+(let ((g (gen-loser)))
+  (eqv? g g))                          ==>  #t
+  (eqv? (gen-loser) (gen-loser))       ==>  unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'both 'f)))
+         (g (lambda () (if (eqv? f g) 'both 'g)))
+  (eqv? f g)))                                     ==>  unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'f 'both)))
+         (g (lambda () (if (eqv? f g) 'g 'both)))
+  (eqv? f g)))                                     ==>  #f
+
+Since it is an error to modify constant objects (those returned by
+literal expressions), implementations are permitted, though not
+required, to share structure between constants where appropriate.
+Thus the value of EQV? on constants is sometimes implementation-dependent.
+
+(eqv? '(a) '(a))          ==>  unspecified
+(eqv? "a" "a")            ==>  unspecified
+(eqv? '(b) (cdr '(a b)))  ==>  unspecified
+(let ((x '(a)))
+  (eqv? x x))             ==>  #t
+
+Rationale: The above definition of EQV? allows implementations
+latitude in their treatment of procedures and literals: implementations
+are free either to detect or to fail to detect that two procedures
+or two literals are equivalent to each other, and can decide whether
+or not to merge representations of equivalent objects by using the
+same pointer or bit pattern to represent both.

@@ -1,0 +1,7 @@
+S9 EXT  (sys:sleep integer)   ==>  unspecific
+        (sys:usleep integer)  ==>  unspecific
+
+Suspend process execution for the given number of seconds (SYS:SLEEP)
+or microseconds (SYS:USLEEP).
+
+(sys:sleep 3)  ==>  unspecific

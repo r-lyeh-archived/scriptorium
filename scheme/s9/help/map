@@ -1,0 +1,18 @@
+R4RS 6.9  (map procedure list1 list2 ...)  ==>  list
+
+The LISTs must be lists, and PROCEDURE must be a procedure taking
+as many arguments as there are lists. If more than one list is
+given, then they must all be the same length. Map applies PROCEDURE
+element-wise to the elements of the lists and returns a list of the
+results, in order from left to right. The dynamic order in which
+PROCEDURE is applied to the elements of the lists is unspecified.
+
+(map cadr '((a b) (d e) (g h)))             ==>  (b e h)
+(map (lambda (n) (expt n n)) '(1 2 3 4 5))  ==>  (1 4 27 256 3125)
+(map + '(1 2 3) '(4 5 6))                   ==>  (5 7 9)
+
+(let ((count 0))
+  (map (lambda (ignored)
+         (set! count (+ count 1))
+         count)
+       '(a b c)))                 ==>  unspecified

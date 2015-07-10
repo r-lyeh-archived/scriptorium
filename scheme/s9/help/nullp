@@ -1,0 +1,3 @@
+R4RS 6.3  (null? object)  ==>  boolean
+
+Returns #T if OBJECT is the empty list, otherwise returns #F.

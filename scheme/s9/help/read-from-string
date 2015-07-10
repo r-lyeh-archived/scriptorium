@@ -1,0 +1,32 @@
+S9 LIB  (read-from-string string <option> ...)  ==>  object
+
+Read a datum from a string. READ-FROM-STRING is like READ but it
+takes its input from a string instead of a port. It returns a pair
+containing the datum read in case of success. If there are any
+trailing characters after the extracted datum, the trailing string
+is placed in the cdr part of the returned pair. If the trailing
+string is empty, the cdr part is set to (). When an empty string
+or a string consisting of a comment exclusively is passed to
+READ-FROM-STRING, it returns (). In case of an error, a string
+explaining the cause of the error is returned.
+
+When the 'CONVERT-UNREADABLE option with a non-#F value is passed
+to READ-FROM-STRING, it will write the informal representation of
+#<...> expressions to a string and include that string in the
+resulting form in the place of the unreadable expression. By default
+it will signal an error when an unreadable expression is found.
+
+(read-from-string "  (this \"is\" #(a) (list)) ; comment")
+  ==>  ((this "is" #(a) (list)))
+
+(read-from-string "  (this \"is\" #(a) (list))  more text")
+  ==>  ((this "is" #(a) (list)) . "  more text")
+
+(read-from-string ")")
+  ==>  "read-from-string: unexpected closing parenthesis"
+
+(read-from-string "#<foo>")
+  ==>  "unreadable expression #<foo>"
+
+(read-from-string "#<foo>" 'convert-unreadable #t)
+  ==>  ("#<foo>")

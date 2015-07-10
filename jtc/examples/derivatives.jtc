@@ -1,0 +1,53 @@
+// use jtc's introspection abilities to calculate symbolic derivatives
+// of simple functions.
+
+derive_expr = function(expr var) {
+    expansion = expand_node(expr)
+
+    if(size(expansion)==1) {
+        if(type(expansion[0])=="string") {
+            if(expansion[0] == var)
+                return "1"
+            else
+                return "0"
+        } else {
+            return derive(expansion[0] var)
+        }
+    } else if(expansion[0]=="(") {
+        return derive_expr(expansion[1] var)
+    } else {
+        dleft = derive_expr(expansion[0] var)
+        dright = derive_expr(expansion[2] var)
+        left = tostring(expansion[0])
+        right = tostring(expansion[2])
+        if(expansion[1] == "+") {
+            return "(" + dleft + "+" + dright + ")"
+        } else if(expansion[1] == "-") {
+            return "(" + dleft + "-" + dright + ")"
+        } else if(expansion[1] == "*") {
+            return "(" + left + "*" + dright + "+" + dleft + "*" + right + ")"
+        } else if(expansion[1] == "/") {
+            return "(" + dleft + "*" + right + "-" + dright + "*" + left + ")/(" + right + "*" + right + ")"
+        }
+    }
+}
+
+derive = function(fun  var) {
+    expansion = expand_node(fun)
+    vars = tostring(expansion[1])
+    if(var == nil)
+        var = tostring(expand_node(expansion[1])[1])
+
+    expr = expand_node(expansion[2])[1]
+    source = "function"+vars+" return "+derive_expr(expr  var)+""
+    return eval(parse_expression(source))
+}
+
+f = function(x) return x*x
+df = derive(f)
+
+g = function(x y) return x*y
+dg = derive(g "y")
+
+print(tostring(df) "\n")
+print(tostring(dg) "\n")

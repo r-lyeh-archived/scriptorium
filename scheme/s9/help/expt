@@ -1,0 +1,5 @@
+R4RS 6.5.5  (expt number1 number2)  ==>  number
+
+Returns NUMBER1 raised to the power NUMBER2.
+
+(Expt 0 0) is defined to be equal to 1.

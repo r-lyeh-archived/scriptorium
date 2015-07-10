@@ -1,0 +1,24 @@
+R4RS 6.3  (assq object alist)   ==>  pair | #f
+          (assv object alist)   ==>  pair | #f
+          (assoc object alist)  ==>  pair | #f
+
+ALIST (for "association list") must be a list of pairs. These
+procedures find the first pair in ALIST whose car field is OBJECT,
+and returns that pair. If no pair in ALIST has OBJECT as its car,
+then #F (not the empty list) is returned. ASSQ uses EQ? to compare
+OBJECT with the car fields of the pairs in ALIST, while ASSV uses
+EQV? and ASSOC uses EQUAL?.
+
+(define e '((a 1) (b 2) (c 3)))
+(assq 'a e)                             ==>  (a 1)
+(assq 'b e)                             ==>  (b 2)
+(assq 'd e)                             ==>  #f
+(assq (list 'a) '(((a)) ((b)) ((c))))   ==>  #f
+(assoc (list 'a) '(((a)) ((b)) ((c))))  ==>  ((a))
+(assq 5 '((2 3) (5 7) (11 13)))         ==>  unspecified
+(assv 5 '((2 3) (5 7) (11 13)))         ==>  (5 7)
+
+Rationale: Although they are ordinarily used as predicates, MEMQ,
+MEMV, MEMBER, ASSQ, ASSV, and ASSOC do not have question marks in
+their names because they return useful values rather than just #T
+or #F.

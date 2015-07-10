@@ -1,0 +1,45 @@
+R4RS 4.2.1  (cond <clause1> <clause2> ...)  ==>  object
+
+Syntax: Each <clause> should be of the form
+
+(<test> <expression> ...)
+
+where <test> is any expression. The last <clause> may be an "else
+clause," which has the form
+
+(else <expression1> <expression2> ...).
+
+Semantics: A COND expression is evaluated by evaluating the <test>
+expressions of successive <clause>s in order until one of them
+evaluates to a true value (see section see section 6.1 Booleans).
+When a <test> evaluates to a true value, then the remaining
+<expression>s in its <clause> are evaluated in order, and the result
+of the last <expression> in the <clause> is returned as the result
+of the entire COND expression. If the selected <clause> contains
+only the <test> and no <expression>s, then the value of the <test>
+is returned as the result. If all <test>s evaluate to false values,
+and there is no ELSE clause, then the result of the conditional
+expression is unspecified; if there is an ELSE clause, then its
+<expression>s are evaluated, and the value of the last one is
+returned.
+
+(cond ((> 3 2) 'greater)
+      ((< 3 2) 'less))    ==>  greater
+
+(cond ((> 3 3) 'greater)
+      ((< 3 3) 'less)
+      (else 'equal))      ==>  equal
+
+Some implementations support an alternative <clause> syntax,
+
+(<test> => <recipient>),
+
+where <recipient> is an expression. If <test> evaluates to a true
+value, then <recipient> is evaluated. Its value must be a procedure
+of one argument; this procedure is then invoked on the value of the
+<test>.
+
+(cond ((assv 'b '((a 1) (b 2))) => cadr)
+      (else #f))                          ==>  2
+
+S9fES does support the alternative clause syntax.

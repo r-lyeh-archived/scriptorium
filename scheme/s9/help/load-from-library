@@ -1,0 +1,7 @@
+S9fES  (load-from-library string)  ==>  unspecific
+
+Locate the Scheme source file whose name is specified in STRING and
+load it. It is an error to specify a file that cannot be located.
+LOAD-FROM-LIBRARY uses LOCATE-FILE to locate a file and LOAD to
+load it. It is intended to load files from extension libraries that
+may be stored in a set of pre-defined locations.

@@ -1,0 +1,27 @@
+# mp_printf
+-123 +123  123
+-0123
+123
+1ABCDEF
+ab abc
+
+false true
+(null)
+t
+# vstr
+tests
+sts
+
+test
+tes
+larg
+# repl
+ame__
+
+__name__        path            argv            version
+version_info    implementation  platform        byteorder
+maxsize         exit            stdin           stdout
+stderr          exc_info        print_exception
+ementation
+# attrtuple
+(start=1, stop=2, step=3)

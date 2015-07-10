@@ -1,0 +1,7 @@
+S9 LIB  (variance list)  ==>  real
+
+        (load-from-library "variance.scm")
+
+Return the variance of the given list of values.
+
+(variance '(1 1 2 1 1))  ==>  0.16

@@ -1,0 +1,3284 @@
+.EQ
+delim $$
+gsize 12
+.EN
+.so util/book
+.so _xref.tr
+.nr VV 0
+.ce
+\f[HB]\s36S9 CORE\s0\fP
+.sp
+.ce
+\f[HB]A Toolkit for Implementing Dynamic Languages\fP
+.HD "Contents"
+.nr VV 1
+.sp
+.ta 4.3i
+.tc .
+.nf
+.ps -1
+.vs -1
+.so _toc.tr
+.ps
+.vs
+.fi
+.ta
+.tc
+.TL ""
+.bp
+.HD "Rationale"
+.PA
+Dynamic languages typically require some basic infrastructure that
+is common in their implementations, including
+.I "garbage collection" ,
+.I "primitive functions" ,
+and
+.I "dynamic type checking" ,
+but sometimes also features like
+.I "bignum arithmetics"
+and
+.I "heap images" .
+S9core offers all of the above, and some more, in a single object file
+that can be linked against a dynamic language implementation. It takes care
+of all the nitty gritty stuff and allows the implementor to focus on the
+design of the language itself.
+.PQ
+.sp -1
+.SH "Features"
+.LB
+.LI "Precise, constant-space, stop-the-world garbage collection with \
+vector pool compaction (defragmentation) and finalization of I/O ports"
+.LI "Non-copying GC, all nodes stay in their original locations"
+.LI "Bignum (unbounded-precision) integer arithmetics"
+.LI "Decimal-based, platform-independent real number arithmetics"
+.LI "Persistent heap images"
+.LI "Type-checked primitive functions"
+.LI "Symbol identity"
+.LI "Memory allocation on heap exclusively (no \fCmalloc()\fP until the \
+heap grows)"
+.LI "A basis for implementing interpreters, runtime libraries, etc"
+.LI "Statically or dynamically linked"
+.LI "Available on Unix, Plan 9, and in C89/POSIX environments"
+.LE
+.TL ""
+.bp
+.HD "Reference Manual"
+.SH "C-Level Data Types"
+.PA
+At C level, there are only two data types in S9core. Dynamic typing is
+implemented by adding type tags to objects on the heap.
+.PQ
+.X cell
+.CO "cell"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+A ``cell'' is a reference to an object on the heap. All objects are
+addressed using cells. A cell is wide enough to hold a pointer on the
+host platform (typically a
+.K ptrdiff_t ).
+.PQ
+.PA
+Example:
+.PQ
+.CO "cell x, y;"
+.X PRIM
+.CO "PRIM (struct Primitive_procedure)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+A
+.K PRIM
+is a structure containing information about a primitive procedure:
+.PQ
+.CB
+struct Primitive_procedure { 
+        char    *name;  
+        cell    (*handler)(cell expr);
+        int     min_args;
+        int     max_args;
+        int     arg_types[3];
+};
+.CE
+.PA
+The
+.K name
+field names the primitive procedure. The
+.K handler
+is a pointer to a function from
+.K cell
+to
+.K cell
+implementing the primitive function. Because a
+.K cell
+may reference a list or vector, functions may in fact have any number
+of arguments (and, for that matter, return values).
+.PQ
+.PA
+The
+.K min_args ,
+.K max_args ,
+and
+.K arg_types[]
+fields define the type of the primitive function.
+.K min_args
+and
+.K max_args
+specify the expected argument count. When they are equal, the argument
+count is fixed. When
+.K max_args
+is less then zero, the function accepts any number of arguments that is
+greater or equal to
+.K min_args .
+.PQ
+.PA
+The
+.K arg_types[]
+array holds the type tags of the first three argument of the primitive.
+Functions with more than three arguments must check additional arguments
+internally. Unused argument slots can be set to
+.K T_ANY
+(any type accepted).
+.PQ
+.PA
+Example:
+.PQ
+.CB
+.ps -1
+PRIM Prims[] = {
+  { "cons", p_cons, 2, 2, { T_ANY,  T_ANY, T_ANY } },
+  { "car",  p_car,  1, 1, { T_PAIR, T_ANY, T_ANY } },
+  { "cdr",  p_cdr.  1, 1, { T_PAIR, T_ANY, T_ANY } },
+  { NULL }
+};
+.ps
+.CE
+.PA
+Where
+.K p_cons ,
+.K p_car ,
+and
+.K p_cdr
+are the functions implementing the corresponding primitives.
+.PQ
+.sp -1
+.SH "Calling Conventions"
+.PA
+All S9core functions protect their parameters from the garbage collector,
+so it is safe, for example to write
+.PQ
+.CO "make_real(1, 0, make_integer(x));
+.PA
+or
+.PQ
+.CB
+cell n = cons(a, NIL);
+n = cons(b, n);
+n = cons(c, n);
+.CE
+.PA
+In the first case, the integer created by
+.K make_integer()
+will be protected in the application of
+.K make_real() .
+In the second example, the object $a$ will be protected in the first
+call, and the list $n$ will be protected in all subsequent applications
+of 
+.K cons() .
+Note that the objects $b$ and $c$ are not protected during the first call
+and $c$ is not protected during the second call, though.
+.PQ
+.PA
+Use
+.K save()
+and
+.K unsave()
+[pg \n[save]] to protect objects temporarily.
+.PQ
+.TL "" \&XXX
+.bp \&XXX
+.sp -1
+.SH "Configuration"
+.sp -1
+.SU "Initialization and Shutdown"
+.X s9init
+.CO "void s9init(cell **extroots);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K s9init()
+function initializes the memory pools, connects the first three I/O ports
+to
+.K stdin ,
+.K stdout ,
+and
+.K stderr ,
+and sets up the internal S9core structures. It must be called before
+any other S9core functions can be used.
+.PQ
+.PA
+The
+.K extroots
+parameter is a pointer to an array of addresses of
+.K cell s
+that will be protected from the garbage collector (the so-called
+``GC roots''). The last array member must be
+.K NULL .
+Because
+.K cell s
+can reference trees, lists, or vectors, larger structures may be protected
+from GC by including their handles in this array.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell Environment;
+cell *GC_roots[] = { &Environment, NULL };
+\&...
+s9init(GC_roots);
+.CE
+.X s9fini
+.CO "void s9fini(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K s9fini()
+function shuts down S9core and releases all memory allocated by it.
+This function is normally never called, because clean-up is done by
+the operating system.
+.PQ
+.PA
+The only reason to call it is to prepare for the
+.I re-initialization
+of the toolkit, for example to recover from a failed image load (see
+.K load_image() ).
+.PQ
+.sp -1
+.SU "Memory Allocation"
+.X NODE_LIMIT
+.X VECTOR_LIMIT
+.CO "NODE_LIMIT"
+.sp -0.5
+.CO "VECTOR_LIMIT"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K NODE_LIMIT
+and
+.K VECTOR_LIMIT
+constants specify the maximal sizes if the node pool and the vector pool,
+respectively. The ``pools'' are used to allocate objects at run time. Their
+sizes are measured in ``nodes'' for the node pool and
+.K cell s
+for the vector pool. Both sizes default to $14013 times 1024$ (14,013K).
+.PQ
+.PA
+The size of a
+.K cell
+is the size of a pointer on the host platform. The size of a node is
+two
+.K cell s
+plus a
+.K char .
+So the total node memory limit using the default settings on a 64-bit host
+would be:
+.PQ
+.EE "$14013 times 1024 times (2 times 8+1) ~~=~~ 243,938,304 ~ bytes$."
+.PA
+The default vector pool limit would be:
+.PQ
+.EE "$14013K ~ cells ~~=~~ 114,794,496 ~ bytes$."
+.PA
+At run time, the S9core toolbox will
+.I never
+allocate more memory than the sum of the above (plus the small amount
+allocated to primitive functions at initialization time).
+.PQ
+.PA
+When S9core runs out of memory, it will print a message and terminate
+program execution. However, a program can request to handle memory
+allocation failure itself (see the
+.K mem_error_handler()
+function for an explanation).
+.PQ
+.PA
+The amount allocated to S9core can be changed by the user. See the
+.K set_node_limit()
+and
+.K set_vector_limit()
+functions for details.
+.PQ
+.X mem_error_handler
+.CO "void mem_error_handler(void (*h)(int src));"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+When a function pointer is passed to
+.K mem_error_handler() ,
+S9core will no longer terminate program execution when a node or vector
+allocation request fails. Instead, the request will
+.I succeed
+and the function
+passed to
+.K mem_error_handler()
+will be called.
+.I "The function is then required to handle the error as soon as possible,"
+for example by interrupting program execution and returning to the REPL,
+or by throwing an exception.
+.PQ
+.PA
+The integer argument passed to a memory error handler will identify the
+source of the error: 1 denotes the node allocator and 2 indicates the
+vector allocator.
+.PQ
+.PA
+Allocation requests can still succeed in case of a failed allocation, because
+S9core
+.I never
+allocates more than 50% of each pool. This is done, because using more than
+half of a pool will result in
+.I "GC thrashing" ,
+which would reduce performance dramatically.
+.PQ
+.PA
+As soon as a memory error handler has been invoked, thrashing
+.I will
+start immediately. Program execution will slow down to a crawl and
+eventually the allocator will fail to recover from a low-memory condition
+and kill the process,
+.I "even with memory error handling enabled" .
+.PQ
+.PA
+The default handler (which just terminates program execution) can be
+reinstalled by passing
+.K NULL
+to
+.K mem_error_handler() .
+.PQ
+.X set_node_limit
+.X set_vector_limit
+.CO "void set_node_limit(int k);"
+.sp -0.5
+.CO "void set_vector_limit(int k);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These functions modify the node pool and vector pool memory limits. The value
+passed to the function will become the new limit for the respective pool.
+The limits must be set up immediately after initialization and may not be
+altered once set. Limits are specified in
+.I kilo
+nodes, i.e. they will be multiplied by 1024 internally.
+.PQ
+.PA
+Setting either value to zero will disable the corresponding memory limit,
+i.e. S9core will grow the memory pools indefinitely until physical memory
+allocation fails. This may cause
+.I "massive swapping"
+in high-memory applications.
+.PQ
+.PA
+S9core memory both start with a size of 32768 units
+(\f[CB]INITIAL_SEGMENT_SIZE\fP constant)
+and grow exponentially to a base of $3/2$. With the default settings,
+the limit will be reached after growing either pool for 15 times.
+.PQ
+.PA
+Note that actual memory limits all have the form
+.PQ
+.EE "$32768 times left ( {3} over {2} right ) sup n$"
+.PA
+so specifying a limit that is not constructed using the above formula
+will probably be smaller than expected. Reasonable memory limits (using
+the default segment size) are listed in figure 1.
+.PQ
+.PA
+As can be seen in the table, the minimal memory footprint of S9core is
+416K bytes on 32-bit and 800K bytes on 64-bit systems. If a smaller initial
+pool size is needed, the
+.K INITIAL_SEGMENT_SIZE
+constant has to be reduced and the table in figure 1 has to be recalculated.
+.PQ
+.S
+.TS
+box tab(:) ;
+r r r .
+Limit:64-bit memory:32-bit memory
+_
+32:800K:416K
+48:1200K:625K
+72:1800K:937K
+108:2700K:1405K
+162:4050K:2107K
+243:6075K:3160K
+364:9100K:4733K
+546:14M:7089K
+820:21M:11M
+1,230:31M:16M
+1,846:46M:24M
+2,768:69M:36M
+4,152:104M:54M
+6,228:156M:81M
+9,342:234M:121M
+_
+14,013:350M:182M
+_
+21,019:525M:273M
+31,529:788M:410M
+47,293:1182M:615M
+70,939:1773M:922M
+106,409:2660M:1383M
+159,613:3990M:2075M
+239,419:5985M:3112M
+359,128:8978M:4669M
+538,692:13G:7003M
+808,038:20G:10G
+1,212,057:30G:16G
+1,818,085:45G:24G
+2,727,127:68G:35G
+4,090,690:102G:53G
+6,136,034:153G:80G
+.TE
+.sp -0.5
+.PA
+.ps -2
+Fig 1. Memory Limits
+.ps
+.PQ
+.TL "" \&XXX
+.bp \&XXX
+.sp -1
+.SU "Arithmetics"
+.X DIGITS_PER_WORD
+.X INT_SEG_LIMIT
+.CO "DIGITS_PER_WORD"
+.sp -0.5
+.CO "INT_SEG_LIMIT"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K DIGITS_PER_CELL
+is the number of
+.I decimal
+digits that can be represented by a
+.K cell
+and
+.K INT_SEG_LIMIT
+is the smallest integer that
+.I cannot
+be represented by an ``integer segment'' (which has the size of one
+.K cell ).
+The integer segment limit is equal to
+.PQ
+.S
+.EQ
+10 sup "DIGITS_PER_WORD"
+.EN
+.PA
+A
+.K cell
+is called an integer segment in S9core arithmetics, because numbers are
+represented by chains of
+.K cell s
+(segments).
+.PQ
+.PA
+The practical use of the
+.K INT_SEG_LIMIT
+constant is that bignums that are smaller than this limit can be converted
+to (long) integers just be extracting their first segment.
+.PQ
+.PA
+These values are
+.I not
+tunable.
+.K DIGITS_PER_CELL
+is 18 on 64-bit machines, 9 on 32- bit machines, and (theoretically)
+4 on 16-bit machines.
+.PQ
+.X MANTISSA_SEGMENTS
+.CO "MANTISSA_SEGMENTS"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This is the number of integer segments (see above) in the mantissae of
+real numbers. The default is one segment (18 digits of precision) on
+64-bit hosts and two segments (also 18 digits) on 32-bit platforms.
+Each additional mantissa segment increases precision by
+.K DIGITS_PER_CELL
+(see above), but also slows down real number computations.
+.PQ
+.PA
+This is a compile-time option and cannot be tweaked at run time.
+.PQ
+.sp -1
+.SH "S9core Types"
+.PA
+S9core data types are pretty LISP- or Scheme-centric, but most of
+them can be used in a variety of languages.
+.PQ
+.PA
+Each type tag may be associated with a predicate testing for the type,
+an allocator creating an object of the given type, and one or more
+accessors that extract values from the type. Predicates always return
+0 (false) or 1 (true). Type predicates succeed (return 1) if the object
+passed to them is of the given type.
+.PQ
+.sp -1
+.SU "Special Values"
+.PA
+Special values are constant, unique, can be compared with
+.K == ,
+and have no allocators.
+.PQ
+.X NIL
+.EE "Type: \f[CB]NIL\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]x == NIL\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K NIL
+(``Not In List'') denotes the end of a list. For instance, to create
+a list of the objects $a$, $b$, and $c$, the following S9core code
+would be used:
+.PQ
+.CB
+cell list = cons(c, NIL);
+list = cons(b, list);
+list = cons(a, list);
+.CE
+.PA
+See also:
+.K T_LIST .
+.PQ
+.X END_OF_FILE
+.X eof_p
+.EE "Type: \f[CB]END_OF_FILE\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]eof_p(x)\fP, \f[CB]x == END_OF_FILE\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K END_OF_FILE
+is an object that is reserved for indicating the end of file when reading
+from an input source. The
+.K eof_p()
+predicate returns truth only for the
+.K END_OF_FILE
+object.
+.PQ
+.X UNDEFINED
+.X undefined_p
+.EE "Type: \f[CB]UNDEFINED\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]undefined_p(x)\fP, \f[CB]x == UNDEFINED\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K UNDEFINED
+value is returned by a function to indicate that its value for the given
+arguments is undefined. For example,
+.PQ
+.CO "bignum_divide(One, Zero)"
+.PA
+would return
+.K UNDEFINED .
+.PQ
+.X UNSPECIFIC
+.X unspecific_p
+.EE "Type: \f[CB]UNSPECIFIC\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]unspecific_p(x)\fP, \f[CB]x == UNSPECIFIC\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K UNSPECIFIC
+value can be returned by functions to indicate that the return value is
+of no importance and should be ignored.
+.PQ
+.bp \&XXX
+.X USER_SPECIALS
+.X special_value_p
+.CO "USER_SPECIALS"
+.sp -0.5
+.CO "special_value_p(x)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+When more special values are needed, they should be assigned
+.I "decreasing values
+starting at the value of the
+.K USER_SPECIALS
+constant. The predicate
+.K special_value_p()
+will return truth for all special values, including user-defined ones.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+#define TOP      (USER_SPECIALS-0)
+#define BOTTOM   (USER_SPECIALS-1)
+.CE
+.sp -1
+.SU "Tagged Types"
+.X T_ANY
+.EE "Type: \f[CB]T_ANY\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+When used in a
+.K PRIM
+structure, this type tag matches any other type (i.e. the described
+primitive procedure will accept any type in its place).
+.PQ
+.X T_BOOLEAN
+.X TRUE
+.X FALSE
+.X boolean_p
+.EE "Type: \f[CB]T_BOOLEAN\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]TRUE\fP, \f[CB]FALSE\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]boolean_p(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K TRUE
+and
+.K FALSE
+objects denote logical truth and falsity.
+.PQ
+.X T_CHAR
+.X make_char
+.X char_p
+.X char_value
+.EE "Type: \f[CB]T_CHAR\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_char(int c)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]char_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]int char_value(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K T_CHAR
+objects store single characters. The
+.K make_char()
+function expects the character to store, and
+.K char_value()
+retrieves the character.
+.PQ
+.PA
+Example:
+.PQ
+.CO "make_char('x')
+.X T_INPUT_PORT
+.X make_port
+.X input_port_p
+.X port_no
+.EE "Type: \f[CB]T_INPUT_PORT\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_port(int portno, T_INPUT_PORT)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]input_port_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]int port_no(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K make_port()
+allocator boxes a port handle. The port handle must be obtained by one
+of the I/O routines [pg \n[IO]] before.
+.K port_no()
+returns the port handle stored in an
+.K T_INPUT_PORT
+(or
+.K T_OUTPUT_PORT )
+object.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell p = open_input_port(path);
+if (p >= 0) return make_port(p, T_INPUT_PORT);
+.CE
+.X T_INTEGER
+.X make_integer
+.X integer_p
+.X bignum_to_int
+.EE "Type: \f[CB]T_INTEGER\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_integer(cell segment)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]integer_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]cell bignum_to_int(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K make_integer()
+function creates a single-segment bignum integer in the range from
+.PQ
+.S
+.EQ
+-10 sup{"DIGITS_PER_WORD"}+1 ~~"to"~~ 10 sup{"DIGITS_PER_WORD"}-1
+.EN
+.PA
+To create larger bignum integers, the
+.K string_to_bignum()
+[pg \n[string_to_bignum]] function has to be used.
+.PQ
+.PA
+The
+.K bignum_to_int()
+accessor returns the value of a single-segment bignum integer or
+.K UNDEFINED ,
+if the bignum has more than a single segment. There is no way to
+convert multi-segment bignums to a native C type.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell x = make_integer(-12345);
+int  i = bignum_to_int(x);
+.CE
+.X T_LIST
+.X T_PAIR
+.X cons
+.X pair_p
+.X car
+.X cdr
+.EE "Type: \f[CB]T_LIST\fP, \f[CB]T_PAIR\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]cons(cell car_val, cell cdr_val)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]pair_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]cell car(x)\fP, \f[CB]cell cdr(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The difference between the
+.K T_PAIR
+and
+.K T_LIST
+type tags is that
+.K T_LIST
+also includes
+.K NIL ,
+which
+.K T_PAIR
+does not. Both type tags are used for primitive procedure type checking
+exclusively.
+.PQ
+.PA
+The
+.K cons()
+allocator returns an ordered ``pair'' of any two values. It is in fact
+an incarnation of the LISP function of the same name. The accessors
+.K car()
+and
+.K cdr()
+retrieve the first and second value from a pair, respectively.
+.PQ
+.PA
+.K pair_p()
+checks for a pair as created by
+.K cons() .
+.K T_LIST
+corresponds to
+.PQ
+.CO "pair_p(x) || x == NIL"
+.PA
+Further accessors, like
+.K caar()
+and friends, are also available and will be explained later in this text.
+[pg \n[caar...cddddr]]
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell x = cons(One, Two); /* pair */
+cons(One, NIL);          /* list */
+car(x);                  /* One  */
+cdr(x);                  /* Two  */
+.CE
+.X T_OUTPUT_PORT
+.X make_port
+.X output_port_p
+.X port_no
+.EE "Type: \f[CB]T_OUTPUT_PORT\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_port(int portno, T_OUTPUT_PORT)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]output_port_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]int port_no(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+See
+.K T_INPUT_PORT ,
+above, for details.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+make_port(port_no, T_OUTPUT_PORT);
+.CE
+.X T_PRIMITIVE
+.X make_primitive
+.X primitive_p
+.X prim_slot
+.X prim_info
+.EE "Type: \f[CB]T_PRIMITIVE\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_primitive(PRIM *p)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]primitive_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]int prim_slot(x)\fP, \f[CB]int prim_info(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K make_primitive()
+function allocates a slot in an internal primitive function table, fills
+in the information in the given
+.K PRIM
+structure, and returns a primitive function object referencing that table
+entry. The
+.K prim_info()
+function retrieves the stored information (as a
+.K "PRIM *" ).
+.PQ
+.PA
+The
+.K prim_slot()
+accessor returns the slot number allocated for a given primitive function
+object in the internal table. Table offsets can be used yo identify
+individual primitive functions.
+.PQ
+.PA
+See the the discussion of the
+.K PRIM
+structure [pg \n[PRIM]] for an example of how to set up a primitive function.
+Given the table shown there, the following code would create the
+corresponding
+.K T_PRIMITIVE
+objects:
+.PQ
+.CB
+for (i=0; p[i].name; i++) {
+        prim = make_primitive(&p[i]);
+        ...
+}
+.CE
+.X T_FUNCTION
+.X function_p
+.EE "Type: \f[CB]T_FUNCTION\fP"
+.sp -0.5
+.EE "Allocator: n/a"
+.sp -0.5
+.EE "Predicate: \f[CB]function_p(x)\fP"
+.sp -0.5
+.EE "Accessor: n/a"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+Function objects are deliberately underspecified. The user is required
+to define their own function object structure and accessors.
+.PQ
+.PA
+For example, a LISP function allocator might look like this:
+.PQ
+.CB
+.ps -1
+cell make_function(cell args, cell body, cell env) {
+        cell fun = cons(env, NIL);
+        fun = cons(body, fun);
+        fun = cons(args, fun);
+        return new_atom(T_FUNCTION, fun);
+}
+.ps
+.CE
+.PA
+Given the structure of the function objects, the corresponding accessors
+would look like this:
+.PQ
+.CB
+#define fun_args(x) (cadr(x))
+#define fun_body(x) (caddr(x))
+#define fun_env(x)  (cadddr(x))
+.CE
+.X T_REAL
+.X make_real
+.X Make_real
+.X real_p
+.X real_mantissa
+.X real_exponent
+.X Real_flags
+.EE "Type: \f[CB]T_REAL\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_real(int s, cell e, cell m)\fP"
+.sp -0.5
+.EE "\h'\w'Allocator: 'u'\f[CB]Make_real(int f, cell e, cell m)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]real_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \s-1\f[CB]cell real_mantissa(x)\fP, \f[CB]cell real_exponent(x)\fP\s0,"
+.sp -0.5
+.EE "\h'\w'Accessor: 'u'\s-1\f[CB]Real_flags(x)\fP\s0"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+A real number consists of three parts, a ``mantissa'' (the digits of the
+number), an exponent (the position of the decimal point), and a ``flags''
+field, containing the sign of the number.
+.PQ
+.PA
+The value of a real number is
+.PQ
+.S
+.EQ
+"sign" ~times~ "mantissa" ~times~ 10 sup {"exponent"}
+.EN
+.PA
+The
+.K real_mantissa()
+and
+.K real_exponent()
+functions extract the mantissa and exponent, respectively. When applied to
+a bignum integer, the mantissa will be the number itself and the exponent
+will always be 0.
+.PQ
+.PA
+Note that
+.K real_mantissa
+returns a bignum integer, but
+.K real_exponent
+returns an unboxed,
+.K cell -sized
+integer.
+.PQ
+.PA
+The
+.K Real_flags()
+accessor can only be applied to real numbers. It extracts the flags field.
+.PQ
+.PA
+The
+.K make_real()
+function is the principal real number allocator. It expects a sign $s$ ($-1$
+or $1$), an exponent as single
+.K cell ,
+and a mantissa in the form of a bignum integer. When the mantissa is too large,
+it will return
+.K UNDEFINED .
+.PQ
+.PA
+.K Make_real()
+is a ``quick and dirty'' allocator. I expects a flags field in the place of
+a sign, a chain of integer segments instead of a bignum, and it does not
+perform any overflow checking.
+.I "Caution: This function can create an invalid real number!"
+.PQ
+.PA
+Examples:
+.PQ
+.CB
+cell m = make_integer(123);
+cell r = make_real( 1,  0, m); /* 123 */
+cell r = make_real( 1, 10, m); /* 1.23e+12 */
+cell r = make_real(-1, -5, m); /* -0.00123 */
+.CE
+.X T_STRING
+.X make_string
+.X string_p
+.X string
+.X string_len
+.EE "Type: \f[CB]T_STRING\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_string(char *s, int k)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]string_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]char *string(x)\fP, \f[CB]int string_len(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K make_string()
+function creates a string of the length $k$ and initializes it with
+the content of $s$. When the length $n$ of $s$ is less than $k$, the
+last $k-n$ characters of the resulting string object will be undefined.
+.PQ
+.PA
+Strings are counted
+.I and
+NUL-terminated. The counted length of a given string is returned by the
+.K string_len()
+function, the C string length of $x$ is
+.PQ
+.CO "strlen(string(x))"
+.PA
+The
+.K string()
+accessor returns a pointer to the
+.K char
+array holding the string.
+.PQ
+.PA
+.B Note:
+no string obtained by
+.K string()
+or
+.K symbol_name()
+may be passed to
+.K make_string()
+as an initialization string, because vector objects (including strings and
+symbols) may move during heap compaction. The proper way to copy a string is
+.PQ
+.CB
+int k = string_len(source);
+cell dest = make_string("", k-1);
+memcpy(string(dest), string(source), k);
+.CE
+.PA
+Alternatively, the
+.K copy_string()
+function may be used.
+.PQ
+.X T_SYMBOL
+.X make_symbol
+.X symbol_ref
+.X symbol_p
+.X symbol_name
+.X symbol_len
+.EE "Type: \f[CB]T_SYMBOL\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_symbol(char *s, int k)\fP,"
+.sp -0.5
+.EE "\h'\w'Allocator: 'u'\f[CB]symbol_ref(char *s)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]symbol_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]char *symbol_name(x)\fP, \f[CB]int symbol_len(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+Typically, the
+.K symbol_ref()
+function is used to create
+.I "or reference
+a symbol. A
+.I symbol
+is a unique string with an identity operation defined on it. I.e. referencing
+the same string twice using
+.K symbol_ref
+will return
+.I "the same symbol" .
+Hence symbols can be compared using the
+.K ==
+operator.
+.PQ
+.PA
+The
+.K make_symbol()
+function creates an ``uninterned'' symbol, i.e. a symbol with no identity
+(which cannot be compared or referenced). In a typical implementation, this
+function will not be used.
+.PQ
+.PA
+See the
+.K T_STRING
+description for further details and caveats.
+.PQ
+.PA
+Example:
+.PQ
+.CO "cell sym = symbol_ref(""foo"");"
+.X T_SYNTAX
+.X syntax_p
+.EE "Type: \f[CB]T_SYNTAX\fP"
+.sp -0.5
+.EE "Allocator: n/a"
+.sp -0.5
+.EE "Predicate: \f[CB]syntax_p(x)\fP"
+.sp -0.5
+.EE "Accessor: n/a"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+Like function objects, syntactic abstractions (``macros'') are deliberately
+underspecified. Typically, the value of a
+.K T_SYNTAX
+object would be a
+.K T_FUNCTION
+object.
+.PQ
+.X T_VECTOR
+.X make_vector
+.X make_byte_vector
+.X vector_p
+.X vector
+.X vector_len
+.EE "Type: \f[CB]T_VECTOR\fP"
+.sp -0.5
+.EE "Allocator: \f[CB]make_vector(int k)\fP"
+.sp -0.5
+.EE "Predicate: \f[CB]vector_p(x)\fP"
+.sp -0.5
+.EE "Accessor: \f[CB]cell *vector(x)\fP, \f[CB]int vector_len(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K make_vector()
+function returns a vector of $k$ elements (slots) with all slots set to
+.K UNDEFINED .
+.PQ
+.PA
+.K vector()
+returns a pointer to the slots of the given vector,
+.K vector_len()
+returns the number of slots.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell v = make_vector(100);
+save(v);
+for (i=0; i<100; i++) {
+        x = make_integer(i);
+        vector(v)[i] = x;
+}
+unsave(1);
+.CE
+.PA
+.B Note:
+the result of
+.K vector()
+may not be used on the left side of an assignment where the right side
+allocates any objects. When in doubt, first assign the value to a
+temporary variable and then the variable to the vector. For an explanation
+see
+.K T_STRING .
+.PQ
+.X T_CONTINUATION
+.X continuation_p
+.EE "Type: \f[CB]T_CONTINUATION\fP"
+.sp -0.5
+.EE "Allocator: n/a"
+.sp -0.5
+.EE "Predicate: \f[CB]continuation_p(x)\fP"
+.sp -0.5
+.EE "Accessor: n/a"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+A ``continuation'' object is used to store the value of a captured
+continuation (as in Scheme's
+.K call/cc ).
+Its implementation is left to the user.
+.PQ
+.sp -1
+.SU "Additional Allocators"
+.X cons3
+.CO "cell cons3(cell a, cell d, int t);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K cons3()
+function is the principal node allocator of S9core. It is like
+.K cons() ,
+but has an additional parameter for the ``tag'' field. The tag field
+of a node assigns specific properties to a node. For example, it can
+turn a node into an ``atom'' [pg \n[new_atom]], a vector reference, or an
+I/O port reference. In fact,
+.K cons()
+is a wrapper around
+.K cons3()
+that supplies an empty (zero) tag field.
+.PQ
+.PA
+The most interesting user-level application of
+.K cons3()
+is maybe the option to mix in a
+.K CONST_TAG
+in order to create an immutable node. Note though, that immutability
+is not enforced by S9core itself, because it never alters any nodes.
+However, implementations using S9core can use the
+.K constant_p()
+predicate to check for immutability.
+.PQ
+.PA
+Also note that ``atoms'' are typically created by the
+.K new_atom()
+allocator, explained below.
+.PQ
+.X copy_string
+.CO "cell copy_string(cell x);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function creates an new string object with the same content as the
+given string object.
+.PQ
+.X new_atom
+.X atom_p
+.CO "new_atom(a, d)"
+.sp -0.5
+.CO "atom_p(x)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+An
+.I atom
+is a node with its atom flag set. Unlike a ``cons'' node, as
+delivered by
+.K cons() ,
+an atom has no reference to another node in its ``car'' field. Instead
+of a reference, it can carry any value in the car field, for example:
+a character of a character object, a bignum integer segment, or a type tag.
+The
+.K new_atom()
+function expects any value in the $a$ parameter and a node reference in
+the $d$ parameter.
+.PQ
+.PA
+(Non-special) S9core types are composed of multiple atoms. For example,
+the following program would create a ``character'' object containing the
+character
+.K 'x' :
+.PQ
+.CB
+cell n = new_atom('x', NIL);
+n = new_atom(T_CHAR, n);
+.CE
+.PA
+(Don't do this, though! Use
+.K make_char()
+instead!)
+.PQ
+.PA
+The
+.K atom_p()
+function checks whether the given node is an atom. S9core atoms encompass
+all the special values (like
+.K NIL ,
+.K TRUE ,
+.K END_OF_FILE ,
+etc), all nodes with the atom flag set (including all tagged types), and
+all vector objects (see below). In fact, only ``conses'' (as delivered
+by
+.K cons() )
+are considered to be non-atomic).
+.PQ
+.X new_port
+.CO "cell new_port(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K new_port()
+function returns a handle to a port, but does not assign any
+.K FILE
+to it. A file can be assigned by using the return value of
+.K new_port()
+as an index to the
+.K Ports[]
+array. A negative return value indicates failure (out of free ports).
+.PQ
+.PA
+Example:
+.PQ
+.CB
+int p = new_port();
+if (p >= 0) {
+        Ports[p] = fopen(file, "r");
+}
+.CE
+.X new_vec
+.CO "cell new_vec(cell type, int size);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function allocates a new
+.I vector .
+A vector object has a type tag in its car and a reference to the vector
+pool in its cdr field, that is, neither of its field reference any other
+nodes. The $"type"$ parameter is the type tag to be installed in the new
+vector atom and $"size"$ is the number
+.I bytes
+to allocate in the vector pool. The newly allocated segment of the vector
+pool will be left uninitialized.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+new_vec(T_STRING, 100);
+new_vec(T_VECTOR, 100 * sizeof(cell));
+.CE
+.X save
+.X unsave
+.CO "save(n)"
+.sp -0.5
+.CO "cell unsave(int k);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K save()
+saves an object on the internal S9core stack and
+.K unsave(n)
+removes $n$ elements from the stack and returns the one last removed
+(i.e. the previously $n sup th$ element on the stack).
+.PQ
+.PA
+The S9core stack is frequently used to protect objects from being
+recycled by the GC.
+.PQ
+.PA
+Removing an element from an empty stack will cause a fatal error and
+terminate program execution.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell a = cons(One, NIL);
+save(a);
+cell b = cons(Two, NIL); /* a is protected */
+b = cons(b, NIL);        /* still protected */
+a = unsave(1);
+a = cons(a, b);
+.CE
+.sp -1
+.SU "Additional Predicates"
+.X constant_p
+.CO "constant_p(x)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This predicate succeeds, if the object passed to it has its
+.K CONST_TAG
+set, i.e. should be considered to be immutable.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+if (constant_p(x))
+        /* error: x is constant */
+.CE
+.X number_p
+.CO "number_p(x)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K number_p()
+predicate succeeds, if its argument is either a bignum integer or a
+real number.
+.PQ
+.sp -1
+.SU "Additional Accessors"
+.X caar...cddddr
+.EE "\f[CB]caar(x)\fP ... \f[CB]cddddr(x)\fP"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These are the usual LISP accessors for nested lists and trees. For instance,
+.PQ
+.CO "cadr(x)"
+.PA
+denotes the ``car of the cdr of x''. All names can be decoded by reading
+their ``a''s and ``d''s from the right to the left, where each ``a'' denotes
+a car accessor, and each ``d'' a cdr, e.g.
+.PQ
+.CB
+  cadadr of ((1 2) (8 9))
+= cadar  of ((8 9))
+= cadr   of (8 9)
+= car    of (9)
+=           9
+.CE
+.TL "" \&XXX
+.bp \&XXX
+.sp -1
+.SH "Primitive Procedures"
+.PA
+A S9core primitive function consists of a
+.K PRIM
+entry [pg \n[PRIM]] describing the primitive, and a ``handler'' implementing
+it. Here is a
+.K PRIM
+structure describing the Scheme procedure
+.K list-tail
+which, given a list and an integer $n$, returns the $n sup th$ element of
+the list.
+.PQ
+.CB
+  { "list-tail", p_list_tail, 2, 2,
+    { T_LIST,  T_INTEGER, T_ANY } },
+.CE
+.PA
+The corresponding handler,
+.K p_list_tail ,
+looks like this:
+.PQ
+.CB
+cell pp_list_tail(cell x) {     
+    cell    p, n;
+
+    n = bignum_to_int(cadr(x));
+    if (n == UNDEFINED)
+        return error("int argument too big");
+    for (p = car(x); p != NIL; p = cdr(p), n--) {
+        if (!pair_p(p))
+            return error("not a proper list");
+        if (n <= 0)
+            break;
+    }
+    if (n != 0)
+        return error("int argument too big");
+    return p;
+}
+.CE
+.PA
+Like all primitive handlers,
+.K p_list_tail
+is a function from
+.K cell
+to
+.K cell ,
+but the argument it receives is actually a
+.K T_LIST
+of arguments, so
+.K car
+accesses the first argument and
+.K cadr
+the second one.
+.PQ
+.PA
+The function first extracts the value of the integer argument and checks
+for overflow (multi-segment bignum). It then traverses the list argument,
+decrementing $n$ until $n=0$ or the end of the list is reached. After
+some final error checking, it returns the tail of the given list.
+.PQ
+.PA
+Primitive handlers usually do not have to type-check their arguments,
+because there is a function that can do that
+.I before
+dispatching the handler:
+.PQ
+.X typecheck
+.CO "char *typecheck(cell f, cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K typecheck()
+function expects a primitive function object $f$ and an argument list
+$a$. It checks the types of the arguments in $a$ against the type tags
+in the
+.K PRIM
+structure of $f$. When all arguments match, it returns
+.K NULL .
+.PQ
+.PA
+When a type mismatch is found, the function returns a string explaining
+the nature of the type error in plain English. For example, passing a
+.K T_LIST
+and a
+.K T_CHAR
+to
+.K list-tail
+would return the message
+.PQ
+.CO "list-tail: expected integer in argument #2"
+.PA
+Then program could then add a visual representation of the actual arguments
+that were about to be passed to the handler.
+.PQ
+.X apply_prim
+.CO "cell apply_prim(cell f, cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K apply_prim()
+function extracts the handler from the primitive function object $f$,
+calls it with the parameter $a$, and delivers the return value of the
+handler.
+.PQ
+.PA
+.K apply_prim()
+itself does
+.I not
+protect its arguments. Doing so is in the responsibility
+of the implementation.
+.PQ
+.sp -1
+.SH "Symbol Management"
+.X find_symbol
+.CO "cell find_symbol(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+This function searches the internal symbol list for the given symbol.
+When the symbol is in the list (``interned''; see also
+.K intern_symbol() ,
+below), then it returns a reference to it. Otherwise, it returns
+.K NIL .
+.PA
+.PQ
+.X intern_symbol
+.CO "cell intern_symbol(cell y);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This
+function adds the given symbol to an internal list of symbols. Symbols
+contained in that list are called ``interned'' symbols, and only those
+symbols can be checked for identity (i.e. compared with C's
+.K ==
+operator).
+.PQ
+.PA
+The
+.K intern_symbol()
+should only be used to intern ``uninterned'' symbols, i.e. symbols created
+by
+.K make_symbol() .
+Symbols creates by
+.K symbol_ref()
+are automatically interned.
+.PQ
+.PA
+.B Note:
+while uninterned symbols have their uses, almost all common use cases
+rely on interned symbols.
+.PQ
+.X symbol_to_string
+.X string_to_symbol
+.CO "cell symbol_to_string(cell x);"
+.sp -0.5
+.CO "cell string_to_symbol(cell x);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K symbol_to_string()
+returns a string object containing the name of the given symbol.
+.K string_to_symbol()
+is the inverse operation; it returns a symbol with the name given as
+its string argument. It also makes sure that the new symbol is interned.
+.PQ
+.sp -1
+.SH "Bignum Arithmetics"
+.PA
+Bignum arithmetics can never overflow, but performance will degrade
+linearly as numbers get bigger.
+.PQ
+.X Zero
+.X One
+.X Two
+.CO "Zero, One, Two"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These are constants for common values, so you do not have to
+allocate them using
+.K make_integer() .
+.PQ
+.X bignum_abs
+.CO "cell bignum_abs(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns the absolute value (magnitude) of its argument, i.e.
+the original value with a positive sign.
+.PQ
+.X bignum_add
+.CO "cell bignum_add(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K bignum_add()
+adds two integers and returns their result.
+.PQ
+.X bignum_divide
+.CO "cell bignum_divide(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K bignum_divide()
+divides $a$ by $b$ and returns both the floored integer quotient
+$left floor a/b right floor$ and the truncated division remainder
+$a - "trunc" (a/b) times b$ (where $"trunc"$ removes any non-zero
+fractional digits from its argument).
+.PQ
+.PA
+The result is delivered as a cons node with the quotient in the car
+and the remainder in the cdr field. For example, given
+.PQ
+.CB
+cell a = make_integer(-23),
+     b = make_integer(7);
+cell r = bignum_divide(a, b);
+.CE
+.PA
+the result would be
+.PQ
+.CB
+.ps -1
+car(r) = make_integer(-3); /* floor(-23/7) */
+cdr(r) = make_integer(-2); /* -23 - trunc(-23/7)*7 */
+.ps
+.CE
+.X bignum_equal_p
+.CO "int bignum_equal_p(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This predicate returns 1, if its arguments are equal.
+.PQ
+.X bignum_even_p
+.CO "int bignum_even_p(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This predicate returns 1, if its argument is divisible by 2 with a
+remainder of 0. See
+.K bignum_divide() .
+.PQ
+.X bignum_less_p
+.CO "int bignum_less_p(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This predicate returns 1, if its argument $a$ has a smaller value than
+its argument $b$.
+.PQ
+.X bignum_multiply
+.CO "cell bignum_multiply(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K bignum_multiply()
+multiplies two integers and returns their product.
+.PQ
+.X bignum_negate
+.CO "cell bignum_negate(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns its argument with its sign reversed.
+.PQ
+.X bignum_shift_left
+.CO "cell bignum_shift_left(cell a, int fill);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K bignum_shift_left()
+function shifts its argument $a$ to the left by one decimal digit and
+then replaced the rightmost digit with the digit $"fill"$.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell n = make_integer(1234);
+bignum_shift_left(x, 5); /* 12345 */
+.CE
+.X bignum_shift_right
+.CO "cell bignum_shift_right(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K bignum_shift_right()
+shifts its argument to the right by one decimal digit. It returns a node
+with the shifted argument in the car part. The cdr part will contain the
+digit that ``fell out'' on the right side.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell n = make_integer(12345);
+cell r = bignum_shift_right(n);
+.CE
+.PA
+The result would be as follows:
+.PQ
+.CB
+car(r) = make_integer(1234);
+cdr(r) = make_integer(5);
+.CE
+.X bignum_subtract
+.CO "cell bignum_subtract(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns the difference $a-b$.
+.PQ
+.X bignum_to_real
+.CO "cell bignum_to_real(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K bignum_to_real()
+function converts a bignum integer to a real number. Note that for big
+integers, this will lead to a loss of precision. E.g., converting the
+integer
+.PQ
+.EE "340282366920938463463374607431768211456"
+.PA
+to real on a machine with a mantissa size of 18 digits will yield:
+.PQ
+.EE "3.40282366920938463e+38"
+.PA
+Converting it back to bignum integer will give:
+.EE "340282366920938463000000000000000000000"
+.PQ
+.X bignum_to_string
+.CO "cell bignum_to_string(cell x);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K bignum_to_string()
+will return a string object containing the decimal representation of the
+given bignum integer. The string will be allocated in the vector pool, so
+it is safe to convert
+.I really
+big integers.
+.PQ
+.sp -1
+.SH "Real Number Arithmetics"
+.PA
+All real number operations except those with a
+.K Real_
+prefix (capital ``R'') except bignum operands as well and convert them
+to real numbers silently. Of course, this may cause a loss of precision
+when large bignums are involved in a computation
+.PQ
+.PA
+When
+.I both
+operands of a real number operation are bignums, the function will
+perform a precise bignum computation instead (except for
+.K real_divide() ,
+which will always perform a real number division).
+.PQ
+.PA
+Note that S9core real numbers are base-10 (ten), so $1/2$, $1/4$, $1/5$,
+$1/8$ have exact results, but $1/3$, $1/6$, $1/7$, and $1/9$ do not.
+.PQ
+.X Epsilon
+.CO "Epsilon"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K Epsilon
+($epsilon$) is a very small number ($10 sup {-("MANTISSA_SIZE"+1)}$). By
+all practical means, two numbers $a$ and $b$ should be considered to be
+equal, if their difference is not greater than $epsilon$, i.e.
+$|a-b|<={epsilon}$.
+.PQ
+.PA
+Of course, much smaller numbers can be expressed
+.I "and ordered 
+(by
+.K real_less_p() )
+using S9core, but the difference between two very small numbers becomes
+insignificant as it approaches $epsilon$.
+.PQ
+.PA
+This is particularly important
+when computing converging series. Here the precision cannot increase any
+further when the difference between the current guess $x sub i$ and
+previous guess $x sub i-1$ drops below $epsilon$. So the computation has
+reached a fixed point when $|{x sub i} - {x sub i-1}| <= epsilon$.
+.PQ
+.PA
+Technically, the value of
+.K Epsilon
+is chosen in such a way that its number of fractional digits is one more
+than the mantissa size, so it cannot represent an
+.I exact
+difference between
+.I any
+two exact real numbers. For example (given a mantissa size of 9 digits:)
+.PQ
+.EE "$0.999999999 + 0.000000001 = 1.0$"
+.PA
+but
+.PQ
+.EE "$0.999999999 + 0.0000000001 = 0.999999999$"
+.PA
+In this example, the smaller value in the second equation would be equal
+to $epsilon$.
+.PQ
+.X Real_flags
+.X Real_exponent
+.X Real_mantissa
+.X Real_negative_flag
+.CO "Real_flags(x)"
+.sp -0.5
+.CO "Real_exponent(x)"
+.sp -0.5
+.CO "Real_mantissa(x)"
+.sp -0.5
+.CO "Real_negative_flag(x)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K Real_mantissa()
+and
+.K Real_exponent()
+macros are just more efficient versions of the
+.K real_mantissa()
+and
+.K real_exponent()
+functions. Unlike their function counterparts [pg \n[real_exponent]], they
+accept real number operands exclusively.
+.K Real_flags()
+is described in the section on tagged types [pg \n[Real_flags]].
+.K Real_negative_flag()
+extracts the ``negative sign'' flag from the flags field of the given
+real number.
+.PQ
+.PA
+.B Note:
+.K Real_mantissa()
+returns a chain of integer segments
+.I without
+a type tag!
+.PQ
+.X Real_zero
+.X Real_negative
+.X Real_positive
+.CO "Real_zero_p(x)"
+.sp -0.5
+.CO "Real_negative_p(x)"
+.sp -0.5
+.CO "Real_positive_p(x)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These predicate macros test whether the given real number is zero, negative,
+or positive, respectively.
+.PQ
+.X Real_negate
+.CO "Real_negate(a)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This macro negates the given real number (returning a new real number
+object).
+.B "It does not protect its argument!"
+.PQ
+.X real_abs
+.CO "cell real_abs(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K real_abs()
+function returns the magnitude (absolute value) of its argument (the original
+value with a positive sign).
+.PQ
+.X real_add
+.CO "cell real_add(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns the sum of its arguments.
+.PQ
+.PA
+.B Caveat :
+When the arguments $a$ and $b$ differ by $n$ orders of magnitude, where
+$n > "MANTISSA_SIZE"$, then the sum will be equal to the larger of the
+two arguments. E.g. (given a mantissa size of 9):
+.PQ
+.EE "1000000000 + 9 = 1000000000"
+.PA
+because the result (1000000009) would not fit in a mantissa. Even with
+values that overlap only partially, the result will be truncated, resulting
+in loss of precision.
+.PQ
+.PA
+.I "This is not a bug,
+.I "but an inherent property of floating point arithmetics.
+.PQ
+.X real_divide
+.CO "cell real_divide(cell x, cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns the quotient $a/b$. Loss of precision may occur, e.g.:
+.PQ
+.EE "1.0 / 3 * 3 = 0.999999999"
+.PA
+(given a mantissa size of 9).
+.PQ
+.PA
+The function
+.I always
+performs a real number division, even if both arguments are integers.
+.PQ
+.X real_equal_p
+.CO "int real_equal_p(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K real_equal_p()
+predicate succeeds, if its arguments are equal. In S9core, two real
+numbers are equal, if they look equal when printed with
+.K print_real() .
+.PQ
+.PA
+However, the result of a real number operation may not be equal to a
+specific real number, even if expected. For instance,
+.PQ
+.EE "$1.0 ~/~ 3 times 3 ~~ != ~~ 1.0$"
+.PA
+Generally, equality of real numbers implemented using a floating point
+representation should be considered with care. This applies not only to
+the S9core operations, but even to common hardware implementations of
+real numbers. See also:
+.K Epsilon .
+.PQ
+.X real_floor
+.X real_trunc
+.X real_ceil
+.CO "cell real_floor(cell x);"
+.sp -0.5
+.CO "cell real_trunc(cell x);"
+.sp -0.5
+.CO "cell real_ceil(cell x);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These functions round the given real number as shown in figure 2.
+.PQ
+.X real_integer_p
+.CO "cell real_integer_p(cell x);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This predicate succeeds, if the given number is an integer, i.e. has a
+fractional part of 0. This is trivially true for bignum integers.
+.PQ
+.S
+.TS
+box tab(:) ;
+c     c    c    c
+c     c    c    c
+lfCB  c    r    r .
+:round::
+function:toward:sample:rounded
+=
+real_floor:$- inf$:$1.5$:$1.0$
+::$-1.5$:$-2.0$
+_
+real_trunc:$0$:$1.5$:$1.0$
+::$-1.5$:$-1.0$
+_
+real_ceil:$+ inf$:$1.5$:$2.0$
+::$-1.5$:$-1.0$
+.TE
+.sp -0.5
+.PA
+.ps -2
+Fig 2. Rounding
+.ps
+.PQ
+.X real_less_p
+.CO "int real_less_p(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This predicate succeeds, if $a<b$.
+.PQ
+.X real_multiply
+.CO "cell real_multiply(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns the product of its arguments.
+.PQ
+.X real_negate
+.CO "cell real_negate(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns its argument with its sign reversed.
+.PQ
+.X real_negative_p
+.X real_positive_p
+.X real_zero_p
+.CO "cell real_negative_p(cell a);"
+.sp -0.5
+.CO "cell real_positive_p(cell a);"
+.sp -0.5
+.CO "cell real_zero_p(cell a);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These predicates test whether the given number is zero, negative, or
+positive, respectively.
+.PQ
+.X real_subtract
+.CO "cell real_subtract(cell a, cell b);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K real_subtract()
+function returns the difference $a-b$. The caveats regarding real number
+addition (see
+.K real_add() )
+also apply to subtraction.
+.PQ
+.X real_to_bignum
+.CO "cell real_to_bignum(cell r);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function converts a integers in real number format to bignum integers.
+Real numbers with a non-zero fractional part cannot be converted and will
+yield a result of
+.K UNDEFINED .
+.PQ
+.PA
+Note that converting large real number will result in bignum integers with
+lots of zeros. Converting very large numbers may terminate the S9core
+process or, in case the memory limit has been removed, result in allocation
+of huge amounts of memory. For example, converting the number
+.K 1e+1000000
+would create a string of 1 million zeros (and one one) and allocate about
+25M bytes of memory in the process (on a 64-bit system). Also, the process
+would take a very long time.
+.PQ
+.PA
+This function is most useful for real numbers with a magnitude not larger
+than the mantissa size.
+.PQ
+.sp -1
+.X IO
+.SH "Input/Output"
+.PA
+S9core input and output is based on ``ports''. A port is a handle to
+a garbage-collected object. On the C level, a port is a small integer
+(an index to the ports array). On the S9core level, a
+.K T_INPUT_PORT
+or
+.K T_OUTPUT_PORT
+type tag is attached to the handle to make it distinguishable to the type
+checker.
+.PQ
+.PA
+There are input ports and output ports, but no bidirectional ports for
+both input and output.
+.PQ
+.PA
+When the garbage collector can prove that a port is inaccessible, it will
+finalize and recycle it. Of course, this works only for S9core ports.
+At C level, a port has to be
+.I locked
+(see
+.K lock_port() )
+to protect it from being recycled.
+.PQ
+.PA
+Input ports are finalized by closing them, output ports by flushing and
+closing them.
+.PQ
+.PA
+All I/O operations are performed on two implicit port called the
+.I "current input port
+and
+.I "current output port" .
+There are procedures for selecting these ports (e.g.
+.K set_input_port() ).
+.PQ
+.PA
+The standard I/O files
+.K stdin ,
+.K stdout ,
+and
+.K stderr
+are assigned to the port handles 0, 1, and 2 when S9core is initialized.
+These ports are locked from the beginning.
+.PQ
+.X blockread
+.CO "int blockread(char *s, int k);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function reads up to $k$ character from the current input port and
+stores them in $s$. It returns the number of characters read. When an
+I/O error occurs, it updates the internal I/O status (see
+.K io_status() ).
+.PQ
+.X readc
+.X reject
+.CO "readc()"
+.sp -0.5
+.CO "reject(c)"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K readc()
+reads a single character from the current input port and returns it. A
+return value of $-1$ indicates the EOF or an error.
+.PQ
+.PA
+The
+.K reject()
+function inserts a character into the input stream, so the next
+.K readc()
+(or
+.K blockread() )
+will return it. In combination with
+.K readc() ,
+it can be used to look ahead one character in the input stream.
+.PQ
+.PA
+Example:
+.PQ
+.CB
+cell peek = readc();
+reject(peek);
+.CE
+.X blockwrite
+.CO "void blockwrite(char *s, int k);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function writes $k$ characters from $s$ to the current output port.
+It returns the number of characters written. When an I/O error occurs,
+it updates the internal I/O status (see
+.K io_status() ).
+.PQ
+.X prints
+.CO "void prints(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K prints()
+writes the C string $s$ to the current output port.
+.PQ
+.X print_bignum
+.CO "void print_bignum(cell n);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K print_bignum()
+function writes the decimal representation of the bignum integer $n$
+to the current output port.
+.PQ
+.X print_expanded_real
+.X print_sci_real
+.X print_real
+.CO "void print_expanded_real(cell n);"
+.sp -0.5
+.CO "void print_real(cell n);"
+.sp -0.5
+.CO "void print_sci_real(cell n);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These functions all write representations of the real number $n$ to the
+current output port.
+.K print_expanded_real()
+prints all digits of the real number, both the integer and fractional
+parts.
+.K print_sci_real()
+prints numbers in ``scientific'' notation with a normalized mantissa
+and an exponent. E.g., $123.45$ will print as $1.2345e"+"2$, meaning
+$1.2345 times 10 sup 2$. The exponent character may vary; see the
+.K exponent_chars()
+function [pg \n[exponent_chars]] for details.
+.PQ
+.PA
+The
+.K print_real()
+function will print numbers with more than 4 fractional digits and/or more
+than 6 integer digits in scientific notation and all other numbers in
+expanded notation.
+.PQ
+.X nl
+.CO "nl()"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K nl()
+is short for
+.K "prints(""\\\\n"");" .
+.PQ
+.X flush
+.CO "void flush(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K flush()
+commits all pending write operations on the current output port.
+.PQ
+.X io_status
+.X io_reset
+.CO "int io_status(void);"
+.sp -0.5
+.CO "void io_reset(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K io_status()
+function returns the internal I/O state. When it returns 0, no I/O
+error occurred since the call of
+.K io_reset()
+(or the initialization of S9core). When it returns $-1$, an I/O
+error has occurred in between.
+.PQ
+.PA
+.K io_reset()
+resets the I/O status to zero.
+.PQ
+.PA
+These two functions can be used to perform multiple I/O operations in
+a row without having to check each return value. Once the I/O state was
+changed to $-1$, it will stay that way until explicitly reset using
+.K io_reset() .
+.PQ
+.X open_input_port
+.X open_output_port
+.X close_port
+.CO "int open_input_port(char *path);"
+.sp -0.5
+.CO "int open_output_port(char *path, int append);"
+.sp -0.5
+.CO "void close_port(int port);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K open_input_port()
+opens a file for reading an returns a port handle for accessing that file.
+.K open_output_port()
+opens the given file for output and returns a handle. When the $"append"$
+flag is zero, it creates the file. It will truncate any preexisting file to
+zero length. When the $"append"$ flag is one, it will append data to an
+existing file. It still creates the file, if it does not exist.
+.PQ
+.PA
+The port opening functions return a negative value in case of an error.
+.PQ
+.PA
+The
+.K close_port()
+function closes the file associated with the given port handle and frees
+the handle. It can be used to close locked ports (see below), thereby
+unlocking them in the process.
+.PQ
+.X lock_port
+.X unlock_port
+.CO "int lock_port(cell port);"
+.sp -0.5
+.CO "int unlock_port(cell port);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These function
+.I lock
+and
+.I unlock
+a port, respectively. Locking a port protects it from being finalized and
+recycled by the garbage collector. For example, a function opening a file
+and packaging the resulting port in a
+.K T_INPUT_PORT
+object, would need to lock the port:
+.PQ
+.CB
+int port = open_input_port("some-file");
+lock_port(port);
+cell n = make_port(port, T_INPUT_PORT);
+unlock_port(port);
+.CE
+.PA
+Without locking the port, the
+.K make_port()
+function might close the freshly opened port when it triggers a GC. After
+unlocking the port, the
+.K T_INPUT_PORT
+object protects the port,
+.I if
+it is accessible through a GC root (on the stack, bound to a symbol, etc).
+.PQ
+.X input_port
+.X output_port
+.CO "cell input_port(void);"
+.sp -0.5
+.CO "cell output_port(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+These functions return the
+.I "current input port
+and
+.I "current output port" ,
+respectively.
+.PQ
+.X set_input_port
+.X set_output_port
+.X reset_std_ports
+.CO "cell set_input_port(cell port);"
+.sp -0.5
+.CO "cell set_output_port(cell port);"
+.sp -0.5
+.CO "void reset_std_ports(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K set_input_port()
+functions redirect all input to the given port. All read operations
+(\f[CB]readc()\fP,
+.K blockread() )
+will use the given port after calling this function. The given port
+will become the new ``current input port''.
+.PQ
+.PA
+.K set_output_port()
+changes the current output port, affecting
+.K blockwrite() ,
+.K prints() ,
+etc.
+.PQ
+.PA
+The
+.K reset_std_ports()
+function sets the current input stream (handle 0) to
+.K stdin ,
+the current output stream (handle 1) to
+.K stdout ,
+and port handle 2 to
+.K stderr .
+.PQ
+.bp \&XXX
+.X set_printer_limit
+.X printer_limit
+.CO "void set_printer_limit(int k);"
+.sp -0.5
+.CO "int printer_limit(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+When
+.K set_printer_limit()
+is used to specify a non-zero ``printer limit'' $k$, then the output
+functions (like
+.K prints() ,
+.K blockwrite() ,
+etc) will write $k$ characters at most and discard any excess output.
+The
+.K printer_limit()
+function returns a non-zero value, if the printer limit has been reached
+(so that no further characters will be written).
+.PQ
+.PA
+Specifying a printer limit of zero will remove any existing limit.
+.PQ
+.PA
+Printer limits are useful for printing partial data, for instance in
+error messages. This is especially useful when outputting cyclic
+structures, which would otherwise print indefinitely.
+.PQ
+.sp -1
+.SU "Heap Images"
+.X dump_image
+.CO "char *dump_image(char *path, char *magic);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K dump_image()
+function writes a heap image to the given path. The "$magic$" parameter
+must be a string of up to 16 characters that will be used for a magic ID
+when loading images.
+.PQ
+.PA
+Heap images work only, if
+.I all
+state of the language implementation using S9core is kept on the heap.
+Internal variables referring to the heap must be included as image variables.
+See the
+.K image_vars()
+function, below.
+.PQ
+.PA
+.K dump_image()
+will return
+.K NULL
+on success or an error message in case of failure.
+.PQ
+.X image_vars
+.CO "void image_vars(cell **v);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The parameter of
+.K image_vars()
+is a list of addresses of cells that need to be saved to a heap image.
+This includes basically all non-local
+.K cell
+variables that reference the node pool when an image is dumped, for
+example, a symbol table, an interpreter stack, etc.
+.PQ
+.PA
+All variables that are GC roots [pg \n[s9init]], should also be included in
+the image.
+.PQ
+.PA
+Internal S9core variables are included automatically and do not have
+to be specified here.
+.PQ
+.X load_image
+.CO "char *load_image(char *path, char *magic);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K load_image()
+function loads a heap image file from the given path. It expects the heap
+image to contain the given magic ID (or the load will fail). See
+.K dump_image()
+for details.
+.PQ
+.PA
+When an image could be successfully loaded, the function will return
+.K NULL .
+In case of failure, it will deliver an explanatory error message in
+plain English.
+.PQ
+.PA
+.B Note:
+If
+.K load_image()
+fails, it leaves the heap in an undefined state. In this case, there
+are there options:
+.PQ
+.LB
+.LI "Load a different image
+.LI "Restart S9core by calling \f[CB]s9fini()\fP and then \f[CB]s9init()\fP
+.LI "Terminate the process with \f[CB]fatal()\fP
+.LE
+.sp -1
+.SH "Memory Management"
+.X gc
+.X gcv
+.CO "int gc(void);"
+.sp -0.5
+.CO "int gcv(void);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K gc()
+function starts a node pool garbage collection and returns the number of
+nodes reclaimed.
+.K gcv()
+starts a vector pool garbage collection and compaction and returns the
+number of free cells in the vector pool.
+.PQ
+.PA
+GC is normally triggered by the allocator functions, but sometimes you
+might want to start from some known state (e.g. when benchmarking).
+.PQ
+.X gc_verbosity
+.CO "void gc_verbosity(int n);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+When the parameter $n$ of
+.K gc_verbosity()
+is set to $1$, S9core will print information about pool growth to
+.K stdout .
+When $n=2$, it will also print the number of nodes/cells reclaimed in
+each GC. $n=0$ disables informative messages.
+.PQ
+.TL "" \&XXX
+.bp \&XXX
+.sp -1
+.SH "String/Number Conversion"
+.X exponent_chars
+.CO "void exponent_chars(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function specifies the characters that will be interpreted as
+exponent signs in real numbers by
+.K string_numeric_p()
+and
+.K string_to_real() .
+.PQ
+.PA
+The first character of the string passed to this function will
+be used to denote exponents in the output of
+.K print_sci_real() .
+.PQ
+.PA
+The default exponent characters are
+.K """eE""" .
+.PQ
+.X integer_string_p
+.X string_numeric_p
+.CO "int integer_string_p(char *s);"
+.sp -0.5
+.CO "int string_numeric_p(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K string_numeric_p()
+checks whether the given string represents a number. A number consists of
+the following parts:
+.PQ
+.LB
+.LI "an optional $+$ or $-$ sign
+.LI "a non-empty sequence of decimal digits with an optional decimal point \
+at any position
+.LI "an optional exponent character followed by another optional sign and \
+another non-empty sequence of decimal digits
+.LE
+.PA
+Subsequently, valid numbers would include, for instance:
+.PQ
+.CO "0  +123  -1  .1  +1.23e+5  1e6  .5e-2"
+.PA
+.K integer_string_p()
+checks whether a string represents an integer, i.e. a non-empty sequence
+of digits with an optional leading $+/-$ sign. Each integer is trivially
+a number by the above rules.
+.PQ
+.X string_to_bignum
+.CO "cell string_to_bignum(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K string_to_bignum()
+function converts a numeric string (see
+.K integer_string_p() )
+to a bignum integer and returns it. The result of this function is
+undefined, if its argument does not represent an integer.
+.PQ
+.bp \&XXX
+.X string_to_real
+.CO "cell string_to_real(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K string_to_real()
+function converts a numeric string (as recognized by
+.K string_numeric_p() )
+to a real number and returns it. The result of this function is
+undefined, if its argument does not represent a real number.
+.PQ
+.PA
+It returns
+.K UNDEFINED ,
+if the given exponent is too large. Converting the string to real
+will lead to loss of precision, if the mantissa does not fit in
+the internal representation, e.g.
+.PQ
+.CO "string_to_real(""3.1415926535897932384626"")"
+.PA
+will result in 3.14159265 when the internal format uses a 9-digit
+mantissa. In this case, the result will be truncated (rounded towards
+zero).
+.PQ
+.X string_to_number
+.CO "cell string_to_number(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function converts integer representations to bignums and real number
+representations (containing decimal points or exponent characters) to
+real numbers. Its result is undefined for non-numeric strings. See also:
+.K string_to_bignum() ,
+.K string_to_real () ,
+.K integer_string_p() .
+.PQ
+.sp -1
+.SH "Counters"
+.X counter
+.CO "counter"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+A
+.K counter
+is a structure for counting events. It can be reset, incremented, and
+read. See the following functions for details.
+.PQ
+.X reset_counter()
+.CO "void reset_counter(counter *c);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function resets the given counter to zero.
+.PQ
+.X count
+.CO "void count(counter *c);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function increments the given counter by one. Counters overflow
+at one quatrillion ($10 sup {15}$). There is no overflow checking.
+.PQ
+.bp \&XXX
+.X read_counter
+.CO "cell read_counter(counter *c);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function converts the value of the given counter into a list of
+numbers in the range $0..999$, where the first number represents the
+trillions, the second one the billions, etc. The last number contains
+the ``ones'' of the counter. E.g. reading a counter with a value of
+$12,345,678$ would return
+.PQ
+.CO "(0 0 12 345 678)"
+.sp -1
+.SU "Internal Counters"
+.X run_stats
+.CO "void run_stats(int run);
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+When
+.K run_stats()
+is called with a non-zero arguments, it resets all internal S9core
+counters and starts counting. When passed a zero argument, it stops
+counting and leaves the counters untouched. The counter values can
+be extracted using the
+.K get_counters()
+function.
+.PQ
+.X run_stats
+.CO "void cons_stats(int on);
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+Passing a non-zero value to
+.K cons_stats()
+activates the the internal $c$ (cons) counter of S9core. Passing zero
+to the function deactivates the counter (but does not reset it).
+.PQ
+.PA
+Cons counting is usually activated before dispatching a primitive
+function and immediately deactivated thereafter. It counts allocation
+requests made by a
+.I "program being interpreted"
+rather than requests made by the interpreter.
+.PQ
+.X get_counters
+.CO "\s-2void get_counters(counter **n, counter **c, counter **g);\s0"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function retrieves the values of the three internal S9core counters
+that start when
+.K run_stats()
+is called with a non-zero argument. These counters count
+.PQ
+.LB
+.LI "the number of nodes allocated in total ($n$)"
+.LI "the number of nodes allocated by a program ($c$)"
+.LI "the number of garbage collections performed ($g$)"
+.LE
+.PA
+The $n$, $c$, and $g$ varialbles can be passed to
+.K read_counter
+to convert them to a (machine-)readable form.
+.PQ
+.sp -1
+.SH "Utility Functions"
+.X asctol
+.CO "long asctol(char *s);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+The
+.K asctol()
+function is like
+.K atol() ,
+but does not interpret a leading $0$ as a base-8 prefix, like Plan 9's
+.K atol()
+does.
+.PQ
+.X fatal
+.CO "void fatal(char *msg);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function prints the given message and then aborts program execution.
+.PQ
+.X flat_copy
+.CO "cell flat_copy(cell n, cell *lastp);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+.K flat_copy()
+copies the ``spine'' of the list $n$, i.e. the cons nodes connecting the
+elements of the list, giving a ``shallow'' or ``flat'' copy of the list,
+i.e. new spine, but identical elements.
+.PQ
+.PA
+When $"lastp"$ is not
+.K NULL ,
+it will be filled with the last cons of the fresh list, allowing, for
+instance, an O(1) destructive append. $"lastp"$ will be ignored, if $n$
+is
+.K NULL .
+.PQ
+.X length
+.CO "int length(cell n);"
+.sp -0.7
+.PS
+line right 4.5i
+.PE
+.PA
+This function returns the number of elements in the list $n$.
+.PQ
+.TL ""
+.bp
+.HD "Caveats"
+.PA
+.B Note :
+All caveats outlined here are due to garbage collection. This means that
+code exhibiting any of these issues
+.I may
+run properly most of the time and then fail unexpectedly.
+.PQ
+.sp -1
+.SH "Temporary Values"
+.PA
+A
+.I temporary
+value is a
+.K cell
+that is not part of any GC-protected structure, like the symbol table,
+the stack, or any other GC root. Temporary values are not protected in
+S9core and subject to recycling by the garcage collector. E.g. the
+value $n$ in
+.PQ
+.CB
+cell n = cons(One, NIL);
+cell m = cons(Two, NIL); /* n is unprotected */
+.CE
+.PA
+is
+.I not
+protected during the allocation of $m$ and may therefore be recycled.
+.PQ
+.PA
+Most S9core functions allocate nodes, so a conservative premise would be
+that calling
+.I any
+S9core function (with the obvious exception of accessors, like
+.K car() ,
+.K string() ,
+or
+.K port_no() ),
+will destroy temporary values.
+.PQ
+.PA
+There are several ways to protect temporary values. The most obvious one
+is to push the value on the stack during a critical phase:
+.PQ
+.CB
+cell m, n = cons(One, NIL);
+save(n);
+m = cons(Two, NIL);
+unsave(1);
+.CE
+.PA
+A less versatile, but more lightweight approach would be to create a
+temporary protection object ($"Tmp"$) and add that to the GC root as
+specified in
+.K s9init()
+[\n[s9init]]. Using such an object, you could write:
+.PQ
+.CB
+cell m, n = cons(One, NIL);
+Tmp = n;
+m = cons(Two, NIL);
+Tmp = NIL;
+.CE
+.PA
+Finally, all symbols created by
+.K symbol_ref()
+or interned by
+.K intern_symbol()
+are automatically protected, because they are stored in the internal
+S9core symbol table. So the following code is safe:
+.PQ
+.CB
+cell n = symbol_ref("foo");
+cell m = cons(Two, NIL);
+.CE
+.PA
+Note that uninterned symbols (created by
+.K make_symbol() )
+are
+.I not
+protected!
+.PQ
+.sp -1
+.SH "Locations of Vector Objects"
+.PA
+Nodes never move once allocated, e.g., the location of $N$ will
+never change after executing
+.PQ
+.CO "N = make_vector(10);
+.PA
+given that $N$ is protected from GC.
+.PQ
+.PA
+However,
+.I "vector objects"
+(vectors, strings, and symbols)
+.I will
+be moved during garbage collection by the
+.I "vector pool compactor" .
+Therefore, no S9core function may be called between retrieving the
+payload of a vector and accessing it. For example, the following code
+.B "will not work" :
+.PQ
+.CB
+.ps -1
+cell S = make_string("foo", 3);
+char *s = string(S);
+cell n = make_string("", 10); /* s may move */
+printf("%s\\n", s);
+.ps
+.CE
+.PA
+Because
+.K make_string()
+may trigger a vector pool garbage collection and compaction, the location
+of $s$ may change before it is printed by
+.K printf() .
+In this simple example, the issue can be resolved by swapping the first
+two statements.
+.PQ
+.PA
+Things are more complicated in statements like
+.PQ
+.CO "make_string(string(S), strlen(string(S)));
+.PA
+As explained earlier [\n[T_STRING]], this statement will
+.I not
+create a copy of the string $S$, because the location delivered by
+.K string(S)
+may become invalid before
+.K make_string()
+has a chance to copy it. See page \n[T_STRING] for the proper procedure
+for copying strings.
+.PQ
+.PA
+The same applies to locations delivered by the
+.K vector()
+and
+.K symbol_name()
+accessors.
+.PQ
+.sp -1
+.SH "Mixing Assignments and Allocators"
+.PA
+Assignments to accessors must
+.I never
+have an allocator in their rvalues. The statement
+.PQ
+.CO "car(n) = cons(One, Two); /* pool may move! */
+.PA
+.I will
+fail at some point, because the pool containing $n$ may move due to
+node pool reallocation.
+.PQ
+.PA
+The
+.K cell
+$n$ is an index to an internal pool and
+.K car
+accesses a slot in that pool. When the
+.K cons
+in the above statement causes the node pool to grow, the pool will be
+.K realloc 'ed,
+so the original address of the pool may become invalid
+.I before
+.K car
+can access the pool.
+.PQ
+.PA
+The above works with some C compilers and does not with others, but either
+way,
+.I "it is not covered by any C standard and should be avoided" .
+The proper way to write the above would be:
+.PQ
+.CB
+m = cons(One, Two);
+car(n) = m;
+.CE
+.PA
+For similar reasons, statements like
+.PQ
+.CO "return cdr(bignum_divide(a, b));
+.PA
+will fail. Even here, storing the result in a temporary variable before
+taking the
+.K cdr
+would be the proper way.
+.PQ
+.TL ""
+.bp
+.HD "Index"
+.S
+.nf
+\f[CB]apply_prim\fP \n[apply_prim]                	\f[CB]DIGITS_PER_WORD\fP \n[DIGITS_PER_WORD]  
+\f[CB]asctol\fP \n[asctol]                        	\f[CB]dump_image\fP \n[dump_image]            
+\f[CB]atom_p\fP \n[atom_p]                        	\f[CB]END_OF_FILE\fP \n[END_OF_FILE]          
+\f[CB]bignum_abs\fP \n[bignum_abs]                	\f[CB]eof_p\fP \n[eof_p]                      
+\f[CB]bignum_add\fP \n[bignum_add]                	\f[CB]Epsilon\fP \n[Epsilon]                  
+\f[CB]bignum_divide\fP \n[bignum_divide]          	\f[CB]exponent_chars\fP \n[exponent_chars]    
+\f[CB]bignum_equal_p\fP \n[bignum_equal_p]        	\f[CB]FALSE\fP \n[FALSE]                      
+\f[CB]bignum_even_p\fP \n[bignum_even_p]          	\f[CB]fatal\fP \n[fatal]                      
+\f[CB]bignum_less_p\fP \n[bignum_less_p]          	\f[CB]find_symbol\fP \n[find_symbol]          
+\f[CB]bignum_multiply\fP \n[bignum_multiply]      	\f[CB]flat_copy\fP \n[flat_copy]              
+\f[CB]bignum_negate\fP \n[bignum_negate]          	\f[CB]flush\fP \n[flush]                      
+\f[CB]bignum_shift_left\fP \n[bignum_shift_left]  	\f[CB]function_p\fP \n[function_p]            
+\f[CB]bignum_shift_right\fP \n[bignum_shift_right]	\f[CB]gcv\fP \n[gcv]                          
+\f[CB]bignum_subtract\fP \n[bignum_subtract]      	\f[CB]gc\fP \n[gc]                            
+\f[CB]bignum_to_int\fP \n[bignum_to_int]          	\f[CB]gc_verbosity\fP \n[gc_verbosity]        
+\f[CB]bignum_to_real\fP \n[bignum_to_real]        	\f[CB]get_counters\fP \n[get_counters]        
+\f[CB]bignum_to_string\fP \n[bignum_to_string]    	\f[CB]image_vars\fP \n[image_vars]            
+\f[CB]blockread\fP \n[blockread]                  	\f[CB]input_port\fP \n[input_port]            
+\f[CB]blockwrite\fP \n[blockwrite]                	\f[CB]input_port_p\fP \n[input_port_p]        
+\f[CB]boolean_p\fP \n[boolean_p]                  	\f[CB]integer_p\fP \n[integer_p]              
+\f[CB]caar...cddddr\fP \n[caar...cddddr]          	\f[CB]integer_string_p\fP \n[integer_string_p]
+\f[CB]car\fP \n[car]                              	\f[CB]intern_symbol\fP \n[intern_symbol]      
+\f[CB]cdr\fP \n[cdr]                              	\f[CB]INT_SEG_LIMIT\fP \n[INT_SEG_LIMIT]      
+\f[CB]cell\fP \n[cell]                            	\f[CB]IO\fP \n[IO]                            
+\f[CB]char_p\fP \n[char_p]                        	\f[CB]io_reset\fP \n[io_reset]                
+\f[CB]char_value\fP \n[char_value]                	\f[CB]io_status\fP \n[io_status]              
+\f[CB]close_port\fP \n[close_port]                	\f[CB]length\fP \n[length]                    
+\f[CB]cons3\fP \n[cons3]                          	\f[CB]load_image\fP \n[load_image]            
+\f[CB]constant_p\fP \n[constant_p]                	\f[CB]lock_port\fP \n[lock_port]              
+\f[CB]cons\fP \n[cons]                            	\f[CB]make_byte_vector\fP \n[make_byte_vector]
+\f[CB]continuation_p\fP \n[continuation_p]        	\f[CB]make_char\fP \n[make_char]              
+\f[CB]copy_string\fP \n[copy_string]              	\f[CB]make_integer\fP \n[make_integer]        
+\f[CB]counter\fP \n[counter]                      	\f[CB]make_port\fP \n[make_port]              
+\f[CB]count\fP \n[count]                          	\f[CB]make_port\fP \n[make_port]              
+.bp
+\f[CB]make_primitive\fP \n[make_primitive]          	\f[CB]real_ceil\fP \n[real_ceil]                  
+\f[CB]Make_real\fP \n[Make_real]                    	\f[CB]real_divide\fP \n[real_divide]              
+\f[CB]make_real\fP \n[make_real]                    	\f[CB]real_equal_p\fP \n[real_equal_p]            
+\f[CB]make_string\fP \n[make_string]                	\f[CB]Real_exponent\fP \n[Real_exponent]          
+\f[CB]make_symbol\fP \n[make_symbol]                	\f[CB]real_exponent\fP \n[real_exponent]          
+\f[CB]make_vector\fP \n[make_vector]                	\f[CB]Real_flags\fP \n[Real_flags]                
+\f[CB]MANTISSA_SEGMENTS\fP \n[MANTISSA_SEGMENTS]    	\f[CB]Real_flags\fP \n[Real_flags]                
+\f[CB]mem_error_handler\fP \n[mem_error_handler]    	\f[CB]real_floor\fP \n[real_floor]                
+\f[CB]new_atom\fP \n[new_atom]                      	\f[CB]real_integer_p\fP \n[real_integer_p]        
+\f[CB]new_port\fP \n[new_port]                      	\f[CB]real_less_p\fP \n[real_less_p]              
+\f[CB]new_vec\fP \n[new_vec]                        	\f[CB]Real_mantissa\fP \n[Real_mantissa]          
+\f[CB]NIL\fP \n[NIL]                                	\f[CB]real_mantissa\fP \n[real_mantissa]          
+\f[CB]nl\fP \n[nl]                                  	\f[CB]real_multiply\fP \n[real_multiply]          
+\f[CB]NODE_LIMIT\fP \n[NODE_LIMIT]                  	\f[CB]Real_negate\fP \n[Real_negate]              
+\f[CB]number_p\fP \n[number_p]                      	\f[CB]real_negate\fP \n[real_negate]              
+\f[CB]One\fP \n[One]                                	\f[CB]Real_negative\fP \n[Real_negative]          
+\f[CB]open_input_port\fP \n[open_input_port]        	\f[CB]Real_negative_flag\fP \n[Real_negative_flag]
+\f[CB]open_output_port\fP \n[open_output_port]      	\f[CB]real_negative_p\fP \n[real_negative_p]      
+\f[CB]output_port\fP \n[output_port]                	\f[CB]Real_positive\fP \n[Real_positive]          
+\f[CB]output_port_p\fP \n[output_port_p]            	\f[CB]real_positive_p\fP \n[real_positive_p]      
+\f[CB]pair_p\fP \n[pair_p]                          	\f[CB]real_p\fP \n[real_p]                        
+\f[CB]port_no\fP \n[port_no]                        	\f[CB]real_subtract\fP \n[real_subtract]          
+\f[CB]port_no\fP \n[port_no]                        	\f[CB]real_to_bignum\fP \n[real_to_bignum]        
+\f[CB]primitive_p\fP \n[primitive_p]                	\f[CB]real_trunc\fP \n[real_trunc]                
+\f[CB]PRIM\fP \n[PRIM]                              	\f[CB]Real_zero\fP \n[Real_zero]                  
+\f[CB]prim_info\fP \n[prim_info]                    	\f[CB]real_zero_p\fP \n[real_zero_p]              
+\f[CB]prim_slot\fP \n[prim_slot]                    	\f[CB]reject\fP \n[reject]                        
+\f[CB]printer_limit\fP \n[printer_limit]            	\f[CB]reset_counter\fP \n[reset_counter]          
+\f[CB]prints\fP \n[prints]                           	\f[CB]reset_std_ports\fP \n[reset_std_ports]      
+\f[CB]print_bignum\fP \n[print_bignum]              	\f[CB]run_stats\fP \n[run_stats]                  
+\f[CB]print_expanded_real\fP \n[print_expanded_real]	\f[CB]run_stats\fP \n[run_stats]                  
+\f[CB]print_real\fP \n[print_real]                  	\f[CB]s9fini\fP \n[s9fini]                        
+\f[CB]print_sci_real\fP \n[print_sci_real]          	\f[CB]s9init\fP \n[s9init]                        
+\f[CB]readc\fP \n[readc]                            	\f[CB]save\fP \n[save]                            
+\f[CB]read_counter\fP \n[read_counter]              	\f[CB]set_input_port\fP \n[set_input_port]        
+\f[CB]real_abs\fP \n[real_abs]                      	\f[CB]set_node_limit\fP \n[set_node_limit]        
+\f[CB]real_add\fP \n[real_add]                      	\f[CB]set_output_port\fP \n[set_output_port]      
+.bp
+\f[CB]set_printer_limit\fP \n[set_printer_limit]	\f[CB]T_FUNCTION\fP \n[T_FUNCTION]      
+\f[CB]set_vector_limit\fP \n[set_vector_limit]  	\f[CB]T_INPUT_PORT\fP \n[T_INPUT_PORT]  
+\f[CB]special_value_p\fP \n[special_value_p]    	\f[CB]T_INTEGER\fP \n[T_INTEGER]        
+\f[CB]string\fP \n[string]                      	\f[CB]T_LIST\fP \n[T_LIST]              
+\f[CB]string_len\fP \n[string_len]              	\f[CB]T_OUTPUT_PORT\fP \n[T_OUTPUT_PORT]
+\f[CB]string_numeric_p\fP \n[string_numeric_p]  	\f[CB]T_PAIR\fP \n[T_PAIR]              
+\f[CB]string_p\fP \n[string_p]                  	\f[CB]T_PRIMITIVE\fP \n[T_PRIMITIVE]    
+\f[CB]string_to_bignum\fP \n[string_to_bignum]  	\f[CB]T_REAL\fP \n[T_REAL]              
+\f[CB]string_to_number\fP \n[string_to_number]  	\f[CB]T_STRING\fP \n[T_STRING]          
+\f[CB]string_to_real\fP \n[string_to_real]      	\f[CB]T_SYMBOL\fP \n[T_SYMBOL]          
+\f[CB]string_to_symbol\fP \n[string_to_symbol]  	\f[CB]T_SYNTAX\fP \n[T_SYNTAX]          
+\f[CB]symbol_len\fP \n[symbol_len]              	\f[CB]T_VECTOR\fP \n[T_VECTOR]          
+\f[CB]symbol_name\fP \n[symbol_name]            	\f[CB]UNDEFINED\fP \n[UNDEFINED]        
+\f[CB]symbol_p\fP \n[symbol_p]                  	\f[CB]undefined_p\fP \n[undefined_p]    
+\f[CB]symbol_ref\fP \n[symbol_ref]              	\f[CB]unlock_port\fP \n[unlock_port]    
+\f[CB]symbol_to_string\fP \n[symbol_to_string]  	\f[CB]unsave\fP \n[unsave]              
+\f[CB]syntax_p\fP \n[syntax_p]                  	\f[CB]UNSPECIFIC\fP \n[UNSPECIFIC]      
+\f[CB]TRUE\fP \n[TRUE]                          	\f[CB]unspecific_p\fP \n[unspecific_p]  
+\f[CB]Two\fP \n[Two]                            	\f[CB]USER_SPECIALS\fP \n[USER_SPECIALS]
+\f[CB]typecheck\fP \n[typecheck]                	\f[CB]vector\fP \n[vector]              
+\f[CB]T_ANY\fP \n[T_ANY]                        	\f[CB]vector_len\fP \n[vector_len]      
+\f[CB]T_BOOLEAN\fP \n[T_BOOLEAN]                	\f[CB]VECTOR_LIMIT\fP \n[VECTOR_LIMIT]  
+\f[CB]T_CHAR\fP \n[T_CHAR]                      	\f[CB]vector_p\fP \n[vector_p]          
+\f[CB]T_CONTINUATION\fP \n[T_CONTINUATION]      	\f[CB]Zero\fP \n[Zero]                  
+.fi

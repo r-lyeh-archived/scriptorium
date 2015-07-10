@@ -1,0 +1,13 @@
+auto i = 3
+auto b1 = false;
+auto b2 = false;
+
+if (i == 2) {
+  b1 = true;
+}
+else {
+  b2 = true;
+}
+
+assert_equal(false, b1);
+assert_equal(true, b2);

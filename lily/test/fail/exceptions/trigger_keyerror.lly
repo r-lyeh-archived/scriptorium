@@ -1,0 +1,9 @@
+#[
+KeyError: "b"
+Traceback:
+    File "trigger_keyerror.lly", from __main__ at line 9
+]#
+
+var v = ["a" => 1]
+
+show(v["b"])

@@ -1,0 +1,4 @@
+S9fES  (dump-image string)  ==>  unspecific
+
+Write a heap image to the file given in the STRING argument.
+If the file already exists, report an error.

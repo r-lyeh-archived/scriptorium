@@ -1,0 +1,8 @@
+To use the geany syntax highlighting install filetypes.qc to the syntax
+directory for geany.
+
+# Can be installed globally to
+/usr/share/geany/
+
+# Can be installed locally to
+~/.config/geany/filedefs/

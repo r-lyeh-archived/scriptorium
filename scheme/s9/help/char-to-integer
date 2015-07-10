@@ -1,0 +1,19 @@
+R4RS 6.6  (char->integer char)     ==>  integer
+          (integer->char integer)  ==>  char
+
+Given a character, CHAR->INTEGER returns an integer representation
+of the character. Given an integer that is the image of a character
+under CHAR->INTEGER, INTEGER->CHAR returns that character. These
+procedures implement injective order isomorphisms between the set
+of characters under the CHAR<=? ordering and some subset of the
+integers under the <= ordering. That is, if
+
+     (char<=? a b)  ==>  #t
+and  (<= x y)       ==>  #t
+
+and X and Y are in the domain of INTEGER->CHAR, then
+
+     (<= (char->integer a)
+         (char->integer b))       ==>  #t
+and  (char<=? (integer->char x)
+              (integer->char y))  ==>  #t.

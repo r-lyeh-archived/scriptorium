@@ -1,0 +1,107 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+// primitives
+
+file_contents = $loader.loadprim("std@file_contents",1);
+file_open = $loader.loadprim("std@file_open",2);
+file_write = $loader.loadprim("std@file_write",4);
+file_write_char = $loader.loadprim("std@file_write_char",2);
+file_close = $loader.loadprim("std@file_close",1);
+command = $loader.loadprim("std@sys_command",1);
+system = $loader.loadprim("std@sys_string",0)();
+
+// find a substring from then end
+
+find = function(str,sub,pos) {
+	var l1 = $ssize(str);
+	var l2 = $ssize(sub);
+	var i = l1 - pos;
+	while( i >= 0 ) {
+		if( $ssub(str,i,l2) == sub )
+			return i;
+		i -= 1;
+	}
+	return null;
+}
+
+// find a file in a path
+
+find_exe_in_path = function(path,file) {
+	while( path != null ) {
+		try {
+			var s = file_contents(path[0]+file);
+			if( $sget(s,0) == 35 ) // '#'
+				$throw("Is a script");
+			return s;
+		} catch e {
+			path = path[1];
+		}
+	}
+	$throw("The bootable executable file was not found : "+file);
+}
+
+// bytecode = first argument
+
+var args = $loader.args;
+var exe_ext = switch system { "Windows" => ".exe" default => "" };
+var boot_exe = "neko" + exe_ext;
+if( args[0] == "-b" ) {
+	boot_exe = args[1];
+	args = $asub(args,2,$asize(args)-2);
+}
+if( $asize(args) != 1 )
+	$throw("Need bytecode argument");
+var file = args[0];
+var bytecode = file_contents(file);
+
+// load boot binary
+
+var boot = find_exe_in_path($loader.path,boot_exe);
+var boot_size = $ssize(boot);
+
+var dot_pos = find(file,".",1);
+if( dot_pos != null )
+	file = $ssub(file,0,dot_pos);
+
+//  create executable file :
+//  this is the content of boot.bin where is appended
+//  the neko bytecode followed by 'NEKO' and the original exe size
+
+var out_name = file+exe_ext;
+var out = file_open(out_name,"wb");
+file_write(out,boot,0,boot_size);
+file_write(out,bytecode,0,$ssize(bytecode));
+file_write(out,"NEKO",0,4);
+file_write_char(out,boot_size & 0xFF);
+file_write_char(out,(boot_size >> 8) & 0xFF);
+file_write_char(out,(boot_size >> 16) & 0xFF);
+file_write_char(out,boot_size >>> 24);
+file_close(out);
+
+// set execution rights
+
+switch system {
+	"Windows" => null
+	default => command("chmod 755 "+out_name)
+}
+

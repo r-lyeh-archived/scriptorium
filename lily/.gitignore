@@ -1,0 +1,15 @@
+# Binary junk to ignore.
+
+lib/*
+lily
+
+# CMake-related stuff.
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Stuff from the Codelite IDE to ignore.
+.codelite/
+*.project
+*.workspace

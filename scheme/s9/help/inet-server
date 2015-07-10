@@ -1,0 +1,36 @@
+S9 LIB  (inet-server string1 string2 procedure^5)          ==>  undefined
+        (inet-server string1 string2 procedure^5 integer)  ==>  undefined
+
+Create a server socket, bind it to host STRING1, port STRING2 and
+listen for requests on that socket. When a request comes in, spawn
+a child process to handle the request. PROCEDURE^5 will be called
+by the child process. When the procedure returns, the child will
+close the connection and terminate.
+
+The following arguments are passed to PROCEDURE^5:
+
+      IN     an input-port for reading data from the connection
+      OUT    an output-port for sending data over the connection
+      PEER   a list of the form (IP PORT) where IP is the remote
+             IP address and PORT is the remote-side port of the
+             connection
+      TIME   the time of establishing the connection (Unix timestamp)
+      DELTA  the time span in seconds in which the most recent NREQ
+             requests of *this* client were received; #F if the client
+             did not yet send NREQ resuests; see below for details
+
+When an INTEGER argument (NREQ) is passed to INET-SERVER, it will keep
+track of the NREQ most recent requests received from each IP address.
+When a client sends more than NREQ-1 requests, INET-SERVER will send
+the difference between the time of the most recent request and the
+time of the oldest tracked request to PROCEDURE^5 in the DELTA argument. 
+The request handler can use this value, for instance, to limit the
+number of requests per unit of time that it accepts from each client.
+
+(load-from-library "read-line.scm")
+
+(define (handle-echo-request in out . ignore)
+  (display (read-line in) out)
+  (newline out))
+
+(inet-server "localhost" "12345" handle-echo-request)

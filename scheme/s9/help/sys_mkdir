@@ -1,0 +1,7 @@
+S9 EXT  (sys:mkdir string integer)  ==>  unspecific
+        (sys:mkdir string)          ==>  unspecific
+
+Create directory STRING with mode INTEGER. When no mode is
+passed to SYS:MKDIR, it defaults to #o755 (rwx-r-xr-x).
+
+(sys:mkdir "new-directory")  ==>  unspecific

@@ -1,0 +1,11 @@
+S9 EXT  (sys:getgrnam string)   ==>  alist
+        (sys:getgrgid integer)  ==>  alist
+
+Return the group record for the group name STRING or the group ID
+INTEGER. The returned association list has the following members:
+
+        ((name . string)    ; group name
+         (gid  . integer))  ; group ID
+
+(sys:getgrnam "staff")  ==>  ((name . "staff") (gid . 20))
+(sys:getgrgid 0)        ==>  ((name . "wheel") (gid . 0))

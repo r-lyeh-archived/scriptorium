@@ -1,0 +1,83 @@
+S9 LIB  (re-comp string)                         ==>  list
+        (re-match list string)                   ==>  list | #f
+        (re-match list string 'symbol ...)       ==>  list | #f
+        (re-subst list string1 string2)          ==>  list | #f
+        (re-subst list string1 string2 'symbol)  ==>  list | #f
+
+        (load-from-library "regex.scm")
+
+Compile, match, and substitute regular expressions.
+
+RE-COMP compiles a regular expression (RE) and returns it.
+Compiled REs (CREs) are represented by lists.
+
+RE-MATCH matches a compiled RE against a string. When (part of) the
+string matches the CRE, it returns a list of the form
+
+      ((first limit) ...)
+
+where FIRST is the index of the first character matching the RE and
+LIMIT is the first character *after* the match (so the match can be
+extracted with SUBSTRING). When no sub-matches are used, just a list
+of the form ((first limit)) will be returned. When sub-matches using
+\( and \) are contained in the regular expression, the subsequent pairs
+will contain the ranges matched by the sub-expressions (in order of
+occurrence of sub-expressions in the RE). See examples.
+
+When the CRE does not match the string, RE-MATCH returns #F.
+
+A special case occurs when a given pattern may match a string of zero
+length. In this case, RE-MATCH returns () when no better match could
+be found.
+
+When 'LAZY is passed as an additional argument to RE-MATCH, it matches
+repetitions "lazily," e.g.: "A+" will match "A" (rather than "AAA")
+in "AAAB".
+
+When 'ALL is passed as an additional argument to RE-MATCH, it will
+generate a list of *all* matches found in the given string, i.e. a
+list of the form:
+
+      (((first limit) ...) ...)
+
+The following RE patterns are evaluated:
+.          match any character
+[char...]  match character class (may contain ranges of the form c1-c2)
+^          match beginning of line
+$          match end of line
+*          match zero or more instances of the preceding pattern
++          match one or more instances of the preceding pattern
+?          match the preceding pattern optionally
+\          match the following character literally (exception below!)
+\(         mark the beginning of a sub-match
+\)         mark the end of a sub-match
+
+RE-SUBST attempts to match the CRE LIST against STRING1. When it
+succeeds, it returns a fresh copy of STRING1 with the match replaced
+by STRING2. When the 'ALL option is used (see RE-MATCH), all occurrences
+of the match will be replaced. When the CRE contains sub-matches, they can
+be referred to in STRING2 by using a backslash and the position of the
+sub-match, i.e.: \1, \2, ... The notation \0 denotes the entire match. To
+include a literal backslash in the replacement string, use \\. (Of course,
+Scheme strings use backslashes for escaping, so you will have to use \\1
+in the place of \1 and \\\\ in the place of \\. Yes, this is awkward.)
+When SUBST fails to match the CRE, it returns #F.
+
+(re-match (re-comp "^a[1-9]*z$") "a1289z")     ==>  ((0 6))
+(re-match (re-comp "a[1-9]+z") "___a123z___")  ==>  ((3 8))
+(re-match (re-comp "a[^1-9]+z") "a123z")       ==>  #f
+(re-match (re-comp "[1-9]*") "__1__")          ==>  ((2 3))
+(re-match (re-comp "[1-9]*") "_____")          ==>  ()
+
+(re-match (re-comp "f\\(.\\)\\(.\\)bar")
+          "foobar")                      ==>  ((0 6) (1 2) (2 3))
+
+(re-match (re-comp "a\\(.\\)a") "aba_aca_ada" 'all)
+                                         ==> (((0 3) (1 2))
+                                              ((4 7) (5 6))
+                                              ((8 11) (9 10)))
+
+(re-subst (re-comp "\\([0-9]+\\)\\.\\([0-9]+\\)\\.")
+          "_01.1._31.12._"
+          "\\2/\\1"
+          'all)                          ==>  "_1/01_12/31_"

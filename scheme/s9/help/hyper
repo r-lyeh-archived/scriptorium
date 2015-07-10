@@ -1,0 +1,5 @@
+S9 LIB  (hyper integer1 integer2 integer3)  ==>  integer
+
+Compute A hyper(N) B, where N=INTEGER1, A=INTEGER2, and B=INTEGER3.
+
+(hyper 4 3 3)  ==>  7625597484987

@@ -1,0 +1,17 @@
+S9 EXT  (sys:select list1 list2 list3)  ==>  integer | #f
+
+Check whether any of the input file descriptors listed in LIST2
+or output file descriptors listed in LIST3 are ready for reading
+or writing respectively. Return the total number of file descriptors
+that are ready. When no descriptors are ready at all, return #F.
+
+LIST1 specifies the maximum time to wait for the file descriptors to
+become ready. It is a two-element list with the following members:
+
+        (seconds microseconds)
+
+When '() is passed in the place of LIST1, SYS:SELECT will wait
+indefinitely. When '(0 0) is passed to it, it will return immediately,
+effectively implementing polling.
+
+(sys:select '(0 0) '() '())  ==>  #f

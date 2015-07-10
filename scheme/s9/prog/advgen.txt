@@ -1,0 +1,472 @@
+
+        ================================================================
+
+        ADVGEN -- An HTML Text Adventure Generator
+
+        By Nils M Holm, 2010,2012
+
+        ================================================================
+
+        The ADVGEN program reads a set of "vertexes" from its input and
+        writes a set of HTML files to the output. Each HTML file contains
+        some text describing the vertex and a set of "actions" that lead
+        to other files. All state of the game is kept in the HTML files,
+        so absolutely no server-side support is necessary. All that is
+        needed on the client side is an HTML browser.
+
+        The ADVGEN input is a sequence of vertexes:
+
+                <game> := <vertex> ...
+
+        Vertexes are specified in S-Expression form (LISP syntax):
+
+                <vertex> :=  (<vertex-id>
+                              <description>)
+                          |  (<vertex-id>
+                              <description>
+                              <modifier>
+                              ...)
+
+        The "vertex-id" is just a LISP symbol name that identifies this
+        vertex. The "description" part is what the player will see in the
+        page that is generated from this vertex. It may have one of the
+        following forms:
+
+                <description> := ("text"
+                                  "more text"
+                                  ...)
+                               | (copy-from <vertex-id>)
+
+        When a description has the special form (copy-from <vertex-id>),
+        the description will be copied from the given vertex, allowing the
+        user to keep repetitive descriptions in a single place.
+
+        The "modifier" is where all the action takes place. First its
+        formal definition:
+
+                <modifier> := (<condition>
+                               ("description"
+                                ...)
+                               "link text"
+                               <action>)
+                            | (<condition>
+                               ("description"
+                                ...)
+                               ("prefix"
+                                "link text"
+                                "suffix")
+                               <action>)
+
+        Each modifier consists of a "condition," more descriptive text,
+        the text for the link that activates the modifier, and an "action"
+        that will be carried out when the link is being followed. The
+        description contained in the modifier will only be displayed when
+        its condition is true. When the link text is a list of three
+        strings, only the middle part of that string will be included in
+        the resulting HTML anchor, e.g.:
+
+                ("$ " "cat foo" "[enter]")
+
+        will render
+
+                $ <A href="...">cat foo</A> [enter]
+
+        A "condition" is simply a list of symbol names, which are called
+        "properties" here, or negated symbol names:
+
+                <condition> := (<clause> ...)
+                             | ()
+
+                <clause>    := <property>
+                             | (not <property>)
+
+        When a condition consists merely of the empty list (), it is
+        trivially true. When it consists of a property, it is true when
+        the property exists and otherwise false. When a condition
+        consists of a "clause" of the form (not <property>) then the
+        condition is true when the property does not exist. When
+        multiple clauses are given, the condition is true if all of
+        them are true. E.g.,
+
+                (matches (not light))
+
+        is true when the "matches" property exists but the "light"
+        property does not exist.
+
+        An "action", finally, is an instruction to the ADVGEN compiler.
+        Instructions tell the compiler to add or remove properties or
+        walk to a different vertex. Formally, an action looks like this:
+
+          <action> := (go      <vertex-id>               ["message"])
+                    | (add     <property>                ["message"])
+                    | (rem     <property>                ["message"])
+                    | (add/go  <property>   <vertex-id>  ["message"])
+                    | (rem/go  <property>   <vertex-id>  ["message"])
+                    | (go/cut  <vertex-id>  <property>   ...        )
+                    | (go/sel  <vertex-id>  <property>   ...        )
+                    | (nop     <symbol>     ...          ["message"])
+
+        GO tells the compiler to generate a link to the HTML file
+        representing the given vertex combined with the current state
+        of the game. The link is inserted in the page currently being
+        generated and then the compiler advances to the given vertex
+        and generates the file referred to by the link.
+
+        The state of the game is simply a list of properties that are
+        currently in effect.
+
+        ADD also generates a link, but stays in the current vertex.
+        However, it changes the state of the game by adding a property,
+        so it also generates a new HTML file.
+
+        REM removes a property and stays in the same vertex.
+
+        ADD/GO adds a property and moves to a different vertex at the
+        same time.
+
+        REM/GO removes a property and moves to a different vertex at
+        the same time.
+
+        GO/CUT moves to a different vertex and removes all properties
+        specified as its arguments.
+
+        GO/SEL moves to a different vertex and selects all properties
+        specified in its arguments (removing all others).
+
+        NOP does nothing. It accepts any combination of arguments.
+
+        Most of the actions also accept a "message" argument, which
+        must be last in the list. When this argument is specified,
+        following a link generated by ADVGEN will lead to a file
+        containing just this message and another link which leads to
+        the final destination of the action. It is typically used to
+        inject short explanatory messages.
+
+        For the sake of completeness here follow the formal definitions
+        of the various identifiers used above:
+
+                <vertex-id> := <symbol>
+
+                <property> := <symbol>
+
+                <symbol> := [a-z0-9:\-]+
+
+        Note that vertex-id's are used as headings in generated HTML
+        files, where minus signs ("-") are replaced with blanks and
+        all characters following a colon (":") are clipped off. So,
+        for instance
+
+                "floor-1:dark"  becomes  "Floor 1".
+
+        (Yes, the first character is being capitalized.)
+
+        These special characters can be used to make the headings more
+        pleasant to the eye and hide state information at the same
+        time.
+
+        ================================================================
+        SAMPLE GAME
+        ================================================================
+
+        Here is a very short sample game:
+
+        ----------------------------------------------------------------
+        (room
+         ("This is a sample room.")
+         (((not light))
+          ("It's pitch-dark!")
+          "Turn on light"
+          (add light))
+         ((light)
+          ("It's too bright!")
+          "Turn off light"
+          (rem light)))
+        ----------------------------------------------------------------
+
+        Compiling it will generate two HTMl files representing the state
+        and vertex combinations
+
+                (room)
+                (room light)
+
+        The resulting HTML files will look like this (formatted for
+        clarity):
+
+        ----------------------------------------------------------------
+        ced21dfa.html:                    6b3b490b.html:
+
+        <HTML>                            <HTML>
+         <HEAD>                            <HEAD>
+          <TITLE>Room</TITLE>               <TITLE>Room</TITLE>
+         </HEAD>                           </HEAD>
+         <BODY>                            <BODY>
+          <H1>Room</H1>                     <H1>Room</H1>
+          <P>This is a sample room.</P>      <P>This is a sample room.</P>
+          <P>It's pitch-dark!</P>            <P>It's too bright!</P>
+          <DL>                               <DL>
+           <DD><A href="6b3b490b.html"        <DD><A href="ced21dfa.html"
+                Turn on light</A></DD>             Turn off light</A></DD>
+          </DL>                              </DL>
+         </BODY>                            </BODY>
+        </HTML>                            </HTML>
+        ----------------------------------------------------------------
+
+        When rendered the pages will look like this:
+
+        +------------------------+         +------------------------+
+        | Room                   |         | Room                   |
+        |                        |         |                        |
+        | This is a sample room. |         | This is a sample room. |
+        | It's pitch-dark!       |         | It's too bright!       |
+        |                        |         |                        |
+        |   Turn on light        |         |   Turn off light       |
+        |   -------------        |         |   --------------       |
+        +------------------------+         +------------------------+
+
+        Note that a separate HTML file is generated for each combination
+        of vertex and properties, so the number of generated files is
+        usually larger -- sometimes *much* larger -- than the number of
+        vertexes in the game description. When adding another room to the
+        initial example, the number of states will increase:
+
+        ----------------------------------------------------------------
+        (room-1
+         ("This is a sample room.")
+         (((not light))
+          ("It's pitch-dark!")
+          "Turn on light"
+          (add light))
+         ((light)
+          ("It's too bright!")
+          "Turn off light"
+          (rem light))
+         (()                                    ;
+          ("There is another room nearby.")     ; new
+          "Go to other room"                    ;
+          (go room-2)))                         ;
+                                                ;
+        (room-2                                 ;
+         ("This is a another sample room.")     ;
+         (()                                    ;
+          ("Nothing to see here.")              ;
+          "Go back"                             ;
+          (go room-1)))                         ;
+        ----------------------------------------------------------------
+
+        When compiling this game description, four HTML files
+        representing the following states will be generated:
+
+                (room-1)
+                (room-1 light)
+                (room-2)
+                (room-2 light)
+
+        The property "light" is being propagated to the other room. This
+        way the game "remembers" that you turned on the light in ROOM-1.
+        When you later return to it from ROOM-2, you will still find it
+        switched on:
+
+        ----------------------------------------------------------------
+
+        +---------+              +---------+
+        | room-1  | ---- GO ---> | room-2  |
+        | ()      | <--- GO ---- | ()      | 
+        +---------+              +---------+
+           |  /|\
+           |   |
+          ADD REM
+           |   |
+          \|/  |
+        +---------+              +---------+
+        | room-1  | ---- GO ---> | room-2  |
+        | (light) | <--- GO ---- | (light) | 
+        +---------+              +---------+
+
+        ----------------------------------------------------------------
+
+        Because the names of the states are hidden behind colons in the
+        vertex identifiers, the player cannot infer the current state of
+        the game. Not even the file names give away hints, because they
+        are formed by hexa-decimal representations of string digests of
+        the state tags associated with the files.
+
+        The entire state of the game is encoded in the graph structure
+        formed by the links.
+
+        The compiler will never generate state files that are not needed.
+        Have a look at the following example:
+
+        ----------------------------------------------------------------
+        (room-1
+         ("This is a sample room.")
+         (((not light))
+          ("It's pitch-dark!")
+          "Turn on light"
+          (add light))
+         ((light)
+          ("It's too bright!")
+          "Turn off light"
+          (rem light))
+         ((light)                                    ; 
+          ("Aha! There is another room nearby!")     ; changed
+          "Go to other room"                         ;
+          (go room-2)))                              ;
+
+        ; room-2 as above
+        ----------------------------------------------------------------
+
+        In this example, the other room can only be seen when the light
+        has been turned on, and the link leading to the second rooms is
+        only activated when the light is on. Consequently, the other
+        room cannot be entered with the light off, so the compiler cuts
+        that branch off. Only three states will be generated:
+
+        ----------------------------------------------------------------
+
+        +---------+
+        | room-1  |
+        | ()      |
+        +---------+
+           |  /|\
+           |   |
+          ADD REM
+           |   |
+          \|/  |
+        +---------+              +---------+
+        | room-1  | ---- GO ---> | room-2  |
+        | (light) | <--- GO ---- | (light) | 
+        +---------+              +---------+
+
+        ----------------------------------------------------------------
+
+        Of course, keeping all state information in the game graph can
+        lead to an exponential growth of state space in games that are a
+        bit more complex. In the worst case, the number of total states
+        in a game would be
+
+                (expt n_vertexes n_properties)
+
+        So a game with 10 properties and 25 vertexes could generate
+        95,367,431,640,625 files. Yes, that's 95 *trillion* files. This
+        is obviously not practicable.
+
+        And this is the point where the GO/CUT operator comes into play.
+        It is used to "cut off" chunks of the game graph, thereby
+        reducing the number of generated states and files. What it does
+        is to remove the given properties from the game state, so in
+        principle
+
+                (go/cut room-2 light)
+
+        would be equal to
+
+                (rem/go light room-2)
+
+        However, GO/CUT can be used to cut off any number of properties,
+        while REM/GO can only remove one at a time. Then again GO/CUT
+        cannot inject explanatory messages, which REM/GO can. It is up
+        to you to choose the right tool for the task.
+
+        Using (GO/CUT ROOM-2 LIGHT) instead of (GO ROOM-2) in the original
+        example (with the second room visible all the time) would result
+        in the following game tree:
+
+        ----------------------------------------------------------------
+
+        +---------+
+        | room-1  | --------- GO ---------+
+        | ()      | <-----------------+   |
+        +---------+                   |   |
+           |  /|\                     |   |
+           |   |                     GO   |
+          ADD REM                     |   |
+           |   |                      |   |
+          \|/  |                      |  \|/
+        +---------+                +---------+
+        | room-1  | --- GO/CUT --> | room-2  |
+        | (light) |                | ()      | 
+        +---------+                +---------+
+
+        ----------------------------------------------------------------
+
+        Of course in this game the light would have turned off
+        automagically each time you return to ROOM-1. So it is a good
+        idea to place the GO/CUT operator in one-way actions, as in
+        the following example:
+
+        ----------------------------------------------------------------
+        (room-1
+         ("This is a sample room.")
+         (((not light))
+          ("It's pitch-dark!")
+          "Turn on light"
+          (add light))
+         (()
+          ("There is another room nearby.")
+          "Go to other room"
+          (rem/go light room-2 "The door locks behind you.")))
+
+        (room-2
+         ("This is a another sample room."
+          "There is a locked door here."))
+        ----------------------------------------------------------------
+
+        In this case it does not matter whether the light is on or off
+        in ROOM-1, because the player cannot return to it anyway. Of
+        course, they could use the "back" button of their browser to
+        return there, but in this case the history function of the
+        browser will take care of restoring the proper state. The graph
+        of this sample game will look like this:
+
+        ----------------------------------------------------------------
+        . . . . . . . . .          . . . . . . . . .
+        .  +---------+  .          .               .
+        .  | room-1  | ------ GO/CUT ------+       .
+        .  | ()      |  .          .       |       .
+        .  +---------+  .          .       |       .
+        .     |  /|\    .          .       |       .
+        .     |   |     .          .       |       .
+        .    ADD REM    .          .       |       .
+        .     |   |     .          .       |       .
+        .    \|/  |     .          .      \|/      .
+        .  +---------+  .          .  +---------+  .
+        .  | room-1  | --- GO/CUT --> | room-2  |  .
+        .  | (light) |  .          .  | ()      |  .
+        .  +---------+  .          .  +---------+  .
+        . . . . . . . . .          . . . . . . . . .
+              level 1                    level 2   
+    
+        ----------------------------------------------------------------
+
+        When designing large games it is a good idea to create "levels"
+        (whether or not they are visible to the user does not matter)
+        that have separate state spaces. Of course it may be desirable
+        to carry *some* state from level to level, but keeping the
+        state space of the sub-levels manageable is certainly an
+        important thing to keep in mind.
+
+        ================================================================
+        NAVIGATION GRID
+        ================================================================
+
+        When any of the modifiers of a vertex has a link text that
+        consists of one of the strings
+
+                "N" "E" "S" "W" "NE" "SE" "SW" "NW"
+
+        then ADVGEN will generate a navigation grid of the form
+
+                +------------+
+                | NW  N   NE |
+                | W       E  |
+                | SW  S   SE |
+                +------------+
+
+        and display it below the other actions that a player may select.
+        Only the directions that are actually used will be linked in the
+        grid. Of course, when using one of the direction abbreviations,
+        all available directions should be abbreviated so that they will
+        all show up in the grid.
+
+        That's it. Have fun creating your own games!
+

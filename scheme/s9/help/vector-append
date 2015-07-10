@@ -1,0 +1,8 @@
+S9 LIB  (vector-append vector ...)  ==>  vector
+
+Returns a fresh vector consisting of the elements of the first vector
+followed by the elements of the other vectors in the given order.
+
+(vector-append '#(x) '#(y))        ==>  #(x y)
+(vector-append '#(a) '#(b c d))    ==>  #(a b c d)
+(vector-append '#(a (b)) '#((c)))  ==>  #(a (b) (c))

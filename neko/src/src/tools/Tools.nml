@@ -1,0 +1,53 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+exception Done;
+
+function erase_argument() {
+	neko "$loader.args = $asub($loader.args,1,$asize($loader.args)-1)"
+}
+
+function invalid_arg(f) {
+	throw Args.Invalid
+}
+
+try {
+	var head = "Neko Tools v1.0 - (c)2006-2013 Haxe Foundation\nUsage : nekotools [options]";
+	var decl = [
+		("server", Args.Void (function() {
+			erase_argument();
+			WebServer.init();
+			throw Done
+		}) , " : start a neko web server");
+		("boot", Args.String (function(_) {
+			erase_argument();
+			neko "$loader.loadmodule('tools/nekoboot',$loader)";
+			throw Done;
+		}) , "<file.n> : build an standalone executable");
+	];
+	Args.parse head decl invalid_arg;
+} catch {
+	| e ->
+		if e == Done then Sys.exit(0);
+		Stack.dump IO.stderr Stack.exc();
+		IO.printf IO.stderr "Exception : %s\n" string(e);
+		Sys.exit (-1);
+}

@@ -1,0 +1,22 @@
+S9 EXT  (curs:endwin)   ==>  unspecific
+        (curs:initscr)  ==>  unspecific
+
+Routines for initializing and shutting down curses. This is only
+a rough summary. See the curses(3) manual page or a curses tutorial
+of your choice for further information.
+
+CURS:ENDWIN restores the terminal state that was in effect before
+initializing curses. No curses routines may be called after running
+CURS:ENDWIN. (Exception: CURS:GET-MAGI-VALUE.)
+
+CURS:INITSCR initializes the curses interface. No curses routines may
+be called prior to running CURS:INITSCR.
+(Exception: CURS:GET-MAGI-VALUE.)
+
+Typical curses-based programs will use the following setup:
+
+        (curs:initscr)
+        (curs:cbreak)   ; or (curs:raw)
+        (curs:noecho)
+        (curs:nonl)
+        (curs:keypad #t)

@@ -1,0 +1,14 @@
+S9 LIB  (r4rs-syntax-objects)         ==>  list
+        (s9fes-syntax-objects)        ==>  list
+        (r4rs-procedures)             ==>  list
+        (s9fes-procedures)            ==>  list
+        (s9fes-extension-procedures)  ==>  list
+        (s9fes-extension-symbols)     ==>  list
+
+        (load-from-library "symbols.scm")
+
+Return lists of symbols bound the corresponding type of object.
+Note: only the R4RS symbols defined in S9fES are included here.
+Caveat Utilitor.
+
+(s9fes-syntax-objects)  ==>  ()

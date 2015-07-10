@@ -1,0 +1,27 @@
+S9 LIB  (format-time string time-list)  ==>  string | #f
+
+Format the time specification TIME-LIST (as returned by the
+UNIX-TIME->TIME procedure) according to the description in
+STRING. This a poor man's CommonLISP FORMAT-style procedure
+intended for making time lists more readable. It returns #F
+if TIME-LIST is not a proper time list or string is erroneous
+(i.e.: contains a wrong format descriptor). The following
+format descriptors are supported:
+
+        ~w   day of week (Mon, Tue, ...)
+        ~y   year
+        ~:m  number of month
+        ~@m  month name (Jan, Feb, ...)
+        ~h   hour
+        ~m   minute
+        ~s   second
+        ~~   literal ~
+
+When a single digit appears between a ~ and the rest of a
+format descriptor, this digit will be interpreted as a length
+and the resulting string will be padded to this length with
+zeros.
+
+(format-time "~w ~4y-~@m-~2d ~2h:~2m:~2s"
+             '(1 2009 3 9 8 53 20))
+    ==> "Tue 2009-Mar-09 08:53:20"

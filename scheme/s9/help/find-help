@@ -1,0 +1,21 @@
+S9 LIB  (find-help string1)          ==>  list
+        (find-help string1 string2)  ==>  list | unspecific
+
+Search the online help database for entries containing the
+word STRING1 and return a list the names of all pages that
+contain the word. When STRING2 is passed to FIND-HELP, it
+is interpreted as a string of options. The following options
+will be evaluated:
+
+        a  Search for substrings instead of full words.
+           This options typically yields more results.
+        l  Return not only the page names but also the
+           context (up to three lines) in which the match
+           was found: (page-name (line1 line2 line3)).
+        p  Print the results instead of returning them.
+           In this case, the result of FIND-HELP is
+           unspecific.
+
+Unknown option characters will be ingored.
+
+(find-help "help")  ==>  ("help" "locate-file")

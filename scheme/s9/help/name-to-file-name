@@ -1,0 +1,30 @@
+S9 LIB  (name->file-name string)  ==>  string
+
+        (load-from-library "name-to-file-name.scm")
+
+Map the given symbol name to a name that is a valid file name
+on most computer file systems. In particular, the procedure
+replaces the following characters:
+
+        character(s)  becomes
+           @          at
+           +          plus
+           *          star
+           /          slash
+           ?          p (predicate)
+           !          b (bang)
+           =          eq
+           ->         -to-
+           <          lt
+           <=         le
+           >          gt
+           >=         ge
+
+In addition a name that consists of a minus sign exclusively
+("-") is replaced with "minus". All other special characters
+are replaced with an underscore. Non-special characters include
+the letters a-z, the digits 0-9, the minus sign, and the dot.
+
+ (name->file-name "sys:stat-pipe?")   ==>  "sys_stat-pipep"
+ (name->file-name "a->b")             ==>  "a-to-b"
+ (name->file-name "*foo*")            ==>  "starfoostar"

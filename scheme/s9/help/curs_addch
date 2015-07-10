@@ -1,0 +1,35 @@
+S9 EXT  (curs:addch char)                           ==>  unspecific
+        (curs:addstr string)                        ==>  unspecific
+        (curs:beep)                                 ==>  unspecific
+        (curs:flash)                                ==>  unspecific
+        (curs:move integer_y integer_x)             ==>  unspecific
+        (curs:mvaddch integer_y integer_x char)     ==>  unspecific
+        (curs:mvaddstr integer_y integer_x string)  ==>  unspecific
+        (curs:scroll integer)                       ==>  unspecific
+        (curs:refresh)                              ==>  unspecific
+
+Curses routines for writing to the screen. This is only a rough
+summary. See the curses(3) manual page or a curses tutorial of
+your choice for further information.
+
+CURS:ADDCH writes CHAR to the current virtual cursor position.
+
+CURS:ADDSTR writes STRING to the current virtual cursor position.
+
+CURS:BEEP rings the audible terminal bell immediately.
+
+CURS:FLASH flashes the terminal screen immediately.
+
+CURS:MOVE moves the virtual cursor to row INTEGER_Y and column
+INTEGER_X. This means that coordinates are specified as Y,X!
+
+CURS:MVADDCH and CURS:MVADDSTR first move the cursor to Y=INTEGER_Y
+and X=INTEGER_X and then perform a ADDCH or ADDSTR operation
+respectively.
+
+CURS:SCROLL scrolls the screen by the given number of rows. When
+INTEGER is negative, it scrolls up.
+
+CURS:REFRESH commits all pending output operations. No writes
+to the physical screen will be performed until CURS:REFRESH (or
+CURS:GETCH; q.v.) is called.

@@ -1,0 +1,122 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+function read() {
+	var buf = Buffer.create();
+	function rec loop() {
+		var l = IO.read_line IO.stdin;
+		var len = String.length l;
+		if len > 0 && String.get l (len - 1) == '!' then
+			Buffer.add buf (String.sub l 0 (len - 1))
+		else {
+			Buffer.add buf l;
+			Buffer.add_char buf '\n';
+			loop();
+		}
+	}
+	loop();
+	Buffer.string buf
+}
+
+function report(msg,p) {
+	IO.printf IO.stderr "%s(%d): %s\n" (Lexer.source p,Lexer.line p,msg);
+}
+
+function run(version) {
+	var ctx = Hashtbl.create();
+	function loop() {
+		// read input
+		print "> ";
+		var code = read();
+		var bytecode , module =
+		if String.length code > 6 && String.sub code 0 6 == "#load " then {
+			// load bytecode
+			var file = String.sub code 6 (String.length code - 6);
+			var input = IO.read_file file true;
+			var bytecode = Neko.Bytecode.read input;
+			IO.close_in input;
+			var input = IO.read_file file true;
+			var str = IO.read_all input;
+			IO.close_in input;
+			(bytecode, str)
+		} else {
+			// parse and compile
+			var input = IO.read_string code;
+			var lex = Lexer.create Buffer.create();
+			Lexer.input lex "@console" input 1 0;
+			var ast = Neko.Parser.parse lex;
+			var bytecode = Neko.Compile.compile version ast;
+			var output , str = IO.write_string();
+			Neko.Bytecode.write output bytecode;
+			(bytecode , str())
+		}
+		// read compiled module
+		var m = Reflect.module_read (IO.input (IO.read_string module));
+		// set module environement
+		var globals = fst bytecode;
+		Array.iteri (function(i,g) {
+			match g {
+			| Neko.Bytecode.GlobalVar v ->
+				try {
+					var v = Hashtbl.find ctx v;
+					Reflect.module_set_global m i v
+				} catch {
+					Not_found -> ()
+				}
+			| _ -> ()
+			}
+		}) globals;
+		// execute
+		try {
+			nprint Reflect.neko_value(Reflect.module_execute m);
+			nprint "\n";
+		} catch {
+			e ->
+				var st = Stack.exc();
+				Stack.dump IO.stdout st;
+				print "Exception : ";
+				match e {
+				| Neko_error e -> nprint e
+				| _ -> print e
+				}
+				print "\n";
+		}
+		// save environment
+		Array.iteri (function(i,g) {
+			match g {
+			| Neko.Bytecode.GlobalVar v ->
+				Hashtbl.replace ctx v (Reflect.module_get_global m i)
+			| _ ->
+				()
+			}
+		}) globals;
+	}
+	while true {
+		try {
+			loop()
+		} catch {
+			| Neko.Lexer.Error(msg,pos) -> report Neko.Lexer.error_msg(msg) pos
+			| Neko.Parser.Error(msg,pos) -> report Neko.Parser.error_msg(msg) pos
+			| Neko.Compile.Error(msg,pos) -> report Neko.Compile.error_msg(msg) pos
+		}
+	}
+}

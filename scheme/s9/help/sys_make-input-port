@@ -1,0 +1,12 @@
+S9 EXT  (sys:make-input-port integer)   ==>  input-port
+        (sys:make-output-port integer)  ==>  output-port
+
+Create a new input or output port and assign it to the Unix file
+descriptor specified in the INTEGER argument. The file descriptor
+must be open and match the type of the port to be created, i.e.
+a file descriptor passed to SYS:MAKE-INPUT-PORT must be open for
+reading and a descriptor passed to SYS:MAKE-OUTPUT-PORT must be
+open for writing.
+
+(sys:make-input-port 0)   ==>  #<input port>
+(sys:make-output-port 2)  ==>  #<output port>

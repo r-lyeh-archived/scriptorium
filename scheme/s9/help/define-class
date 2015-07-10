@@ -1,0 +1,119 @@
+S9 LIB  (call-next-method)                              ==>  object
+        (class-of object)                               ==>  class
+        (class? object)                                 ==>  boolean
+        (define-class <name> (<class> ...) <slot> ...)  ==>  unspecific
+        (define-generic <name>)                         ==>  unspecific
+        (define-method (<name> <argument> ...) <body>)  ==>  unspecific
+        (initialize instance)                           ==>  object
+        (instance? object)                              ==>  boolean
+        (make-instance class <init-arg> ...)            ==>  instance
+        (slot-ref instance symbol)                      ==>  object
+        (slot-set! instance symbol object)              ==>  unspecific
+
+        (load-from-library "sos.scm")
+
+S9SOS is a Scheme Object System that is similar to CLOS, but simpler.
+It has multiple inheritance, generic procedures, and a meta object
+protocol (MOP). If you know CLOS, you will probably find it too
+limited. If you do not know CLOS, you will probably find it too
+complex.
+
+The procedures and macros above form the user-level interface to
+S9SOS. For a more detailed description (including the MOP), see the
+"s9sos.txt" file.
+
+DEFINE-CLASS defines a new class named <name> that is a subclass
+of each specified <class>. Each <slot> specifies an instance
+variable of the new class. It can be a symbol, a list containing
+a symbol, or a list containing a symbol in the car part and any
+expression in the cdr part. In any case the symbol names the slot.
+When an expression is also given, it evaluates to the default value
+of the corresponding slot. Evaluation takes place when the new class
+is being defined.
+
+MAKE-INSTANCE creates a fresh instance of the specified class and
+returns it. Before returning the new instance, MAKE-INSTANCE will
+pass it to the generic procedure INITIALIZE, which can be used to
+perform more elaborate instance initialization.
+When passing some <init-arg>s to MAKE-INSTANCE, these will be used
+to initialize slots with dynamic values. Each <init-arg> consists
+of a slot followed by a value to be stored in that slot. <Init-arg>s
+are evaluated before INITIALIZE, so INITIALIZE can access the values
+stored by them.
+
+DEFINE-GENERIC defines a generic procedure with no methods. When
+the generic exists, all its methods will be removed.
+
+DEFINE-METHOD adds a method to a generic procedure. The generic
+procedure is selected by giving the same name to the generic and
+its methods. All methods must have the same number of arguments.
+Each argument may be a symbol or a list consisting of a symbol
+and a class:
+
+      (define-method (<generic-name> (x <type1>) (n <type2>)) ...)
+
+When a type is specified, the method will only be applied to
+arguments of the specified types (or less specific types from
+which the given type is derived). See "s9sos.txt" for details.
+
+Types may be user-defined classes or "built-in" types. Each
+built-in type corresponds to a Scheme type, e.g.: <pair> would
+represent a pair. When no type is specified, the type of an
+argument defaults to <type>, which matches any type.
+
+Methods, like procedures, may have a "rest" argument. Such an
+argument will not play any role in method dispatch.
+
+CALL-NEXT-METHOD calls the next-unspecific method that is
+applicable to the arguments passed to the method that is
+currently evaluating. Outside of methods, CALL-NEXT-METHOD
+is undefined.
+
+INITIALIZE is a generic procedure that is used to initialize
+instances dynamically. Whenever a new class is defined using
+DEFINE-CLASS, a new method covering that class is added to the
+INITIALIZE generic. Initialization code is added by redefining
+that method. By default INITIALIZE does nothing.
+
+CLASS? is a predicate returning #T if OBJECT is a class.
+
+INSTANCE? is a predicate returning #T if OBJECT is an instance.
+
+CLASS-OF returns the class of a given instance.
+
+SLOT-REF returns the value stored in the slot named SLOT of
+the given INSTANCE.
+
+SLOT-SET! stores the given OBJECT in the slot named SLOT of
+the given INSTANCE, thereby removing its prior value.
+
+(begin
+  (define-generic mul)
+
+  (define-method (mul (x <integer>) (y <integer>))
+    (* x y))
+
+  (define-method (mul (x <integer>) (a <pair>))
+    (map (lambda (i) (* i x)) a))
+
+  (define-method (mul (a <pair>) (x <integer>))
+    (map (lambda (i) (* i x)) a))
+
+  (define-method (mul (a <pair>) (b <pair>))
+    (map * a b))
+
+  (list (mul 5 7)
+        (mul 2 '(1 2 3))
+        (mul '(1 2 3) 2)
+        (mul '(1 2 3) '(4 5 6))))  ==>  (35
+                                         (2 4 6)
+                                         (2 4 6)
+                                         (4 10 18))
+
+; Don't do this! Generic application takes ages.
+(begin
+  (define-generic len)
+  (define-method (len (x <null>)) 0)
+  (define-method (len (x <pair>))
+    (+ 1 (len (cdr x))))
+  (len '(1 2 3 4 5)))                 ==>  5

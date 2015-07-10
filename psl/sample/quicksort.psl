@@ -1,0 +1,19 @@
+qsort(ref list)
+{
+	int size = list;
+	if (size < 2)
+		return;
+	int p = list[0];
+	local left;
+	local right;
+	foreach(range(1, size), $(x){array.push(list[x] < p ? left : right, list[x]);});
+	qsort(left);
+	qsort(right);
+	list = left + p + right;
+}
+
+list = [8,1,5,3,10,9,2,6,7,4];
+qsort(list);
+int size = list;
+for (int i; i < size; i++)
+	print("" + list[i] + "\n");

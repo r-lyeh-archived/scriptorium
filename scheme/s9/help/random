@@ -1,0 +1,20 @@
+S9 LIB  (random integer)        ==>  integer
+        (random-state integer)  ==>  procedure
+
+        (load-from-library "random.scm")
+
+RANDOM returns a random number in the range [0;INTEGER], where
+INTEGER may not be any larger than 2**19 = 524288.
+
+RANDOM-STATE returns a procedure that resembles RANDOM but uses
+a user-supplied seed instead of a default one. RANDOM can be passed
+a different seed by running:
+
+      (set! random (random-state SEED))
+
+RANDOM-STATE uses a 19-bit linear feedback shift register. Hence
+its limited range.
+
+(list (random 100)
+      (random 100)
+      (random 100))  ==>  (5 47 68)

@@ -1,0 +1,5 @@
+S9 LIB  (factorial integer)  ==>  integer
+
+Compute the factorial of a number.
+
+(factorial 30)  ==>  265252859812191058636308480000000

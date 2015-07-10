@@ -1,0 +1,11 @@
+R4RS 6.1  (not object)  ==>  boolean
+
+NOT returns #T if OBJECT is false, and returns #F otherwise.
+
+(not #t)        ==>  #f
+(not 3)         ==>  #f
+(not (list 3))  ==>  #f
+(not #f)        ==>  #t
+(not '())       ==>  #f
+(not (list))    ==>  #f
+(not 'nil)      ==>  #f

@@ -1,0 +1,228 @@
+'\"
+'\" Copyright 1991-1992 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: library.n,v 1.1.1.1 2001/04/29 20:36:21 karll Exp $
+'
+.so man.macros
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.HS library tcl
+.BS
+.SH NAME
+library \- standard library of Tcl procedures
+.SH SYNOPSIS
+.nf
+\fBauto_execok \fIcmd\fR
+\fBauto_load \fIcmd\fR
+\fBauto_mkindex \fIdir pattern\fR
+\fBauto_reset\fR
+\fBparray \fIarrayName\fR
+\fBunknown \fIcmd \fR?\fIarg arg ...\fR?
+.fi
+.BE
+
+.SH INTRODUCTION
+.PP
+Tcl includes a library of Tcl procedures for commonly-needed functions.
+The procedures defined in the Tcl library are generic ones suitable
+for use by many different applications.
+The location of the Tcl library is returned by the \fBinfo library\fR
+command.
+In addition to the Tcl library, each application will normally have
+its own library of support procedures as well;  the location of this
+.VS
+library is normally given by the value of the \fB$\fIapp\fB_library\fR
+global variable, where \fIapp\fR is the name of the application.
+For example, the location of the Tk library is kept in the variable
+\fB$tk_library\fR.
+.VE
+.PP
+To access the procedures in the Tcl library, an application should
+source the file \fBinit.tcl\fR in the library, for example with
+the Tcl command
+.DS
+\fBsource [info library]/init.tcl
+.DE
+This will define the \fBunknown\fR procedure and arrange for the
+other procedures to be loaded on-demand using the auto-load
+mechanism defined below.
+
+.SH "COMMAND PROCEDURES"
+.PP
+The following procedures are provided in the Tcl library:
+.TP
+\fBauto_execok \fIcmd\fR
+Determines whether there is an executable file by the name \fIcmd\fR.
+This command examines the directories in the current search path
+(given by the PATH enviornment variable) to see if there is an
+executable file named \fIcmd\fR in any of those directories.
+If so, it returns 1;  if not it returns 0.  \fBAuto_exec\fR
+remembers information about previous searches in an array
+named \fBauto_execs\fR;  this avoids the path search in
+future calls for the same \fIcmd\fR.  The command \fBauto_reset\fR
+may be used to force \fBauto_execok\fR to forget its cached
+information.
+.TP
+\fBauto_load \fIcmd\fR
+This command attempts to load the definition for a Tcl procedure named
+\fIcmd\fR.
+To do this, it searches an \fIauto-load path\fR, which is a list of
+one or more directories.
+The auto-load path is given by the global variable \fB$auto_path\fR
+if it exists.
+If there is no \fB$auto_path\fR variable, then the TCLLIBPATH environment
+variable is used, if it exists.
+Otherwise the auto-load path consists of just the Tcl library directory.
+Within each directory in the auto-load path there must be a file
+\fBtclIndex\fR that describes the procedures defined in that directory
+and the file in which each procedure is defined.  The \fBtclIndex\fR
+file should be generated with the \fBauto_mkindex\fR command.
+If \fIcmd\fR is found in an index file, then the appropriate
+script is \fBsource\fRd to create the procedure.
+The \fBauto_load\fR command returns 1 if the script was successfully
+sourced and \fIcmd\fR now exists.
+The command returns 0 if there was no index entry for \fIcmd\fR
+or if the script didn't actually define \fIcmd\fR (e.g. because
+index information is out of date).
+If an error occurs while processing the script, then that error
+is returned.
+\fBAuto_load\fR only reads the index information once and saves it
+in the array \fBauto_index\fR;  future calls to \fBauto_load\fR
+check for \fIcmd\fR in the array rather than re-reading the index
+files.
+The cached index information may be deleted with the command
+\fBauto_reset\fR.
+This will force the next \fBauto_load\fR command to reload the
+index database from disk.
+.TP
+\fBauto_mkindex \fIdir pattern\fR
+Generates an index suitable for use by \fBauto_load\fR.
+The command searches \fIdir\fR for all files whose names match
+\fIpattern\fR (matching is done with the \fBglob\fR command),
+generates an index of all the Tcl command
+procedures defined in all the matching files, and stores the
+index information in a file named \fBtclIndex\fR in \fIdir\fR.
+For example, the command
+.RS
+.DS
+\fBauto_mkindex foo *.tcl\fR
+.DE
+.LP
+will read all the \fB.tcl\fR files in subdirectory \fBfoo\fR
+and generate a new index file \fBfoo/tclIndex\fR.
+.PP
+\fBAuto_mkindex\fR parses the Tcl scripts in a relatively
+unsophisticated way:  if any line contains the word \fBproc\fR
+as its first characters then it is assumed to be a procedure
+definition and the next word of the line is taken as the
+procedure's name.
+Procedure definitions that don't appear in this way (e.g. they
+have spaces before the \fBproc\fR) will not be indexed.
+.RE
+.TP
+\fBauto_reset\fR
+Destroys all the information cached by \fBauto_execok\fR and
+\fBauto_load\fR.
+This information will be re-read from disk the next time it is
+needed.
+.VS
+\fBAuto_reset\fR also deletes any procedures listed in the auto-load
+index, so that fresh copies of them will be loaded the next time
+that they're used.
+.VE
+.TP
+\fBparray \fIarrayName\fR
+Prints on standard output the names and values of all the elements
+in the array \fIarrayName\fR.
+.VS
+\fBArrayName\fR must be an array accessible to the caller of \fBparray\fR.
+It may be either local or global.
+.VE
+.TP
+\fBunknown \fIcmd \fR?\fIarg arg ...\fR?
+This procedure is invoked automatically by the Tcl interpreter
+whenever the name of a command doesn't exist.
+The \fBunknown\fR procedure receives as its arguments the
+name and arguments of the missing command.
+\fBUnknown\fR first calls \fBauto_load\fR to load a procedure for
+the command.
+If this succeeds, then it executes the original command with its
+original arguments.
+If the auto-load fails then \fBunknown\fR calls \fBauto_execok\fR
+to see if there is an executable file by the name \fIcmd\fR.
+If so, it invokes the Tcl \fBexec\fR command
+with \fIcmd\fR and all the \fIargs\fR as arguments.
+If \fIcmd\fR can't be auto-executed, \fBunknown\fR checks to
+see if the command was invoked at top-level and outside of any
+script.  If so, then \fBunknown\fR takes takes two additional steps.
+First, it sees if \fIcmd\fR has one of the following three forms:
+\fB!!\fR, \fB!\fIevent\fR, or \fB^\fIold\fB^\fInew\fR?\fB^\fR?.
+If so, then \fBunknown\fR carries out history substitution
+in the same way that \fBcsh\fR would for these constructs.
+Second, and last, \fBunknown\fR checks to see if \fIcmd\fR is
+a unique abbreviation for an existing Tcl command.
+If so, it expands the command name and executes the command with
+the original arguments.
+If none of the above efforts has been able to execute
+the command, \fBunknown\fR generates an error return.
+If the global variable \fBauto_noload\fR is defined, then the auto-load
+step is skipped.
+If the global variable \fBauto_noexec\fR is defined then the
+auto-exec step is skipped.
+Under normal circumstances the return value from \fBunknown\fR
+is the return value from the command that was eventually
+executed.
+
+.SH "VARIABLES"
+.PP
+The following global variables are defined or used by the procedures in
+the Tcl library:
+.TP
+\fBauto_execs\fR
+Used by \fBauto_execok\fR to record information about whether
+particular commands exist as executable files.
+.TP
+\fBauto_index\fR
+Used by \fBauto_load\fR to save the index information read from
+disk.
+.TP
+\fBauto_noexec\fR
+If set to any value, then \fBunknown\fR will not attempt to auto-exec
+any commands.
+.TP
+\fBauto_noload\fR
+If set to any value, then \fBunknown\fR will not attempt to auto-load
+any commands.
+.TP
+\fBauto_path\fR
+If set, then it must contain a valid Tcl list giving directories to
+search during auto-load operations.
+.TP
+\fBenv(TCL_LIBRARY)\fR
+.VS
+If set, then it specifies the location of the directory containing
+library scripts (the value of this variable will be returned by
+the command \fBinfo library\fR).  If this variable isn't set then
+a default value is used.
+.VE
+.TP
+\fBenv(TCLLIBPATH)\fR
+If set, then it must contain a valid Tcl list giving directories to
+search during auto-load operations.
+This variable is only used if \fBauto_path\fR is not defined.
+.TP
+\fBunknown_active\fR
+This variable is set by \fBunknown\fR to indicate that it is active.
+It is used to detect errors where \fBunknown\fR recurses on itself
+infinitely.
+The variable is unset before \fBunknown\fR returns.
+
+.SH KEYWORDS
+auto-exec, auto-load, library, unknown

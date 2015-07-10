@@ -1,0 +1,87 @@
+'\"
+'\" Copyright 1989-1992 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: AssembCmd.3,v 1.1.1.1 2001/04/29 20:35:51 karll Exp $
+'\" 
+.so man.macros
+.HS Tcl_AssembleCmd tcl
+.BS
+.SH NAME
+Tcl_CreateCmdBuf, Tcl_AssembleCmd, Tcl_DeleteCmdBuf \- buffer pieces of Tcl commands
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+Tcl_CmdBuf
+\fBTcl_CreateCmdBuf\fR()
+.sp
+\fBTcl_DeleteCmdBuf\fR(\fIbuffer\fR)
+.sp
+char *
+.VS
+\fBTcl_AssembleCmd\fR(\fIbuffer\fR, \fIstring\fR)
+.VE
+.sp
+int
+\fBTcl_CommandComplete\fR(\fIcmd\fR)
+.SH ARGUMENTS
+.AS Tcl_CmdBuf *string;
+.AP Tcl_CmdBuf buffer in
+Token for a command buffer (the result of some previous call to
+\fBTcl_CreateCmdBuf\fR).
+.AP char *string in
+Additional piece of command input to be added to anything currently
+buffered.
+.AP char *cmd in
+.VS
+Command string to test for completeness.
+.VE
+.BE
+
+.SH DESCRIPTION
+.PP
+These procedures provide a convenient mechanism for assembling
+Tcl commands from an input source where command boundaries are not
+obvious.  For example, if input is being read from a terminal, a user
+may type commands that span multiple lines.  In situations like
+this, \fBTcl_AssembleCmd\fR can be called with the individual lines
+as they are received.  It buffers the lines internally and returns
+full commands when they are complete.
+.PP
+A command buffer is created by calling \fBTcl_CreateCmdBuf\fR, and
+it is deleted by calling \fBTcl_DeleteCmdBuf\fR.  There may be any
+number of command buffers for a particular program or even for a
+particular interpreter;  in most cases there should be one
+buffer for each independent source of command input.
+.PP
+When input arrives from a source you should call \fBTcl_AssembleCmd\fR,
+passing it the new input as the \fIstring\fR argument.
+\fBTcl_AssembleCmd\fR will add the new input to anything currently
+buffered in \fIbuffer\fR.  If the information now buffered represents
+a complete Tcl command (i.e. there are no unclosed quotes, braces,
+brackets, or variable references),
+then \fBTcl_AssembleCmd\fR returns a pointer to the complete command
+and arranges for the buffer to be cleared on the next call to
+\fBTcl_AssembleCmd\fR.  If the command is still incomplete (because,
+for example, there are unmatched braces) then \fBTcl_AssembleCmd\fR
+returns NULL.  \fBTcl_AssembleCmd\fR keeps a private copy of the
+command being assembled, so that the caller need not preserve the
+contents of \fIstring\fR between calls to \fBTcl_AssembleCmd\fR.
+\fBTcl_AssembleCmd\fR supports commands of arbitrary length (up to
+the total memory limit imposed by the operating system, if any).
+.PP
+.VS
+The procedure \fBTcl_CommandComplete\fR takes a Tcl command string
+as argument and determines whether the command string is complete
+in the sense defined above.
+If so then it returns 1; otherwise it returns 0.
+.VE
+
+.SH KEYWORDS
+assemble, buffer, partial command

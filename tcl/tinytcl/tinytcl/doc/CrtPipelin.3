@@ -1,0 +1,105 @@
+'\"
+'\" Copyright 1989 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: CrtPipelin.3,v 1.1.1.1 2001/04/29 20:35:54 karll Exp $
+'\" 
+.so man.macros
+.HS Tcl_CreatePipeline tcl
+.VS
+.BS
+.SH NAME
+Tcl_CreatePipeline \- create one or more child processes, with I/O redirection
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+int
+\fBTcl_CreatePipeline\fR(\fIinterp, argc, argv, pidArrayPtr, inPipePtr, outPipePtr, errFilePtr\fR)
+.SH ARGUMENTS
+.AS Tcl_Interp **pidArrayPtr
+.AP Tcl_Interp *interp in
+Interpreter to use for error reporting.
+.AP int argc in
+Number of strings in \fIargv\fR array.
+.AP char **argv in
+Array of strings describing command(s) and I/O redirection.
+.AP int **pidArrayPtr out
+The value at \fI*pidArrayPtr\fR is modified to hold a pointer to
+an array of process identifiers.  The array is dynamically
+allocated and must be freed by the caller.
+.AP char *inPipePtr out
+If this argument is NULL then standard input for the first command
+in the pipeline comes from the current standard input.
+If \fIinPipePtr\fR is not NULL then \fBTcl_CreatePipeline\fR will
+create a pipe, arrange for it to be used for standard input
+to the first command,
+and store a file id for writing to that pipe at \fI*inPipePtr\fR.
+If the command specified its own input using redirection, then
+no pipe is created and -1 is stored at \fI*inPipePtr\fR.
+.AP char *outPipePtr out
+If this argument is NULL then standard output for the last command
+in the pipeline goes to the current standard output.
+If \fIoutPipePtr\fR is not NULL then \fBTcl_CreatePipeline\fR will
+create a pipe, arrange for it to be used for standard output from
+the last command, and store a file id for reading from that
+pipe at \fI*outPipePtr\fR.
+If the command specified its own output using redirection then
+no pipe is created and -1 is stored at \fI*outPipePtr\fR.
+.AP char *errFilePtr out
+If this argument is NULL then error output for all the commands
+in the pipeline will go to the current standard error file.
+If \fIerrFilePtr\fR is not NULL, error output from all the commands
+in the pipeline will go to a temporary file created by
+\fBTcl_CreatePipeline\fR.
+A file id to read from that file will be stored at \fI*errFilePtr\fR.
+The file will already have been removed, so closing the file
+descriptor at \fI*errFilePtr\fR will cause the file to be flushed
+completely.
+.BE
+
+.SH DESCRIPTION
+.PP
+\fBTcl_CreatePipeline\fR processes the \fIargv\fR array and sets
+up one or more child processes in a pipeline configuration.
+\fBTcl_CreatePipeline\fR handles pipes specified with ``|'',
+input redirection specified with ``<'' or ``<<'', and output
+redirection specified with ``>'';  see the documentation for
+the \fBexec\fR command for details on these specifications.
+The return value from \fBTcl_CreatePipeline\fR is a count of
+the number of child processes created;  the process identifiers
+for those processes are stored in a \fImalloc\fR-ed array and
+a pointer to that array is stored at \fI*pidArrayPtr\fR.
+It is the caller's responsibility to free the array when finished
+with it.
+.PP
+If the \fIinPipePtr\fR, \fIoutPipePtr\fR, and \fIerrFilePtr\fR
+arguments are NULL then the pipeline's standard input, standard
+output, and standard error are taken from the corresponding
+streams of the process.  Non-NULL values may be specified for
+these arguments to use pipes for standard input and standard
+output and a file for standard error.  \fBTcl_CreatePipeline\fR
+will create the requested pipes or file and return file identifiers
+that may be used to read or write them.  It is the caller's
+responsibility to close all of these files when they are no
+longer needed.  If \fIargv\fR specifies redirection for standard
+input or standard output, then pipes will not be created even
+if requested by the \fIinPipePtr\fR and \fIoutPipePtr\fR
+arguments.
+.PP
+If an error occurs in \fBTcl_CreatePipeline\fR (e.g. ``|'' or
+``<'' was the last argument in \fIargv\fR, or it wasn't possible
+to fork off a child), then -1 is returned
+and \fIinterp->result\fR is set to an error message.
+
+.SH "SEE ALSO"
+\fBTcl_WaitPids\fR, \fBTcl_DetachPids\fR
+
+.SH KEYWORDS
+background, child, detach, fork, process, status, wait
+.VE

@@ -1,0 +1,51 @@
+R4RS 4.2.2  (let <bindings> <body>)  ==>  object
+
+Syntax: <Bindings> should have the form
+
+((<variable> <init>) ...),
+
+where each <init> is an expression, and <body> should be a sequence
+of one or more expressions. It is an error for a <variable> to
+appear more than once in the list of variables being bound.
+
+Semantics: The <init>s are evaluated in the current environment (in
+some unspecified order), the <variable>s are bound to fresh locations
+holding the results, the <body> is evaluated in the extended
+environment, and the value of the last expression of <body> is
+returned. Each binding of a <variable> has <body> as its region.
+
+(let ((x 2) (y 3))
+  (* x y))            ==>  6
+
+(let ((x 2) (y 3))
+  (let ((x 7)
+        (z (+ x y)))
+    (* z x)))         ==>  35
+
+4.2.4 (let <variable> <bindings> <body>) ==> object
+
+Some implementations of Scheme permit a variant on the syntax of
+LET called "named let" which provides a more general looping construct
+than DO, and may also be used to express recursions.
+
+Named LET has the same syntax and semantics as ordinary LET except
+that <variable> is bound within <body> to a procedure whose formal
+arguments are the bound variables and whose body is <body>. Thus
+the execution of <body> may be repeated by invoking the procedure
+named by <variable>.
+
+(let loop ((numbers '(3 -2 1 6 -5))
+           (nonneg '())
+           (neg '()))
+  (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+          (loop (cdr numbers)
+                (cons (car numbers) nonneg)
+                neg))
+        ((< (car numbers) 0)
+          (loop (cdr numbers)
+                nonneg
+                (cons (car numbers) neg)))))
+          ==>  ((6 1 3) (-5 -2))
+
+S9fES does support named LET.

@@ -1,0 +1,82 @@
+R4RS 5.2  (define <variable> <expression>)         ==>  unspecific
+          (define (<variable> <formals>) <body>)   ==>  unspecific
+          (define (<variable> . <formal>) <body>)  ==>  unspecific
+
+Definitions are valid in some, but not all, contexts where expressions
+are allowed. They are valid only at the top level of a <program>
+and, in some implementations, at the beginning of a <body>.
+
+A definition should have one of the following forms:
+
+- (define <variable> <expression>)
+
+- (define (<variable> <formals>) <body>)
+  <Formals> should be either a sequence of zero or more variables,
+  or a sequence of one or more variables followed by a space-delimited
+  period and another variable (as in a lambda expression). This form
+  is equivalent to
+
+  (define <variable>
+    (lambda (<formals>) <body>)).
+
+- (define (<variable> . <formal>) <body>)
+  <Formal> should be a single variable. This form is equivalent to
+
+  (define <variable>
+    (lambda <formal> <body>)).
+
+- (begin <definition1> ...)
+  This form is equivalent to the set of definitions that form the
+  body of the begin.
+
+5.2.1 Top level definitions
+
+At the top level of a program, a definition
+
+(define <variable> <expression>)
+
+has essentially the same effect as the assignment expression
+
+(set! <variable> <expression>)
+
+if <variable> is bound. If <variable> is not bound, however, then
+the definition will bind <variable> to a new location before
+performing the assignment, whereas it would be an error to perform
+a set! on an unbound variable.
+
+(define add3
+  (lambda (x) (+ x 3)))
+(add3 3)                 ==>  6
+(define first car)
+(first '(1 2))           ==>  1
+
+5.2.2 Internal definitions
+
+Some implementations of Scheme permit definitions to occur at the
+beginning of a <body> (that is, the body of a LAMBDA, LET, LET*,
+LETREC, or DEFINE expression). Such definitions are known as internal
+definitions as opposed to the top level definitions described above.
+The variable defined by an internal definition is local to the
+<body>. That is, <variable> is bound rather than assigned, and the
+region of the binding is the entire <body>. For example,
+
+(let ((x 5))
+  (define foo (lambda (y) (bar x y)))
+  (define bar (lambda (a b) (+ (* a b) a)))
+  (foo (+ x 3)))                             ==>  45
+
+A <body> containing internal definitions can always be converted
+into a completely equivalent LETREC expression. For example, the
+let expression in the above example is equivalent to
+
+(let ((x 5))
+  (letrec ((foo (lambda (y) (bar x y)))
+           (bar (lambda (a b) (+ (* a b) a))))
+    (foo (+ x 3))))
+
+Just as for the equivalent LETREC expression, it must be possible
+to evaluate each <expression> of every internal definition in a
+<body> without assigning or referring to the value of any <variable>
+being defined.
+
+S9fES does support local definitions.

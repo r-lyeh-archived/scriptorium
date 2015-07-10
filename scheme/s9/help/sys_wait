@@ -1,0 +1,15 @@
+S9 EXT  (sys:wait)             ==>  list
+        (sys:waitpid integer)  ==>  integer | #f
+
+Wait for a child process to terminate and return the exit information
+and of the terminated process. SYS:WAIT returns a list containing the
+exit code and PID of any exited child process:
+
+        (exit-code PID)
+
+When no exit information could be obtained it returns #F. The SYS:WAITPID
+procedure checks whether a process with a specific PID of INTEGER has
+exited and if so, it returns its exit code. When the process exists but
+has not yet exited, it returns #F. When there are no child processes to
+wait for, it signals an error. SYS:WAITPID, unlike SYS:WAIT, does not
+block the calling process.

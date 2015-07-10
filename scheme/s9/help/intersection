@@ -1,0 +1,5 @@
+S9 LIB  (intersection list ...)  ==>  list
+
+Compute the intersection of a number of sets.
+
+(intersection '(v w x) '(w x y) '(x y z))  ==>  (x)

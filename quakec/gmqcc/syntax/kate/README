@@ -1,0 +1,9 @@
+To use the Kate syntax highlighting install qc.xml to the syntax
+directory for kate.
+
+# Can be installed globally to
+$KDEDIR/share/apps/katepart/syntax
+
+if $KDEDIR is unset you can lookup the folder directory with
+kde4-config --prefix if that doesn't work chances are KDEDIR is
+/usr

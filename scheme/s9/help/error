@@ -1,0 +1,9 @@
+S9fES  (error string)         ==>  undefined
+       (error string object)  ==>  undefined
+
+Display the message in STRING. If OBJECT is given, display a colon,
+a space character, and the external representation of OBJECT after
+the message. After printing the message, abort evaluation. No result
+is returned.
+
+Rationale: ERROR is used by S9fES programs to signal errors.

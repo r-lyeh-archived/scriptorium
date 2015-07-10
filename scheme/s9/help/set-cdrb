@@ -1,0 +1,10 @@
+R4RS 6.3  (set-cdr! pair object)  ==>  unspecific
+
+Stores OBJECT in the cdr field of PAIR. The value returned by
+SET-CDR! is unspecified.
+
+(define (f) (list 'not-a-constant-list))
+(define (g) '(constant-list))
+
+(set-cdr! (f) 3)  ==>  unspecified
+(set-cdr! (g) 3)  ==>  error

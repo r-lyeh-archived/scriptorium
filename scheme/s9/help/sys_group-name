@@ -1,0 +1,9 @@
+S9 EXT  (sys:group-name string|integer)  ==>  string
+        (sys:group-gid string|integer)   ==>  integer
+
+Return the group name or GID associated with the group name
+STRING or the GID INTEGER. (Yes, getting the group name of a
+group name or the GID of a GID is an identity operation.)
+
+(sys:group-name 0)       ==>  "wheel"
+(sys:group-gid "wheel")  ==>  0

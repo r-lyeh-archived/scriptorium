@@ -1,0 +1,45 @@
+S9 LIB  (prolog list1 list2)          ==>  list
+        (new-database!)               ==>  unspecific
+        (fact! list)                  ==>  unspecific
+        (predicate! list1 list2 ...)  ==>  unspecific
+        (query list)                  ==>  list
+
+        (load-from-library "prolog.scm")
+
+This is a tiny PROLOG interpreter that is based on an even
+tinier PROLOG interpreter written in MACLISP by Ken Kahn.
+
+The PROLOG procedures takes a query LIST1 and a database
+LIST2 as arguments, attempts to prove LIST1 in LIST2, and
+returns the result(s).
+
+NEW-DATABASE! sets up a fresh PROLOG database (thereby
+deleting any existing one).
+
+FACT! adds a new fact to the database.
+
+PREDICATE! adds a predicate with the head LIST1 and the
+clauses LIST2 ... to the database.
+
+QUERY attempts to prove LIST1. It returns a list of results.
+An empty list indicates that LIST1 could not be proven.
+
+See "prolog-test.scm" for an example program.
+
+The following macros add some syntactic sugar for interactive
+use; they allows you to write, for instance, (! (man socrates))
+instead of (fact! '(man socrates)).
+
+(! fact)              ==>  unspecific
+(:- list1 list2 ...)  ==>  unspecific
+(? query)             ==>  unspecific
+
+The following special predicates are implemented in the
+interpreter: (== A B) returns a new environment if A can be
+unified with B, else NO. (Dif A B) returns NO if A can be
+unified with B, else YES (use only at the end of a clause!)
+
+(begin (! (man socrates))
+       (:- (mortal ?x)
+           (man ?x))
+       (query '(mortal ?who)))  ==>  (((who . socrates)))

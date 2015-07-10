@@ -1,0 +1,15 @@
+def for_each(container, function)
+{
+  var range = range(container);
+
+  while (!range.empty())
+  {
+    function(range.front());
+    range.pop_front();
+  }
+}
+
+var vec = [1,2,3,4,5,6,7,8,9, "hi", 4.5]
+
+for_each(vec, fun(x) { print(x); } );
+

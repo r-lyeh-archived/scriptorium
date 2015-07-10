@@ -1,0 +1,33 @@
+S9 EXT  (sys:inet-accept integer)                     ==>  integer
+        (sys:inet-listen string1|#t string2 integer)  ==>  integer
+
+SYS:INET-LISTEN creates a fresh socket, binds it to node name STRING1
+and service STRING2, and then announces its willingness to listen
+to incoming connections. When its first argument is #T rather than
+a node name, SYS:INET-LISTEN uses the uname(2) system call to figure
+out the node name of the host system. INTEGER is the maximum number
+of pending connects accepted by the socket before rejecting further
+connection requests. The procedure returns a file descriptor for
+accessing the listening socket.
+
+SYS:INET-ACCEPT waits for an incoming connection on a socket created
+by SYS:INET-LISTEN. It returns another socket that can be used to
+communicate with the connecting system.
+
+; A simple, single-threaded server that
+; echoes all requests sent to port 5000.
+;
+(define (echo-server)
+  (let ((s (sys:inet-listen #t "5000" 5)))
+    (let connect-loop ((conn (sys:inet-accept s)))
+      (let ((in  (sys:make-input-port conn))
+            (out (sys:make-output-port conn)))
+        (let echo-loop ((line (read-line in)))
+          (if (eof-object? line)
+              (begin (close-input-port in)
+                     (close-output-port out)
+                     (connect-loop (sys:inet-accept s)))
+              (begin (display line out)
+                     (newline out)
+                     (sys:flush out)
+                     (echo-loop (read-line in)))))))))

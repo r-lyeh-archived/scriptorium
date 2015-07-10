@@ -1,0 +1,5 @@
+To use the gtksourceview syntax highlighting install qc.lang to the syntax
+directory for gtksourceview
+
+# Can be installed globally to
+/usr/share/gtksourceview-[version]/language-specs/

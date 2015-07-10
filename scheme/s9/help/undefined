@@ -1,0 +1,7 @@
+S9fES  (undefined)  ==>  undefined
+
+Return an undefined value. Referring to a variable that is bound
+to an undefined value is an error.
+
+(let ((x (undefined)))
+  x)                    ==>  error

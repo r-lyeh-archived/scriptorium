@@ -1,0 +1,8 @@
+R4RS 6.3  (cdr pair)  ==>  object
+
+Returns the contents of the cdr field of PAIR. Note that it is an
+error to take the cdr of the empty list.
+
+(cdr '((a) b c d))  ==>  (b c d)
+(cdr '(1 . 2))      ==>  2
+(cdr '())           ==>  error

@@ -1,0 +1,3 @@
+R4RS 6.8  (vector-length vector)  ==>  integer
+
+Returns the number of elements in VECTOR.

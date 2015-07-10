@@ -1,0 +1,19 @@
+S9 EXT  (curs:clear)     ==>  unspecific
+        (curs:clrtobot)  ==>  unspecific
+        (curs:clrtoeol)  ==>  unspecific
+
+Curses routines for clearing the screen. This is only a rough
+summary. See the curses(3) manual page or a curses tutorial of
+your choice for further information.
+
+These routines do not cause any effect before CURS:REFRESH (q.v.)
+is called.
+
+CURS:CLEAR clears the entire virtual screen.
+
+CURS:CLRTOBOT clears the current line from the current column
+of the virtual cursor to the end of the line as well as all
+lines below the virtual cursor.
+
+CURS:CLRTOEOL clears the current line from the current column
+of the virtual cursor to the end of the line.

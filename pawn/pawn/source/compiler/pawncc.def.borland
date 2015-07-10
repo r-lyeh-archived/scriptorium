@@ -1,0 +1,5 @@
+NAME          PAWNCC
+DESCRIPTION   'Pawn compiler'
+
+IMPORTS
+              _pc_compile = pawnc.pc_compile

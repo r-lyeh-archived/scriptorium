@@ -1,0 +1,13 @@
+R4RS 6.8  (apply procedure list)             ==>  object
+          (apply procedure object ... list)  ==>  object
+
+The first form calls PROCEDURE with the elements of LIST as
+the actual arguments. The second form is a generalization of
+the first that calls PROCEDURE with the elements of the list
+(append (list object ...) LIST) as the actual arguments.
+
+(apply + (list 3 4))                   ==>  7
+
+(define (compose f g)
+  (lambda args (f (apply g args)))))
+((compose - *) 5 7)                    ==>  -35

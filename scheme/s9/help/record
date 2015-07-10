@@ -1,0 +1,61 @@
+S9 LIB  (record pair ...)                   ==>  record
+        (record? object)                    ==>  boolean
+        (record-ref record symbol)          ==>  object
+        (record-set! record symbol object)  ==>  unspecific
+        (list->record alist)                ==>  record
+        (record->list record)               ==>  alist
+        (record-equal? record1 record2)     ==>  boolean
+        (record-copy record)                ==>  record
+        (record-signature record)           ==>  list
+        (record-type-matches? list record)  ==>  boolean
+        (assert-record-type list record)    ==>  record
+
+        (load-from-library "records.scm")
+
+These procedures implement ML-style records.
+
+RECORD creates a new record from the given (TAG . OBJECT) PAIRs,
+where TAG is a symbol naming the record field and OBJECT is the
+value stored in that field. Each TAG must be unique.
+
+RECORD? returns #T, if the given OBJECT is a record.
+
+RECORD-REF extracts the value of the field tagged SYMBOL
+from RECORD.
+
+RECORD-SET! sets the SYMBOL field of RECORD to OBJECT. If OBJECT
+and the value of the SYMBOL have different types, an error is
+reported.
+
+LIST->RECORD creates a RECORD from the association list ALIST.
+(LIST->RECORD (LIST P ...)) is equal to (RECORD P ...).
+
+RECORD->LIST returns an association list containing the same
+fields as the given RECORD. Tags of the fields become keys of
+the alist.
+
+RECORD-EQUAL? returns true, if RECORD1 and RECORD2 contain
+the same fields and corresponding fields contain equal values
+in the sense of EQUAL.
+
+RECORD-COPY creates a fresh copy of RECORD.
+
+RECORD-SIGNATURE creates a "type signature" of RECORD.
+
+RECORD-TYPE-MATCHES? returns #T, if LIST is the type signature
+or RECORD.
+
+ASSERT-RECORD-TYPE returns RECORD, if LIST is the type signature
+of RECORD. Otherwise, it reports an error.
+
+The RECORD type also extends the built-in EQUAL? procedure to
+handle records properly by dispatching their comparison to
+RECORD-EQUAL?.
+
+(record-ref (record (list 'name "Foo") (list 'value 31415))
+            'name)
+  ==> "Foo"
+
+(equal? (record (list 'name "Foo") (list 'value 31415))
+        (record (list 'value 31415) (list 'name "Foo")))
+  ==> #t

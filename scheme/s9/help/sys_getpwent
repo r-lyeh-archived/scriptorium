@@ -1,0 +1,8 @@
+S9 EXT  (sys:getpwent)  ==>  list
+
+Return a list of strings containing all user names contained
+in the system user database.
+
+(sys:getpwent)  ==>  ("root" "toor" "daemon" "operator" "bin" "tty"
+                      "kmem" "games" "news" "man" "uucp" "nobody"
+                      "nmh")

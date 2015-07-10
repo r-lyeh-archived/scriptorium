@@ -1,0 +1,6 @@
+S9 EXT  (sys:unlink string)  ==>  unspecific
+
+Remove the file name (directory entry) STRING.
+
+(sys:link "foo" "bar")
+(sys:unlink "bar")      ==>  unspecific

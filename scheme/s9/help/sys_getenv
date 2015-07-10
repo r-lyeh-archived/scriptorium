@@ -1,0 +1,7 @@
+S9 EXT  (sys:getenv string)  ==>  string | #f
+
+Return the value of the environment variable STRING. If
+the variable is undefined, return #F.
+
+(sys:getenv "HOME")         ==>  "/u/home/nmh"
+(sys:getenv "nonexistent")  ==>  #f

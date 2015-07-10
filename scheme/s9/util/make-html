@@ -1,0 +1,353 @@
+#!/bin/sh
+
+dumpdir=webdump
+update_only=no
+tmpfile=/tmp/mkhtml.$$
+
+cleanup() {
+	rm -f $tmpfile
+	rm -f rpp rp_html
+	exit
+}
+
+trap cleanup 1 2 3
+
+usage() {
+	echo "Usage: make-html [-u {scm|cee|txt|man|nah|dir}]"
+	exit 1
+}
+
+while [ "x$1" != "x" ]; do
+	case x$1 in
+	x-u) 	shift
+		if [ "x$1" = "x" ]; then usage; fi
+		update_only=$1
+		shift
+		;;
+	x-r) 	shift
+		if [ "x$1" = "x" ]; then usage; fi
+		V=$1
+		export V
+		shift
+		;;
+	*) 	usage
+		;;
+	esac
+done
+
+format_scm_files() {
+	base=$1
+	shift
+	files=$*
+	for file in $files; do
+		html=`basename $file`.html
+		fname=$(basename $file)
+		name=$(grep "^$fname|" util/descriptions | cut -f 2 -d "|")
+		desc=$(grep "^$fname|" util/descriptions | cut -f 3 -d "|")
+		oname=$dumpdir/`basename $fname`.html
+		echo -n $oname' ...'
+		if [ "x$name" = "x" ]; then
+			echo -n " NO DESCRIPTION!"
+		fi
+		sed -e "s|@BASE@|<A href="$html">$html</A>|g" \
+			<util/libhead >$tmpfile
+		if [ "x$desc" != "x-" -a "x$name" != "x-" ] ; then
+			sed \
+			-e "s|@DESC@|<CODE>$name\&nbsp;\&nbsp;</CODE> $desc|" \
+			-e "s|@TITLE@|$name\&nbsp;\&nbsp; $desc|" \
+				<$tmpfile >$oname
+		elif [ "x$desc" != "x-" ] ; then
+			sed -e "s|@DESC@|$desc|" \
+			    -e "s|@TITLE@|$desc|" \
+				<$tmpfile >$oname
+		else
+			sed -e "s|@DESC@|<CODE>$name</CODE>|" \
+			    -e "s|@TITLE@|$name|" \
+				<$tmpfile >$oname
+		fi
+		echo -n "<P>" >>$oname
+		if [ "x$base" != "x" ]; then
+			echo "Location: <A href=\"$base.html\">$base</A>, " \
+				>>$oname
+		fi
+		sed -e "1,/^$/d" <$file | wc -l >>$oname
+		echo " Lines</P>" >>$oname
+		prog/scm2html1.scm -9x $file >>$oname
+		cat util/libtail >>$oname
+		echo " done"
+	done
+}
+
+format_C_files() {
+	base=$1
+	shift
+	files=$*
+	for file in $files; do
+		html=`basename $file`.html
+		fname=$(basename $file)
+		oname=$dumpdir/`basename $fname`.html
+		echo -n $oname' ...'
+		sed -e "s|@BASE@|<A href="$html">$html</A>|g" \
+			<util/libhead >$tmpfile
+		if [ "x$base" = "x" ]; then
+			sed -e "s/@DESC@/`basename $file`/" \
+			    -e "s/@TITLE@/`basename $file`/" \
+				<$tmpfile >$oname
+		else
+			sed -e "s|@DESC@|<A href=\"$base.html\">$base</A>/`basename $file`|" \
+			    -e "s/@TITLE@/`basename $file`/" \
+				<$tmpfile >$oname
+		fi
+		echo -n "<P>" >>$oname
+		sed -e "1,/^$/d" <$file | wc -l >>$oname
+		echo " Lines</P>" >>$oname
+		prog/c2html1.scm $file >>$oname
+		cat util/libtail >>$oname
+		echo " done"
+	done
+}
+
+format_txt_files() {
+	hrefs=no
+	if [ "x$1" = "x-r" ]; then hrefs=yes; shift; fi
+	base=$1
+	shift
+	files=$*
+	for file in $files; do
+		html=`basename $file`.html
+		oname=$dumpdir/`basename $file`.html
+		echo -n $oname' ...'
+		sed -e "s|@BASE@|<A href="$html">$html</A>|g" \
+			<util/libhead >$tmpfile
+		if [ "x$base" = "x" ]; then
+			sed -e "s/@DESC@/`basename $file`/" \
+			    -e "s/@TITLE@/`basename $file`/" \
+				<$tmpfile >$oname
+		else
+			sed -e "s|@DESC@|<A href=\"$base.html\">$base</A>/`basename $file`|" \
+			    -e "s/@TITLE@/`basename $file`/" \
+				<$tmpfile >$oname
+		fi
+		echo '<PRE>' >>$oname
+		if [ $hrefs = yes ]; then
+			prog/htmlify.scm -t $file | \
+			sed -e 's/\(http:\/\/.*\)/<A href="\1">\1<\/A>/' \
+				>>$oname
+		else
+			prog/htmlify.scm -t $file >>$oname
+		fi
+		echo '</PRE>' >>$oname
+		cat util/libtail >>$oname
+		echo " done"
+	done
+}
+
+format_man_pages() {
+	hrefs=no
+	if [ "x$1" = "x-r" ]; then hrefs=yes; shift; fi
+	files=$*
+	for file in $files; do
+		html=`basename $file`.html
+		ofile=$dumpdir/`basename $file`.html
+		echo -n $ofile' ...'
+		sed -e "s|@BASE@|<A href="$html">$html</A>|g" \
+			<util/libhead >$tmpfile
+		sed -e "s/@DESC@/`basename $file`/" \
+		    -e "s/@TITLE@/`basename $file`/" \
+		<$tmpfile >$ofile
+		echo '<PRE class=man>' >>$ofile
+		if [ $hrefs = yes ]; then
+			nroff -mdoc -c $file | ./rpp -p html | \
+			sed -e 's/\(http:\/\/.*\)</<A href="\1">\1<\/A></' \
+				>>$ofile
+		else
+			nroff -mdoc -c $file | ./rpp -p html >>$ofile
+		fi
+		echo '</PRE>' >>$ofile
+		cat util/dirtail >>$ofile
+		echo " done"
+	done
+}
+
+naah() {
+	base=$1; shift
+	what=$1; shift
+	files=$*
+	for file in $files; do
+		html=`basename $file`.html
+		oname=$dumpdir/`basename $file`.html
+		echo -n $oname' ...'
+		sed -e "s|@BASE@|<A href="$html">$html</A>|g" \
+			<util/libhead >$tmpfile
+		if [ "x$base" = "x" ]; then
+			sed -e "s/@DESC@/`basename $file`/" \
+			    -e "s/@TITLE@/`basename $file`/" \
+				<$tmpfile >$oname
+		else
+			sed -e "s|@DESC@|<A href=\"$base.html\">$base</A>/`basename $file`|" \
+			    -e "s/@TITLE@/`basename $file`/" \
+				<$tmpfile >$oname
+		fi
+		echo '<H2>Naah</H2>' >>$oname
+		echo "<P>This $what is not included here. Please" >>$oname
+		echo ' download the <A href="'"s9fes-$V.tgz"'">archive</A>' \
+			>>$oname
+		echo ' to have a look at it.</P>' >>$oname
+		cat util/dirtail >>$oname
+		echo " done"
+	done
+}
+
+dirlist() {
+	dir=$1
+	ofile=$2
+	title=$3
+	echo -n $ofile' ...'
+	if [ "x$dir" = "x." ]; then
+		sed -e "s/@BASE@//" <util/dirhead >$tmpfile
+	else
+		sed -e "s|@BASE@|<A href=\"`basename $ofile`\">$dir.html</A>|" \
+			<util/dirhead >$tmpfile
+	fi
+	sed -e "s/@DESC@/$title/" <$tmpfile >$ofile
+	if [ "$4" = "about" ]; then
+		sed -e 's/\$V/'"$V"'/g' <util/blurb >>$ofile
+	fi
+	echo '<PRE class=dirlist>' >>$ofile
+	(cd $dir; ls -l | grep -v "$dumpdir") | grep -v " edoc$" | awk '
+		BEGIN { V=ENVIRON["V"] }
+		{ if ($9 == "CATEGORIES.html")
+			name=$9
+		  else if ($9 == "s9fes-"V".tgz")
+			name=$9
+		  else if ($9 == "s9core-"V".tgz")
+			name=$9
+		  else if ($9 == "s9core.pdf")
+			name=$9
+		  else if ($9 == "MASCOT.png")
+			name=$9
+		  else if ($9 == "freebsd-port")
+			name="http://www.freebsd.org/cgi/cvsweb.cgi/ports/lang/s9fes"
+		  else
+			name=$9".html"
+		  if ($9 == "")
+			print $0
+		  else
+			printf "%s %2s %3s %4s %7s %3s %2s %6s" \
+				" <A href=\"%s\">%s</A>\n", \
+				$1, $2, $3, $4, $5, $6, $7, $8, name, $9
+		}' >>$ofile
+	echo '</PRE>' >>$ofile
+	cat util/dirtail >>$ofile
+	echo " done"
+}
+
+if [ $update_only = no -o $update_only = dir ]; then
+	if [ $update_only = no ]; then
+		make s9core.pdf && mv -f s9core.pdf /tmp/s9core$$.pdf
+		make cdist && mv -f s9core-$V.tgz /tmp/s9core$$.tgz
+		make dist
+		s9 -f util/make-cats.scm
+	fi
+
+	if [ -d $dumpdir ]; then
+		rm -f /tmp/s9core$$.pdf /tmp/s9core$$.tgz
+		if [ $update_only = no ]; then
+			echo -n "You may want to remove the $dumpdir"
+			echo " directory first!"
+			exit 1
+		fi
+	else
+		mkdir $dumpdir
+		cp s9fes-$V.tgz util/s9.css MASCOT.png $dumpdir
+		cp prog/edoc.css contrib/scheme.css contrib/ccode.css $dumpdir
+		mv -f /tmp/s9core$$.pdf s9core.pdf
+		mv -f /tmp/s9core$$.tgz s9core-$V.tgz
+	fi
+
+	dirlist . $dumpdir/index.html "Scheme 9 from Empty Space" "about"
+	dirlist lib $dumpdir/lib.html "lib\/" ""
+	dirlist contrib $dumpdir/contrib.html "contrib\/" ""
+	dirlist ext $dumpdir/ext.html "ext\/" ""
+	dirlist prog $dumpdir/prog.html "prog\/" ""
+	dirlist util $dumpdir/util.html "util\/" ""
+
+	if [ $update_only = no ]; then
+		mv -f CATEGORIES.html $dumpdir
+		mv -f s9core.pdf $dumpdir
+		mv -f s9core-$V.tgz $dumpdir
+		make
+	fi
+fi
+
+if [ $update_only = no -o $update_only = txt ]; then
+	format_txt_files "" ABOUT CHANGES LICENSE
+	format_txt_files "" Makefile README TODO README.s9core
+	format_txt_files "" configure _csums mkfile s9.1.txt s9core.tr
+	format_txt_files lib lib/_template
+	format_txt_files prog prog/adventure.adv prog/edoc.css
+	format_txt_files prog prog/advgen.txt
+	format_txt_files contrib contrib/scheme.css contrib/ccode.css
+	format_txt_files contrib contrib/format.txt contrib/s9sos.txt
+	format_txt_files util util/descriptions util/make-help-links
+	format_txt_files util util/libtest.sh util/make-docs util/make-html
+	format_txt_files util util/fix-help-files util/rp_html util/s9.css	
+	format_txt_files util util/s9.rc
+fi
+
+if [ $update_only = no -o $update_only = cee ]; then
+	format_C_files "" s9.c s9core.c s9core.h
+	format_C_files ext ext/unix.c ext/curses.c
+	format_C_files util util/rpp.c
+fi
+
+make_edoc() {
+	echo -n "webdump/edoc.html ..."
+	edoc -l scheme -w  -P util/libhead -E util/libtail prog/edoc.scm.edoc \
+		| sed -e 's/@DESC@/Rendered EDOC Code/' \
+		-e 's/@BASE@/<A href=edoc.html>edoc.html<\/A>/' \
+		-e 's/@TITLE@/EDOC/' \
+		| sed -e '1,/^$/d' \
+		>webdump/_.html
+        head -$(expr `wc -l webdump/_.html | awk '{print \$1}'` - 3) \
+		webdump/_.html > webdump/edoc.html
+	rm -f webdump/_.html
+	echo " done"
+}
+
+if [ $update_only = no -o $update_only = scm ]; then
+	make_edoc
+	format_scm_files "" s9.scm
+	format_scm_files "" config.scm
+	format_scm_files lib lib/*.scm
+	format_scm_files contrib contrib/*.scm
+	format_scm_files ext ext/*.scm
+	format_scm_files prog prog/*.scm prog/*.scm.edoc
+	format_scm_files util util/*.scm
+fi
+
+if [ $update_only = no -o $update_only = nah ]; then
+	naah "" directory help
+	naah "" directory freebsd-port
+	naah contrib file S9Book
+	naah contrib file S9Book-bw
+	naah prog file adventure.intro
+	naah util file blurb
+	naah util file book
+	naah util file dirhead
+	naah util file dirtail
+	naah util file libhead
+	naah util file libtail
+	naah util file mktoc.sed
+	naah util file pagehead
+	naah util file pagetail
+	naah util file stress-tests.tgz
+	naah util file categories.html
+fi
+
+if [ $update_only = no -o $update_only = man ]; then
+	cc -o rpp util/rpp.c && ln -s util/rp_html rp_html
+	format_man_pages -r s9.1
+fi
+
+cleanup

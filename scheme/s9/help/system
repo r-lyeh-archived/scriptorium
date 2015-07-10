@@ -1,0 +1,6 @@
+S9fES  (system string)  ==>  integer
+
+Run the command STRING and return its exit status.
+
+(system "ls")              ==>  0
+(system "ls nonexistent")  ==>  1

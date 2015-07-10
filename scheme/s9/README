@@ -1,0 +1,223 @@
+
+
+	Scheme 9 from Empty Space
+	A Portable Scheme Interpreter with a Unix Interface
+	By Nils M Holm, 2007-2015
+
+	S9fES is a mature, portable, and comprehensible public-domain
+	interpreter for R4RS Scheme offering
+
+	- bignum arithmetics
+	- decimal-based real number arithmetics
+	- support for low-level Unix programming
+	- cursor addressing with Curses
+	- basic networking procedures
+	- loads of useful library functions
+
+	It is written in ANSI C (C89) and Scheme and it runs in many
+	popular environments, including *BSD, Linux, Plan 9, and the
+	unmentionable horror (although the Plan 9 and Horror versions
+	will exclude the Unix, Curses, and Networking extensions).
+
+	The S9fES code strives to be simple and comprehensible. It is
+	particularly interesting to people who want to
+
+	- have a Scheme system that runs virtually everywhere
+	- write Unix programs in a high-level language
+	- try Scheme without having to jump through too many hoops
+	- study the implementation of Scheme
+	  (in a language other than Scheme)
+
+	There is a book describing the S9 implementation in detail. It
+	is available in print and PDF format. See http://t3x.org/s9book/
+
+	S9fES supports the following SRFI's: 
+	- SRFI-0:  feature-based conditional expansion (subset)
+	- SRFI-2:  AND-LET*                            (subset)
+	- SRFI-22: running Scheme scripts on Unix
+	- SRFI-23: error reporting mechanism
+	- SRFI-30: nested multi-line comments
+	- SRFI-43: vector library                      (subset)
+
+
+	QUICK START
+
+	You can run the interpreter in its build directory without
+	installing it. Just type "cc -Dunix -o s9 s9.c" (or -Dplan9)
+	and then "./s9".
+
+	The S9 code is only loosely coupled to its Makefile, so in most
+	cases running "cc -Dunix -o s9 s9.c" or "8c -Dplan9 -o s9 s9.c"
+	will compile the interpreter just fine. (However, doing so will
+	not include the Unix/Curses/Networking extensions.)
+
+	On most systems of the Unix family (plus CygWin and MinGW),
+	you can compile and install S9fES by running "make install".
+
+	Once installed, typing "s9" will start the interpreter.
+
+	,h  explains the online help system.
+	,a  returns a list of all help topics (long!).
+
+	If the above commands do not work, try  ,l contrib/help.scm
+	first.
+
+
+	COMPILING AND INSTALLING
+
+	Unix
+
+	To compile S9fES, run "make" and then "make test" (this will run
+	the test suite to make sure that the interpreter works properly).
+	Running "make tests" will run even more tests.
+
+	On 64-bit systems, you may have to add the -DBITS_PER_WORD_64
+	define to the Makefile. Not doing so will probably still work,
+	but result in slightly worse bignum performance.
+
+	You can install S9fES (including the goodies) on a Unix system
+	by typing "make install" as root, but before doing so, please
+	edit at least the PREFIX variable at the beginning of Makefile.
+	(Be sure to re-compile S9fES (make clean; make) after changing
+	 PREFIX, because it is used to set up some internal paths).
+
+	Plan 9
+
+	Before installing, run "rc util/fix-help-files". The help/
+	directory contains symlinks, and the above script replaces
+	them by copies.
+
+	To compile S9fES on Plan 9 from Bell Labs, just type "mk".
+	The "test" and "tests" targets will run tests, just like on
+	Unix.
+
+	To install S9fES, run "mk inst". It will copy the S9fES binary,
+	heap image, function library, and help files to $s9dir (which
+	defaults to /lib/s9fes). Edit mkfile if you prefer a different
+	location.
+
+	The install procedure will also copy the file util/s9.rc to
+	/rc/bin/s9 and adjust the $s9dir variable in that file.
+
+	Manual Installation
+
+	To install S9fES manually,
+
+	- Compile s9 with a proper library path (the one hardwired in
+	  "s9.h" is probably not what you want). E.g.:
+
+	  cc -o s9 -DLIBRARY_PATH="\"your-path\"" s9.c
+
+	  A reasonable value for "your-path" would be, for example:
+
+	  ".:~/s9fes:/usr/local/share/s9fes"
+
+	  Security-sensitive people may consider (re)moving the dot.
+
+	- Copy the "s9" binary to a location where it can be executed
+	  (e.g. /usr/local/bin).
+
+	- Copy the file "s9.scm" to a publicly readable directory
+	  (default: /usr/local/share/s9fes). This directory will be
+	  referred to as S9DIR in the following instructions. Note
+	  that this directory *must* be contained in LIBRARY_PATH,
+	  as defined above.
+
+	- Compile a heap image and copy it to S9DIR:
+
+	  s9 -i - -d s9.image
+
+	  The image file must have the same base name as the interpreter
+	  or it will not be loaded. An image loads significantly faster
+	  than source code.
+
+	Optionally:
+
+	- Copy the content of the "lib" directory to S9DIR. This
+	  directory contains lots of useful Scheme functions.
+
+	- Copy the content of the "contrib" directory to S9DIR. These
+	  files contain additional Scheme functions contributed by other
+	  authors and/or imported from various sources.
+
+	- Create a subdirectory named "help" in S9DIR and copy the
+	  content of the "help" directory to S9DIR/help. These files
+	  are part of the interactive help system.
+
+	- Copy the nroff(1) source code of the manual page "s9.1" to
+	  section 1 of your online manual (e.g. /usr/local/man/man1).
+	  In case you are not running Unix, there is a pre-formatted
+	  copy in the file "s9.1.txt".
+
+
+	CONFIGURATION
+
+	You may create the S9FES_LIBRARY_PATH environment variable and
+	make it point to S9DIR as well as other directories that
+	contain Scheme programs. The variable may contain a single
+	directory or a colon-separated list of directories that will be
+	searched in sequence for image files, library files, and help
+	pages (in "help" subdirectories contained in the given paths).
+
+	S9FES_LIBRARY_PATH overrides LIBRARY_PATH, so all directories
+	listed in the latter should also be present in the former.
+
+	To create an image file containing additional functionality,
+	add the desired options to the "config.scm" file and run
+
+	s9 -i - -l config.scm -d s9.image
+
+	(This step is already included in the default Unix Makefile and
+	 Plan 9 mkfile).
+
+
+	GETTING STARTED
+
+	Typing "s9" will drop you into the read-eval-print loop of the
+	interpreter. You can run Scheme programs non-interactively by
+	typing "s9 -f program.scm" (or just "s9 program.scm") at your
+	shell prompt.
+
+	If you installed the extension library functions in S9DIR,
+	they can be loaded by the LOAD-FROM-LIBRARY procedure or the
+	",l" (comma ell) meta command:
+
+	> ,l draw-tree
+	; loading from /usr/local/share/s9fes/draw-tree.scm
+	> (draw-tree '(a b c))
+	[o|o]---[o|o]---[o|/]
+	 |       |       |
+	 a       b       c
+	> _
+
+	Feel free to explore them.
+
+	Running "s9help topic" on the shell prompt will print the S9fES
+	online help page about the given topic.
+
+
+	EXTENDED INTERPRETER
+
+	If compiled in, there are some extension procedures providing
+	access to some Unix system calls, some networking procedures,
+	and a Curses interface. To compile these extensions, uncomment
+	the corresponding EXTRA_ lines in the Makefile. (In fact, all
+	extensions are compiled in by default on Unix.)
+
+
+	ACKNOWLEDGEMENTS
+
+	I would like to thank the following people and organisations for
+	patches, bug reports, suggestions, hardware, access to hardware,
+	etc:
+
+	Bakul Shah, Barak Pearlmutter, Blake McBride, Bsamograd (reddit),
+	David Person, Dig1 (reddit), Dirk Lutzebaeck, Doug Currie, Mario
+	Deilmann, Masaru KIMURA, Ray Lai, Torsten Leibold, Yi Dai, and
+	the Super Dimension Fortress (SDF.ORG).
+
+
+	CONTACT
+
+	Nils M Holm < n m h @ t 3 x . o r g >
+

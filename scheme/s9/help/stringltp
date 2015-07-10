@@ -1,0 +1,23 @@
+R4RS 6.7  (string<? string1 string2)      ==>  boolean
+          (string>? string1 string2)      ==>  boolean
+          (string<=? string1 string2)     ==>  boolean
+          (string>=? string1 string2)     ==>  boolean
+          (string-ci<? string1 string2)   ==>  boolean
+          (string-ci>? string1 string2)   ==>  boolean
+          (string-ci<=? string1 string2)  ==>  boolean
+          (string-ci>=? string1 string2)  ==>  boolean
+
+These procedures are the lexicographic extensions to strings of
+the corresponding orderings on characters. For example, STRING<?
+is the lexicographic ordering on strings induced by the ordering
+CHAR<? on characters. If two strings differ in length but are
+the same up to the length of the shorter string, the shorter
+string is considered to be lexicographically less than the
+longer string.
+
+Implementations may generalize these and the STRING=? and
+STRING-CI=? procedures to take more than two arguments, as with
+the corresponding numerical predicates.
+
+The S9fES versions of these procedures do accept more than two
+arguments.

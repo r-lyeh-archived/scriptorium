@@ -1,0 +1,87 @@
+S9 LIB  (display-usage list)                       ==>  unspecific
+        (option char boolean object)               ==>  opt-list
+        (option char symbol object)                ==>  opt-list
+        (opt-char opt-list)                        ==>  char
+        (opt-arg? opt-list)                        ==>  boolean
+        (opt-type opt-list)                        ==>  symbol
+        (opt-val  opt-list)                        ==>  object
+        (parse-options! list1 list2 procedure|#f)  ==>  list
+
+        (load-from-library "parse-optionsb.scm")
+
+The LIST1 argument of PARSE-OPTIONS! is a list of strings
+containing option groups and their arguments, if any. LIST2
+is a list of lists describing the expected options. LIST2
+has the following format:
+
+        (list (option opt-chr1 arg-type1 [default])
+              ...
+              (option opt-chrN arg-typeN [default]))
+
+Each OPT-CHR is a character associated with that option and
+each ARG-TYPE is the type of the option. When it is a boolean,
+it indicates whether the option expects an argument. When it
+is a symbol, it must be one of the following:
+
+'STRING   The option may have any type of argument.
+          (This is in fact the same as #T.)
+'INTEGER  The option expects a numeric (integer) argument.
+'FILE     The option expects a file name. The file must
+          exist and must be readable by the calling program.
+'COUNT    The option has no argument, but specifying it
+          multiples times increases its value instead of
+          just setting it to #T.
+
+When a default object is specified in OPTION, it constitutes
+the default value of this option when it is not specified in
+the LIST1 argument of PARSE-OPTIONS!.
+
+The OPT-CHAR and OPT-TYPE procedures access the values of an
+opt-list return by OPTION. OPT-ARG? checks whether an option
+expects an argument. The OPT-VAL procedure returns the current
+value of that option. The initial value of each option is #F.
+
+The PARSE-OPTIONS procedure parses the options passed to it
+in LIST1. Each option group (e.g.: "-abc") and argument must
+be packaged in a separate string, i.e. '("-o" "file") works,
+but '("-o file") probably does not. The SYS:COMMAND-LINE
+procedure is typically used to supply a suitable LIST1.
+
+Each option character in LIST1 must be prefixed with a #\-
+or #\+ character. A #\- will set the value of an option to
+#T, a #\+ will set it to #F. When (opt-arg? x) is true for
+an option X, it will expect an argument in the subsequent
+option group. The value of the option will be that string,
+no matter whether the option character is preceded by #\-
+or #\+ character.
+
+When PARSE-OPTIONS detects a formal error (unknown option
+character, missing argument, etc), it will invoke the given
+PROCEDURE, which should print a short synopsis (a.k.a "usage").
+When #F is privided in the place of the usage procedure, a
+default message will be passed to ERROR. After running a
+user-supplied usage procedure the program will terminate with
+(sys:exit 1).
+
+When PARSE-OPTIONS returns, it delivers a list of trailing
+option groups that do not begin with a #\- or #\+ character.
+
+The special option "--" can be used to abort option processing.
+In this case, any remaining option groups will be returned,
+no matter which characters they contain.
+
+The DISPLAY-USAGE procedure prints the strings in its LIST
+argument. Each member prints in an individual line. When
+a non-string is found in LIST, DISPLAY-USAGE will assume it
+is a null-ary usage procedure, as described above, and call
+it.
+
+(option #\o 'string)             ==>  (#\o string (#f))
+(opt-char (option #\o 'string))  ==>  #\o
+(opt-arg? (option #\o 'string))  ==>  #t
+(opt-type (option #\o 'string))  ==>  string
+(opt-val  (option #\o 'string))  ==>  #f
+
+(parse-options! '("-o" "file1" "file2")
+                `(,(option #\o #t))
+                #f)                   ==>  ("file2")

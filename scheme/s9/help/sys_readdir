@@ -1,0 +1,7 @@
+S9 EXT  (sys:readdir string)  ==>  list
+
+Return a list of all file names contained in the directory STRING.
+SYS:READDIR never includes the special files "." and ".." in the
+resulting list.
+
+(sys:readdir "empty-directory")  ==>  ()

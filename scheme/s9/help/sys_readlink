@@ -1,0 +1,6 @@
+S9 EXT  (sys:readlink string)  ==>  string
+
+Return the path of the file referred to by the symbolic link STRING.
+
+(sys:symlink "foo" "bar")
+(sys:readlink "bar")       ==>  "foo"

@@ -1,0 +1,13 @@
+S9 LIB  (string-translate string1 string2 string3)  ==>  string
+
+Translate STRING1 by replacing each instance of a character
+that occurs in STRING2 by the character at the corresponding 
+position in STRING3. STRING-TRANSLATE does not alter STRING1
+but returns a fresh string.
+
+(string-translate "a:b:c" ":" "-")  ==> "a-b-c"
+
+(string-translate
+  "hello, world!"
+  "abcdefghijklmnopqrstuvwxyz"
+  "nopqrstuvwxyzabcdefghijklm")     ==>  "uryyb, jbeyq!"

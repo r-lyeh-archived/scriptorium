@@ -1,0 +1,767 @@
+.\" S9(1) Manual Page
+.\" By Nils M Holm, 2007-2015
+.ll 70
+.lt 70
+.de HD		\" header
+'sp 1v
+.tl 'S9(1)'Scheme 9 from Empty Space'S9(1)'
+'sp 2v
+..
+.de FO		\" footer
+'sp 2v
+.tl 'S9 Interpreter'Page %'S9(1)'
+'bp
+..
+.de B
+\fB\\$1\fP
+..
+.de BR
+\fB\\$1\fP\\$2
+..
+.de IR
+\fI\\$1\fP\\$2
+..
+.de RB
+\\$1\fB\\$2\\fP
+..
+.de I
+\fI\\$1\fP
+..
+.de SH		\" subheading
+.ne 5
+.sp
+.in 0i
+.nf
+\fB\\$1\fP
+.fi
+.in 1i
+..
+.wh 0 HD	\" traps for header
+.wh -4 FO	\" and footer
+.nh
+.sp
+.SH NAME
+.B "s9
+- Scheme Interpreter
+.SH USAGE
+.B "s9 [-hv?] [-i name|-] [-gqu] [-d image] [-k size[m]]
+.B "   [-l prog] [-n size[m]] [-f prog [args]] [-- [args]]
+.B "   [prog [args]]"
+.SH "DESCRIPTION
+.B "Scheme 9 from Empty Space
+is an interpreter for R4RS Scheme with some additional procedures
+for accessing typical Unix system calls and Unix and Curses library
+functions (if compiled-in). The
+.B s9
+command starts the interpreter.
+.SH "OPTIONS
+.B "-h, -v, or -?
+.in +4
+Display a brief summary of options.
+.in -4
+.B "-i name | -
+.in +4
+Load alternative image file `\fIname\fP.image'. When no image file
+can be found, try to load `\fIname\fP.scm'. The file will be searched
+in the entire
+.I S9FES_LIBRARY_PATH
+(see below). When this option is used, it
+.B must
+be the first one of the s9 command.
+.br
+When `-' is specified as \fIname\fP, no heap image will be loaded,
+and the core library will be read from the source file `s9.scm'.
+.in -4
+.B "-d file
+.in +4
+Dump heap image to
+.I file
+and exit.
+.in -4
+.B "-f program [argument ...]
+.in +4
+Run
+.I program
+and exit (implies -q). When there are any
+.IR argument s,
+they are passed to the
+.IR program ,
+where they can be extracted from the
+.B *arguments*
+variable. This option must be the last one. The
+.B -f
+flag is optional.
+.in -4
+.B "-g[g]
+.in +4
+Print GC summaries. A single `g' will report pool growth, a second
+`g' will also include data about pool usage after each collection.
+.in -4
+.B "-k N[m]
+.in +4
+Set vector limit to
+.I N
+kilo (or mega) nodes (\fB-k 0\fP
+means no limit; use with care!).
+.in -4
+.B "-l program
+.in +4
+Load
+.I program
+before entering the REPL or processing
+.BR -f
+(may be repeated).
+.in -4
+.B "-n N[m]
+.in +4
+Set node limit to
+.I N
+kilo (or mega) nodes (\fB-n 0\fP
+means no limit; use with care!).
+.in -4
+.B "-q
+.in +4
+Be quiet: skip banners and prompts, exit on errors.
+.in -4
+.B "-u
+.in +4
+Short for \fB-k 0 -n 0\fP (use unlimited memory).
+.in -4
+.B "-- [argument ...]
+.in +4
+Arguments following
+.B --
+are not interpreted by S9fES, but bound to the
+.B *arguments*
+variable instead. This option must be the last one.
+.in -4
+.SH "ONLINE HELP
+When the interpreter is running and the default heap image is loaded,
+just type \fB(help)\fP or \fB,h\fP to invoke the online help system.
+When the online help system is not loaded, you will have to run the
+following command first:
+.sp
+\fB(load-from-library "help.scm")\fP
+.SH "META COMMANDS
+In order to facilitate the invocation of frequently-used top-level
+procedures,
+.B s9
+provides the following "meta commands" (they work only when entered
+directly at the
+.B s9
+prompt):
+.sp
+.in +4
+.nf
+\fB,a text\fP  =  (apropos "text")
+\fB,h text\fP  =  (help "text")
+\fB,l file\fP  =  (load-from-library "file")
+\fB,q     \fP  =  (sys:exit)
+.fi
+.in -4
+.sp
+The arguments of \fB,a\fP and \fB,h\fP are optional.
+.SH "ADDITIONS
+S9fES supports nestable block comments of the form
+.sp
+.in +4
+.nf
+\fB#|\fP \fIcomment ...\fP \fB|#\fP.
+.fi
+.in -4
+.sp
+Square brackets may be used in the places of parentheses:
+.sp
+.in +4
+.nf
+\fB(cond [(foo) (bar)])\fP.
+.fi
+.in -4
+.sp
+The same type of bracket must be used on both ends of a list.
+.sp
+These S9fES procedures are not in R4RS:
+.sp
+.ne 3
+.B "(argv integer)  ==>  string | #f
+.in +4
+Retrieve the value of the given command line argument. Return
+\fB#f\fP, if there are less than \fIinteger\fP+1 arguments.
+Arguments start at 0.
+.in -4
+.sp
+.ne 3
+.B "(bit-op integer1 integer2 integer3 ...)  ==>  integer | #f
+.in +4
+Implement a variety of bitwise operations. See the
+.B bit-op
+help page for details.
+.in -4
+.sp
+.ne 3
+.B "(delete-file string)  ==>  unspecific
+.in +4
+Delete the file specified in the
+.I string
+argument. If the file does not exist
+or cannot be deleted, report an error.
+.in -4
+.sp
+.ne 3
+.B "(environ string)  ==>  string | #f
+.in +4
+Retrieve the value of the given environment variable. Return
+\fB#f\fP, if the variable is undefined.
+.in -4
+.sp
+.ne 3
+.B "(error string)         ==>  undefined
+.br
+.B "(error string object)  ==>  undefined
+.in +4
+Print an error message of the form
+.I "error: string: object
+and terminate program execution.
+.in -4
+.sp
+.ne 3
+.B "(eval object1)          ==>  object
+.br
+.B "(eval object1 object2)  ==>  object
+.in +4
+Evaluate
+.I object1
+in the current environment and return its normal form.
+If
+.I object2
+is also specified, it is ignored.
+.in -4
+.sp
+.ne 3
+.B "(exponent real)  ==>  integer
+.in +4
+Extract the exponent part from a real number.
+.in -4
+.sp
+.ne 3
+.B "(file-exists? string)  ==>  boolean
+.in +4
+Return
+.B "#t
+if the file specified in the
+.I string
+argument exists and otherwise \fB#f\fP.
+.in -4
+.sp
+.ne 4
+.B "(fold-left proc base list ...)  ==>  object
+.in +4
+Combine the elements of the
+.IR list s
+using
+.IR proc .
+Combine elements left-associatively.
+.I Base
+is the leftmost element.
+.in -4
+.sp
+.ne 4
+.B "(fold-right proc base list ...)  ==>  object
+.in +4
+Combine the elements of the
+.IR list s
+using
+.IR proc .
+Combine elements right-associatively.
+.I Base
+is the rightmost element.
+.in -4
+.sp
+.B "(gensym)         ==>  symbol
+.br
+.B "(gensym symbol)  ==>  symbol
+.br
+.B "(gensym string)  ==>  symbol
+.in +4
+Return a fresh symbol. When a
+.I string
+or
+.I symbol
+argument is given, use it as prefix for the fresh symbol.
+.in -4
+.sp
+.ne 2
+.B "(load-from-library string)  ==>  unspecific
+.in +4
+Attempt to
+.B load
+the file
+.I string
+from each directory of
+.IR S9FES_LIBRARY_PATH .
+.in -4
+.sp
+.ne 2
+.B "(locate-file string)  ==>  string | #f
+.in +4
+Search for the file
+.I string
+in each  directory of
+.I S9FES_LIBRARY_PATH
+in sequence.
+When the file can be located, return its full path, else
+return \fB#f\fP.
+.in -4
+.sp
+.ne 3
+.B "(macro-expand object)  ==>  object
+.br 
+.B "(macro-expand-1 object)  ==>  object
+.in +4
+If
+.I object
+is a list resembling a macro application, return the expanded form,
+else return the object.
+.B Macro-expand-1
+expands macros only once while
+.B macro-expand
+expands them recursively.
+.in -4
+.sp
+.ne 3
+.B "(mantissa real)  ==>  integer
+.in +4
+Extract the mantissa part from a real number.
+.in -4
+.sp
+.ne 2
+.B "(print object ...)  ==>  unspecific
+.in +4
+Write multiple
+.IR object s
+separated by spaces.
+.in -4
+.sp
+.ne 2
+.B "(require-extension name ...)  ==>  unspecific
+.in +4
+Require the named extensions to be compiled-in. Signal an error
+if not all of the required extensions are present.
+.in -4
+.sp
+.ne 2
+.B "(reverse! list)  ==>  list
+.in +4
+Reverse
+.I list
+destructively and return the reverse list.
+.in -4
+.sp
+.ne 2
+.B "(set-input-port! input-port)  ==>  unspecific
+.in +4
+Destructively set the current input port.
+.in -4
+.sp
+.ne 2
+.B "(set-output-port! output-port)  ==>  unspecific
+.in +4
+Destructively set the current output port.
+.in -4
+.sp
+.ne 2
+.B "(stats form)  ==>  form
+.in +4
+Evaluate the given
+.I form
+and return a list containing its normal form plus a summary
+of the resources used to compute that normal form:
+.sp
+.in +4
+.nf
+- reduction steps
+- conses allocated
+- total nodes allocated
+- garbage collections
+.fi
+.in -4
+.sp
+Each resource count will be returned as a group of integers
+representing ones, thousands, millions, etc. Note that
+.I form
+must be quoted or it will be evaluated before passing it to
+.BR stats .
+.in -4
+.sp
+.ne 2
+.B "(symbols)  ==>  list
+.in +4
+Return a list of all defined symbols.
+.in -4
+.sp
+.ne 3
+.B "(system string)  ==>  number
+.in +4
+Run the given shell command and return its exit code.
+.in -4
+.sp
+.ne 3
+.B "(vector-append vector ...)  ==>  vector
+.in +4
+Return a fresh vector containing the concatenation of the given
+vectors.
+.in -4
+.sp
+.ne 3
+.B "(vector-copy vector)                           ==>  vector
+.br
+.B "(vector-copy vector integer)                   ==>  vector
+.br
+.B "(vector-copy vector integer1 integer2)         ==>  vector
+.br
+.B "(vector-copy vector integer1 integer2 object)  ==>  vector
+.in +4
+Return a copy of the given vector. When
+.I integer1
+is specified, skip the given number of elements. When
+.I integer2
+is also specified, copy elements from
+.I integer1
+up to, but not including,
+.IR integer2 .
+When
+.I integer2
+exceeds the size of the original vector, add unspecific slots to the
+copy. When an
+.I object
+argument is given, fill extra slots with that argument.
+.in -4
+.sp
+.ne 3
+.B "(void)  ==>  unspecific
+.in +4
+Return an unspecific value.
+.in -4
+.sp
+Refer to the help pages for descriptions of the Scheme 9 extension
+procedures.
+.SH "SPECIAL VARIABLES
+These variables are predefined in the dynamic top-level scope of the
+interpreter.
+.sp
+.ne 2
+.B "** (form)
+.in +4
+The normal form of the expression most recently evaluated at the
+top level.
+.in -4
+.ne 2
+.B "*arguments* (list of strings)
+.in +4
+A list of command line arguments passed to the
+.I "Scheme program
+(not to the interpreter), i.e. the
+.I args
+in \fIs9 -f file args\fP.
+.in -4
+.ne 2
+.B "*extensions* (list of symbols)
+.in +4
+Compiled-in extensions.
+.in -4
+.ne 2
+.B "*host-system* (symbol)
+.in +4
+The host system running the \fBs9\fP interpreter: \fBunix\fP, \fBplan9\fP, or
+.B "#F
+(unknown).
+.in -4
+.ne 2
+.B "*library-path* (string)
+.in +4
+A verbatim copy of the
+.I S9FES_LIBRARY_PATH
+environment variable (see below).
+.in -4
+.ne 2
+.B "*loading* (boolean)
+.in +4
+Set to
+.B #t
+when \fBload\fPing a file, else \fB#f\fP.
+.in -4
+.SH "MACROS
+A macro is a procedure that is applied to its unevaluated arguments.
+The macro application is replaced with the value returned by the procedure.
+This happens before the expression containing the macro application is
+evaluated, so a macro
+.I rewrites
+its own application:
+.sp
+.ne 2
+.nf
+(define-syntax (when p . c)
+  `(if ,p (begin ,@c)))
+(macro-expand '(when (= 1 1) (display "true") (newline) #t))
+  ==>  (if (= 1 1)
+           (begin (display "true")
+                  (newline)
+                  #t))
+(when (= 1 1) 1 2 3)  ==>  3
+.fi
+.sp
+The
+.B define-syntax
+form introduces a new macro:
+.sp
+.ne 3
+.B "(define-syntax name procedure)        ==>  unspecific
+.br
+.B "(define-syntax (name args ...) body)  ==>  unspecific
+.sp
+Both of these forms introduce the keyword
+.I name
+and bind it to a procedure. The first form requires the
+second argument to be a procedure. Like in
+.B define
+forms the second variant implies a procedure definition.
+.sp
+Macros may contain applications of macros that were defined earlier.
+Macros may not recurse directly, but they may implement recursion
+internally using
+.B letrec
+or by rewriting their own applications. The following macro,
+for example, does
+.I not
+work, because
+.I d
+is undefined in the body of
+.IR d :
+.sp
+.B "(define-syntax (d x) (and (pair? x) (d (cdr x)))) ; wrong"
+.sp
+The following version
+.I does
+work, though:
+.sp
+.B "(define-syntax (d x) (and (pair? x) `(d ,(cdr x)))) ; OK"
+.sp
+The body of
+.B define-syntax
+may be a
+.B syntax-rules
+transformer, as described in R4RS, if the
+.B syntax-rules
+extension has been loaded.
+.SH "TECHNICAL DETAILS
+S9fES is a tree-walking interpreter using deep binding and hashed
+environments. It employs an extremely reliable[1] constant-space mark
+and sweep garbage collector with in-situ string and vector pool
+compaction. Memory pools grow on demand. The interpreter uses
+arbitrary-precision integer arithmetics and decimal-based real number
+arithmetics.
+.SH "INTERPRETER START-UP
+When the
+.B s9
+interpreter is started, the following steps will be performed in this
+order:
+.sp
+Load library.
+.in +4
+The interpreter searches its library path (either built-in or specified
+in the
+.I S9FES_LIBRARY_PATH
+environment variable)
+for a heap image file or the library source code. The heap image file
+is the name of the interpreter with a
+.I .image
+suffix appended. An alternative name can be specified with the
+.B -i
+option (see
+.BR OPTIONS ).
+The default library source code is named
+.IR s9.scm .
+First all directories of the library path are searched for images,
+then the directories are searched for library sources.
+.in -4
+.sp
+Initialize extensions.
+.in +4
+Any extensions compiled into the interpreter are initialized by calling
+the nullary procedure
+.B ext:ext
+(where
+.B ext
+is the name of the extension). The procedures are optional. The last
+`extension' being initialized is
+.B S9
+itself, so when a procedure named
+.B s9:s9
+exists, it will be called at this point.
+.in -4
+.sp
+Evaluate command line options.
+.in +4
+When a
+.I "-l file
+option is found, the program contained in the given file will be
+.BR load ed.
+When a
+.I "-f file args
+option is found, the program contained in the file will be run and then
+S9 will exit.
+.I Args
+will be passed to the program.
+.in -4
+.sp
+.ne 2
+Enter REPL.
+.in +4
+Interactive mode is only entered, when no
+.I -f
+option was specified.
+.in -4
+.SH "ALLOCATION STRATEGY
+The S9fES memory pools grow exponentially until the memory limit
+is reached. When the limit is reached, the current computation
+is aborted. A memory limit can be specified using the \fB-k\fP,
+\fB-n\fP, and
+.B -u
+command line options. The limit is specified in units of 1024
+nodes/cells (or in units of 1024*1024 nodes/cells by appending an
+.B m
+suffix).
+.sp
+Note that computations may abort
+.I before
+the limit is reached due to the way the pool grows. Use the
+.B -g
+command line option to experiment with pool sizes.
+.br
+Specifying a limit of zero (or using the
+.B -u
+option) disables the memory limit completely
+and the interpreter will allocate as much memory as it can get.
+This option should be used with care.
+.SH "LIMITATIONS
+These parts of R4RS are not implemented:
+.sp
+I/O:
+.B char-ready?
+(this is in the
+.B sys-unix
+extension).
+.br
+Transcripts:
+.BR transcript-off ,
+.BR transcript-on .
+.br
+Rational and complex numbers and related procedures.
+.br
+The
+.B atan
+procedure does not accept a second argument.
+.SH "BUGS
+You may not quasiquote
+.B quasiquote
+unless in
+.BR unquote
+(e.g.:
+.B ``x
+does not work, but
+.B `,`x
+does).
+.br
+The macro expander will expand
+.B (x)
+in \fB(cond (x))\fP,
+if
+.B x
+is a macro.
+.br
+.B Syntax-rules
+is not fully hygienic.
+.br
+.B Call/cc
+must be the only argument when used in
+.B lambda
+(or derived binding syntax, such as
+.BR let ).
+Not observing this rule
+.I will
+break the interpreter.
+.SH "FILES
+.ne 2
+.B @S9DIR@
+.in +4
+The S9fES procedure library (source code).
+.in -4
+.ne 2
+.B @S9DIR@/s9.image
+.in +4
+The interpreter heap image.
+.in -4
+.ne 2
+.B *.scm
+.in +4
+Scheme source code.
+.in -4
+.SH "ENVIRONMENT
+.B S9FES_LIBRARY_PATH
+.in +4
+A colon-separated list of directories which will be searched for
+the s9 library when the interpreter is launched. The same directories
+will be searched by the
+.B locate-file
+procedure.
+.br
+Default:
+.I \&.:~/.s9fes:@S9DIR@
+.in -4
+.SH "SIGNALS
+.ne 3
+.B "SIGINT
+.in +4
+Abort input or terminate program execution.
+.in -4
+.ne 3
+.B "SIGQUIT
+.in +4
+Terminate the interpreter process (emergency exit).
+.in -4
+.B "SIGTERM
+.in +4
+Silently terminate the interpreter process.
+.in -4
+.B """interrupt"""
+.in +4
+On Plan 9, receiving an
+.I interrupt
+note will abort input or terminate program execution, as
+.I SIGINT
+would on Unix.
+.in -4
+.SH "FOOTNOTES
+.B [1]
+See
+.I comp.lang.scheme
+Usenet message
+.in +4
+.I "<vhtzl9lupyp.fsf@maharal.csail.mit.edu>
+.br
+(Thu, 27 Aug 2009 13:27:42 -0400) and its follow-ups.
+.in -4
+.SH "REFERENCES
+.ne 3
+The Revised^4 Report on the Algorithmic Language Scheme.
+.in +4
+.B "http://www-swiss.ai.mit.edu/~jaffer/r4rs_toc.html
+.in -4
+.sp
+.ne 3
+Scheme 9 from Empty Space -- A Guide to Implementing Scheme in C.
+.in +4
+.B "Available at Lulu.com, see http://www.t3x.org
+.in -4
+.SH AUTHOR
+Nils M Holm

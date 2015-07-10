@@ -1,0 +1,38 @@
+Tcl commands to interface to DOS 
+
+$Id: dos.txt,v 1.1.1.1 2001/04/29 20:36:22 karll Exp $
+
+kbhit - returns 1 if a key has been hit, else 0
+
+getkey - returns a key as an integer keycode.  waits until a key
+has been pressed.  (So use kbhit to see if one is there first, if you
+don't want to wait.)
+
+sound - start the sound playing a square wave at the specified
+frequency in hertz.  If 0, stops the sound from playing.
+
+getdate - returns the current date as a list containing month, day, year.
+
+setdate month day year -- set the current date to the specified
+month, day and year.
+
+drive -- set the drive to the specified drive letter.
+
+Example:  drive A
+
+If drive letter is not specified, the current drive is returned.
+
+memfree - returns the amount of RAM left on the system.
+
+stackfree - returns the amount of stack left on the system
+
+rawclock - returns the raw clock value in ticks since the time the program
+started.
+
+cls - clear the screen
+
+heapcheck - check the heap for corruption.  If corruption is detected, the
+program panics, printing an error message and then exiting immediately.
+
+mkdir dir - create a directory.
+

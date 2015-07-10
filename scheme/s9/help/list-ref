@@ -1,0 +1,6 @@
+R4RS 6.3  (list-ref list integer)  ==>  obj
+
+Returns the INTEGER'th element of list. (This is the same as the
+car of (list-tail list INTEGER).)
+
+(list-ref '(a b c d) 2)  ==>  c

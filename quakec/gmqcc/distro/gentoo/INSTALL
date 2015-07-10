@@ -1,0 +1,35 @@
+To use the ebuilds provided in this gentoo directory you first must
+create a directory in your overlay tree.
+
+If you don't already have your own directory for custom ebuilds, you can
+create one. If you already have one, and that directory is set in your
+/etc/make.conf for PORTDIR_OVERLAY, this step can be skiped. Otherwise
+if you don't already, you can create one as such.
+
+# mkdir -p /usr/local/portage
+# vim /etc/make.conf
+	Set PORTDIR_OVERLAY=/usr/local/portage
+	Then save and exit
+
+Once that is completed, or you skiped that step, you need to create a
+directory in your overlay tree for gmqcc, this can be done as such:
+(subsitute [[PORTDIR_OVERLAY]] with the one set in /etc/make.conf)
+
+# mkdir -p [[PORTDIR_OVERLAY]]/gmqcc
+
+After the directory is created you need to move the correct version ebuild
+into that directory depending on which version of GMQCC you want. For
+instance, if you want gmqcc 0.3.0, you move gmqcc-0.3.0.ebuild into that
+directory.
+
+# mv gmqcc-{version}.ebuild [[PORTDIR_OVERLAY]]/gmqcc/
+
+After the file is moved into your newly created portage overlay tree, you'll
+need to build a digest for it with ebuild. A digest is simply a Manifest and
+digital signature for the source files used.
+
+# ebuild gmqcc-0.3.0.ebuild digest
+
+After the digest is built, you can emerge gmqcc as usual.
+
+# emerge gmqcc

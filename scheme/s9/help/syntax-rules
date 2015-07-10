@@ -1,0 +1,79 @@
+R4RS Appendix  (syntax-rules <literals> <syntax rule> ...)  ==>  transformer
+
+Syntax: <Literals> is a list of identifiers, and each <syntax rule>
+should be of the form
+
+(<pattern> <template>)
+
+where the <pattern> and <template> are described in detail in the
+`Binding syntactic keywords' section of R4RS.
+
+Semantics: An instance of SYNTAX-RULES produces a new macro
+transformer by specifying a sequence of hygienic rewrite rules. A
+use of a macro whose keyword is associated with a transformer
+specified by SYNTAX-RULES is matched against the patterns contained
+in the <syntax rule>s, beginning with the leftmost <syntax rule>.
+When a match is found, the macro use is transcribed hygienically
+according to the template.
+
+Each pattern begins with the keyword for the macro. This keyword
+is not involved in the matching and is not considered a pattern
+variable or literal identifier.
+
+An identifier that appears in the pattern of a <syntax rule> is a
+pattern variable, unless it is the keyword that begins the pattern,
+is listed in <literals>, or is the identifier `...'. Pattern variables
+match arbitrary input elements and are used to refer to elements
+of the input in the template. It is an error for the same pattern
+variable to appear more than once in a <pattern>.
+
+Identifiers that appear in <literals> are interpreted as literal
+identifiers to be matched against corresponding sub-forms of the
+input. A sub-form in the input matches a literal identifier if and
+only if it is an identifier and either both its occurrence in the
+macro expression and its occurrence in the macro definition have
+the same lexical binding, or the two identifiers are equal and both
+have no lexical binding.
+
+A sub-pattern followed by `...' can match zero or more elements of
+the input. It is an error for `...' to appear in <literals>. Within
+a pattern the identifier `...' must follow the last element of a
+nonempty sequence of sub-patterns.
+
+More formally, an input form F matches a pattern P if and only if:
+
+- P is a pattern variable; or
+- P is a literal identifier and F is an identifier with the same
+  binding; or
+- P is a pattern list `(P_1 ... P_n)' and F is a list of n forms
+  that match P_1 through P_n, respectively; or
+- P is an improper pattern list `(P_1 P_2 ... P_n . P_n+1)' and F
+  is a list or improper list of n or more forms that match P_1
+  through P_n, respectively, and whose nth "cdr" matches P_n+1; or
+- P is of the form `(P_1 ... P_n P_n+1 <ellipsis>)' where <ellipsis>
+  is the identifier `...' and F is a proper list of at least n
+  elements, the first n of which match P_1 through P_n, respectively,
+  and each remaining element of F matches P_n+1; or
+- P is a pattern datum and F is equal to P in the sense of the
+  `equal?' procedure.
+
+It is an error to use a macro keyword, within the scope of its
+binding, in an expression that does not match any of the patterns.
+
+When a macro use is transcribed according to the template of the
+matching <syntax rule>, pattern variables that occur in the template
+are replaced by the sub-forms they match in the input. Pattern
+variables that occur in sub-patterns followed by one or more instances
+of the identifier `...' are allowed only in sub-templates that are
+followed by as many instances of `...'. They are replaced in the
+output by all of the sub-forms they match in the input, distributed
+as indicated. It is an error if the output cannot be built up as
+specified.
+
+Identifiers that appear in the template but are not pattern variables
+or the identifier `...' are inserted into the output as literal
+identifiers. If a literal identifier is inserted as a free identifier
+then it refers to the binding of that identifier within whose scope
+the instance of `syntax-rules' appears. If a literal identifier is
+inserted as a bound identifier then it is in effect renamed to
+prevent inadvertent captures of free identifiers.

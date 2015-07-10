@@ -1,0 +1,81 @@
+S9 EXT  (curs:cbreak)                  ==>  unspecific
+        (curs:clearok boolean)         ==>  unspecific
+        (curs:echo)                    ==>  unspecific
+        (curs:idlok boolean)           ==>  unspecific
+        (curs:get-magic-value string)  ==>  integer
+        (curs:keypad boolean)          ==>  unspecific
+        (curs:nl)                      ==>  unspecific
+        (curs:nocbreak)                ==>  unspecific
+        (curs:nodelay boolean)         ==>  unspecific
+        (curs:noecho)                  ==>  unspecific
+        (curs:nonl)                    ==>  unspecific
+        (curs:noraw)                   ==>  unspecific
+        (curs:raw)                     ==>  unspecific
+        (curs:resetty)                 ==>  unspecific
+        (curs:savetty)                 ==>  unspecific
+        (curs:scrollok boolean)        ==>  unspecific
+
+Curses routines for configuring the terminal. This is only a rough
+summary. See the curses(3) manual page or a curses tutorial of your
+choice for further information.
+
+CURS:CBREAK switches the terminal to "cbreak" mode. In cbreak mode
+characters are delivered to the calling program as soon as they are
+typed. Cbreak and raw mode exclude each other.
+
+CURS:NOCBREAK switches the terminal to "cooked" mode. In cooked
+mode, input will only be delivered to the calling program when the
+RETURN key is pressed on the terminal. Input buffering and basic
+editing (erasing characters) will be handled by the TTY driver.
+
+CURS:ECHO enables "echo" mode. In echo mode, all input will be
+echoed to the virtual screen.
+
+CURS:NOECHO disables echo mode.
+
+CURS:GET-MAGIC-VALUE retrieves a magic constant from the curses
+library (e.g.: key codes or screen attributes). When the requested
+constant could not be delivered, an error is signalled the calling
+program is terminated.
+
+CURS:IDLOK enables or disables the hardware insert line/delete line
+commands, if supported by the terminal. When these commands are
+disabled lines are inserted and deleted by rewriting the bottom
+of the screen completely.
+
+CURS:KEYPAD enables or disables "keypad" mode. In keypad mode,
+Curses will interpret escape sequences sent by "special" keys and
+translate them to key codes. See CURS:GETCH for details. When
+keypad mode is disabled, CURS:GETCH will deliver the individual
+parts of the sequence instead, leaving interpretation to the
+calling program.
+
+CURS:NL enables "newline" mode. In newline mode, RETURN will be
+translated to newline on input and newline to carriage return
+plus line-feed on output.
+
+CURS:NONL disables newline mode. Characters will not be translated
+on input or output.
+
+CURS:NODELAY enables or disables "nodelay" mode. In nodelay
+mode CURS:GETCH does not block and delivers #F when there are
+no characters in the keyboard queue.
+
+CURS:RAW switches the terminal to "raw" mode. Raw mode is like
+cbreak mode, but in addition passes trough the interrupt, quit,
+suspend, XON, and XOFF characters without interpreting them.
+Cbreak and raw mode exclude each other.
+
+CURS:NORAW ends raw mode.
+
+CURS:SAVETTY saves the current terminal state in an internal
+buffer. CURS:RESETTY restores the state from that buffer.
+
+CURS:SCROLLOK enables and disables scroll mode. In scroll mode,
+emitting a newline character in the bollom line of the screen
+or writing past the last column of the last row of the screen
+will cause the screen to scroll up automatically. When scroll
+mode is disabled, no auto-scrolling will be initiated.
+
+Hardware line insert/delete has to be activated in addition
+to enable hardware scrolling. (See CURS:IDLOK.)

@@ -1,0 +1,6 @@
+R4RS 6.8  (make-vector integer)         ==>  vector
+          (make-vector integer object)  ==>  vector
+
+Returns a newly allocated vector of INTEGER elements. If a second
+argument is given, then each element is initialized to fill.
+Otherwise the initial content of each element is unspecified.

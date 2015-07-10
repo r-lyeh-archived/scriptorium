@@ -1,0 +1,7 @@
+S9fES  (print object ...)  ==>  unspecific
+
+Write the external representation of each given OBJECT to the port
+returned by CURRENT-OUTPUT-PORT. Use WRITE to write each external
+representation. Display one space character between adjacent objects.
+Display a newline sequence after the last object. PRINT with no
+arguments is equal to (NEWLINE).

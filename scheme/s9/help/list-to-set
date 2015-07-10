@@ -1,0 +1,7 @@
+S9 LIB  (list->set list)  ==>  list
+
+        (load-from-library "list-to-set.scm")
+
+Convert list to set. A set is a list containing unique members.
+
+(list->set '(a b c b c))  ==>  (a b c)

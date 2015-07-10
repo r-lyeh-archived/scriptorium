@@ -1,0 +1,96 @@
+R4RS 6.9  (force promise)     ==>  object
+          (delay expression)  ==>  promise
+
+FORCE forces the value of PROMISE (see DELAY, section see section
+4.2.5 Delayed evaluation). If no value has been computed for the
+promise, then a value is computed and returned. The value of the
+promise is cached (or "memoized") so that if it is forced a second
+time, the previously computed value is returned.
+
+(force (delay (+ 1 2)))        ==>  3
+(let ((p (delay (+ 1 2))))
+  (list (force p) (force p)))  ==>  (3 3)
+
+(define a-stream
+  (letrec ((next (lambda (n)
+                   (cons n (delay (next (+ n 1)))))))
+    (next 0)))
+(define head car)
+(define (tail stream) (force (cdr stream)))
+(head (tail (tail a-stream)))                ==>  2
+
+FORCE and DELAY are mainly intended for programs written in functional
+style. The following examples should not be considered to illustrate
+good programming style, but they illustrate the property that only
+one value is computed for a promise, no matter how many times it
+is forced.
+
+(define count 0)
+(define p
+  (delay (begin (set! count (+ count 1))
+                (if (> count x)
+                    count
+                    (force p)))))
+(define x 5)
+p                    ==>  a promise
+(force p)            ==>  6
+p                    ==>  a promise, still
+(begin (set! x 10)
+       (force p))    ==>  6
+
+Here is a possible implementation of DELAY and FORCE. Promises are
+implemented here as procedures of no arguments, and FORCE simply
+calls its argument:
+
+(define force
+  (lambda (object)
+    (object)))
+
+We define the expression
+
+(delay <expression>)
+
+to have the same meaning as the procedure call
+
+(make-promise (lambda () <expression>)),
+
+where make-promise is defined as follows:
+
+(define (make-promise proc)
+  (let ((result-ready? #f)
+        (result #f))
+    (lambda ()
+      (if result-ready?
+          result
+          (let ((x (proc)))
+            (if result-ready?
+                result
+                (begin (set! result-ready? #t)
+                       (set! result x)
+                       result)))))))
+
+Rationale: A promise may refer to its own value, as in the last
+example above. Forcing such a promise may cause the promise to be
+forced a second time before the value of the first FORCE has been
+computed. This complicates the definition of make-promise.
+
+Various extensions to this semantics of DELAY and FORCE are supported
+in some implementations:
+
+- Calling FORCE on an object that is not a promise may simply
+  return the object.
+- It may be the case that there is no means by which a promise
+  can be operationally distinguished from its forced value. That
+  is, expressions like the following may evaluate to either #T or
+  to #F, depending on the implementation:
+
+  (eqv? (delay 1) 1)          ==>  unspecified
+  (pair? (delay (cons 1 2)))  ==>  unspecified
+
+- Some implementations may implement "implicit forcing," where
+  the value of a promise is forced by primitive procedures like
+  cdr and +:
+
+  (+ (delay (* 3 7)) 13)  ==>  34
+
+S9fES does not implement implicit forcing.

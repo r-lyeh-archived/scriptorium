@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="GenerateHeaders">
+
+  <Import Project="env.props" Condition="$(PyEnvIncluded)!=True"/>
+
+  <!--Generate qstrdefs.h and mpversion.h similar to what is done in py/py.mk-->
+  <Target Name="GenerateHeaders" DependsOnTargets="MakeQstrData;MakeVersionHdr">
+  </Target>
+
+  <PropertyGroup>
+    <DestDir>$(PyBuildDir)genhdr\</DestDir>
+    <PySrcDir>$(PyBaseDir)py\</PySrcDir>
+  </PropertyGroup>
+
+  <Target Name="MakeDestDir">
+    <MakeDir Directories="$(DestDir)"/>
+  </Target>
+
+  <Target Name="MakeQstrData" DependsOnTargets="MakeDestDir">
+    <PropertyGroup>
+      <PreProc>$(DestDir)qstrdefs.preprocessed.h</PreProc>
+      <QstrDefs>$(PyBaseDir)unix\qstrdefsport.h</QstrDefs>
+      <DestFile>$(DestDir)qstrdefs.generated.h</DestFile>
+      <TmpFile>$(DestFile).tmp</TmpFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <PyIncDirs Include="$(PyIncDirs)"/>
+    </ItemGroup>
+    <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /Fi$(PreProc) /P $(PySrcDir)qstrdefs.h"/>
+    <Exec Command="python $(PySrcDir)makeqstrdata.py $(PreProc) $(QstrDefs) > $(TmpFile)"/>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
+  <Target Name="MakeVersionHdr" DependsOnTargets="MakeDestDir">
+    <PropertyGroup>
+      <DestFile>$(DestDir)mpversion.h</DestFile>
+      <TmpFile>$(DestFile).tmp</TmpFile>
+    </PropertyGroup>
+    <Exec Command="python $(PySrcDir)makeversionhdr.py $(TmpFile)"/>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
+  <!--Copies SourceFile to DestFile only if SourceFile's content differs from DestFile's.
+      We use this to 'touch' the generated files only when they are really newer
+      so a build is only triggered if the generated content actually changed,
+      and not just because the file date changed since the last build-->
+  <Target Name="CopyFileIfDifferent">
+    <Exec Command="fc /B $(SourceFile) $(DestFile) > NUL 2>&amp;1" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="FilesDiffer" />
+    </Exec>
+    <Copy SourceFiles="$(SourceFile)" DestinationFiles="$(DestFile)" Condition="'$(FilesDiffer)'!='0'"/>
+  </Target>
+
+</Project>

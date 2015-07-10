@@ -1,0 +1,12 @@
+PRE.ccode { background: #f6f0ea;
+            line-height: 130%;
+            padding: 0.5em;
+            border: 1px solid #808080; }
+
+PRE.ccode SPAN.co { color: #600000; } /* comment */
+PRE.ccode SPAN.cp { color: #505050; } /* punctuation */
+PRE.ccode SPAN.cs { color: #000000; } /* symbol */
+PRE.ccode SPAN.cc { color: #0060c0; } /* constant */
+PRE.ccode SPAN.cr { color: #6000c0; } /* reserved word */
+PRE.ccode SPAN.cl { color: #6000c0; } /* stdlib symbol */
+PRE.ccode SPAN.cx { color: #c06000; } /* extension */

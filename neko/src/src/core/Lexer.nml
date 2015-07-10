@@ -1,0 +1,244 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+type pos {
+	psource : string;
+	pline : int;
+	pmin : int;
+	pmax : int;
+}
+
+type 'a t {
+	mutable data : 'a;
+	mutable current : string;
+	mutable buffer : string;
+	mutable bsize : int;
+	mutable bin : int;
+	mutable bpos : int;
+	mutable cin : int;
+	mutable cpos : int;
+	mutable input : IO.input;
+	mutable source : string;
+	mutable line : int;
+	mutable pos : int;
+	mutable carriage : bool;
+}
+
+type ('a,'b) tables {
+	engine : LexEngine.tables;
+	cases : ('b t -> 'a) array;
+	def :  'b t -> 'a;
+}
+
+exception Invalid_rule : string
+
+var null_pos = { pmin = 0; pmax = 0; pline = 0; psource = "<null>" };
+
+function source(p) { p.psource }
+function line(p) { p.pline }
+
+function punion(p,p2) {
+	{
+		psource = p.psource;
+		pline = p.pline;
+		pmin = min p.pmin p2.pmin;
+		pmax = max p.pmax p2.pmax;
+	}
+}
+
+function create(data) {
+	var bufsize = 4096;
+	{
+		data = data;
+		carriage = false;
+		current = "";
+		buffer = String.create bufsize;
+		bsize = bufsize;
+		bin = 0;
+		cin = 0;
+		bpos = bufsize;
+		cpos = bufsize;
+		input = IO.read_string "";
+		source = "<null>";
+		line = 0;
+		pos = 0;
+	}
+}
+
+function data(l) {
+	l.data;
+}
+
+function set(l,data) {
+	l.data := data;
+}
+
+function input(l,source,input,line,pos) {
+	l.bin := 0;
+	l.cin := 0;
+	l.bpos := l.bsize;
+	l.cpos := l.bsize;
+	l.input := input;
+	l.source := source;
+	l.line := line;
+	l.pos := pos;
+}
+
+
+function curpos(l) {
+	{
+		psource = l.source;
+		pline = l.line;
+		pmin = l.pos - String.length l.current;
+		pmax = l.pos;
+	}
+}
+
+function current(l) : string {
+	l.current
+}
+
+function read(l) : char {
+	if l.bin == 0 then {
+		if l.bpos == l.bsize then {
+			var buf = String.create (l.bsize * 2);
+			String.blit buf l.bsize l.buffer 0 l.bsize;
+			l.cpos := l.cpos + l.bsize;
+			l.bpos := l.bpos + l.bsize;
+			l.buffer := buf;
+			l.bsize := l.bsize * 2;
+		}
+		var delta = l.bpos - l.cpos;
+		String.blit l.buffer 0 l.buffer l.cpos delta;
+		l.bpos := delta;
+		l.cpos := 0;
+		var k = IO.input l.input l.buffer delta (l.bsize - delta);
+		l.bin := l.bin + k;
+		l.cin := l.cin + k;
+	};
+	var c = String.get l.buffer l.bpos;
+	l.bpos := l.bpos + 1;
+	l.bin := l.bin - 1;
+	c
+}
+
+function inc_line(l,c) {
+	if c == '\r' then
+		l.carriage := true
+	else if c == '\n' || l.carriage then {
+		l.carriage := false;
+		l.line := l.line + 1;
+	};
+}
+
+function char(l) : char option {
+	try {
+		var c = read l;
+		l.bpos := l.bpos - 1;
+		l.bin := l.bin + 1;
+		inc_line l c;
+		Some c
+	} catch {
+		IO.Eof -> None
+	}
+}
+
+type cur {
+	mutable cur_n : int;
+	mutable cur_res : int;
+}
+
+function token(l,t) : 'a {
+	var tbl = fst t.engine;
+	var exits = snd t.engine;
+	var cur = { cur_n = 0; cur_res = -1 };
+	var last = { cur_n = 0; cur_res = -1 };
+	function rec loop(n,k) {
+		var res = neko("tbl[0][k][0][read(l)]");
+		var e = exits.[k];
+		cur.cur_n := n;
+		cur.cur_res := res;
+		if e != -1 then {
+			last.cur_n := n;
+			last.cur_res := e;
+		}
+		if res == -1 then throw Exit;
+		neko("loop[0](n+1,res)");
+	};
+	function process(eof) {
+		var n = last.cur_n;
+		var k = last.cur_res;
+		if k == -1 then {
+			l.current := "";
+			if !eof then {
+				l.bpos := l.bpos - (cur.cur_n + 1);
+				l.bin := l.bin + (cur.cur_n + 1);
+			}
+			-1;
+		} else {
+			l.cin := l.cin - n;
+			l.bin := l.cin;
+			l.current := String.sub l.buffer l.cpos n;
+			l.cpos := l.cpos + n;
+			l.bpos := l.cpos;
+			l.pos := l.pos + n;
+			var i = &0;
+			while *i < n {
+				inc_line l (String.get l.current (*i));
+				i := *i + 1;
+			}
+			k
+		}
+	};
+	var k = try {
+		loop 0 0;
+		assert();
+	} catch {
+		| IO.Eof ->
+			if cur.cur_res != -1 then {
+				last.cur_n := cur.cur_n + 1;
+				last.cur_res := exits.[cur.cur_res];
+			}
+			process true;
+		| Exit ->
+			process false
+	}
+	if k == -1 then
+		t.def(l)
+	else
+		t.cases.[k](l)
+}
+
+function build(rules,def) {
+	var nfa = List.map (function((r,_)) { try LexEngine.parse r catch { _ -> throw Invalid_rule(r) } }) rules;
+	var cases = List.array (List.map snd rules);
+	{
+		engine = LexEngine.make_tables (LexEngine.determinize (List.array nfa));
+		cases = cases;
+		def = def;
+	}
+}
+
+function empty() {
+	function empty_table(_) { invalid_arg() };
+	build [] empty_table;
+}

@@ -1,0 +1,168 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+open Nekoml.Ast
+
+type error_msg {
+	Invalid_character : char;
+	Unterminated_string;
+	Unclosed_comment;
+	Invalid_escaped_character : int;
+	Invalid_escape;
+}
+
+exception Error : (error_msg , pos)
+
+function error_msg(msg) {
+	match msg {
+	| Invalid_character c -> sprintf "Invalid character '%s'" (String.escape_char c)
+	| Unterminated_string -> "Unterminated string"
+	| Unclosed_comment -> "Unclosed comment"
+	| Invalid_escaped_character n -> sprintf "Invalid escaped character %d" n
+	| Invalid_escape -> "Invalid escape sequence"
+	}
+}
+
+function error(l,msg) {
+	throw Error(msg,Lexer.curpos l)
+}
+
+var keywords = {
+	var h = Hashtbl.create();
+	List.iter (function(k) { Hashtbl.add h (s_keyword k) k })
+	[Var;If;Else;Function;Try;Catch;Type;Match;Then;When;While;Exception];
+	h
+}
+
+function mk(l,t) {
+	(t,Lexer.curpos l)
+}
+
+function mk_ident(l) {
+	var s = Lexer.current l;
+	mk l (try Keyword (Hashtbl.find keywords s) catch { Not_found -> Const (Ident s) })
+}
+
+function mk_int(l) {
+	mk l (Const (Int (int (Lexer.current l))))
+}
+
+function mk_float(l) {
+	mk l (Const (Float (Lexer.current l)))
+}
+
+function mk_binop(l) {
+	mk l (Binop (Lexer.current l));
+}
+
+
+var ident = "[a-z_][a-zA-Z0-9_]*";
+var modident = "[A-Z][a-zA-Z0-9_]*";
+var binop = "[-!=*/<>&|%+:]";
+var number = "[0-9]";
+var numbers = number + "+";
+var spaces = "[ \r\n\t]+";
+
+var token = &Lexer.empty();
+
+function comment(l) {
+	Lexer.token l (*Neko.Lexer.ecomment)
+}
+
+function str(l) {
+	Lexer.token l (*Neko.Lexer.estring)
+}
+
+token := Lexer.build [
+	(";", function(l) { mk l Semicolon });
+	(".", function(l) { mk l Dot });
+	(",", function(l) { mk l Comma });
+	("{", function(l) { mk l BraceOpen });
+	("}", function(l) { mk l BraceClose });
+	(spaces +  "(", function(l) { mk l (ParentOpen true) });
+	("(", function(l) { mk l (ParentOpen false) });
+	(")", function(l) { mk l ParentClose });
+	("\\[", function(l) { mk l BracketOpen });
+	("]", function(l) { mk l BracketClose });
+	("'", function(l) { mk l Quote });
+	("|", function(l) { mk l Vertical });
+	(spaces, function(l) { Lexer.token l (*token) });
+	( "0x[0-9a-fA-F]+", mk_int );
+	( numbers, mk_int );
+	( numbers + "." + number + "*", mk_float);
+	( "." + numbers, mk_float );
+	("true", function(l) { mk l (Const (Bool true)) });
+	("false", function(l) { mk l (Const (Bool false))});
+	("\"", function(l) {
+		var p1 = Lexer.curpos l;
+		var buf = Lexer.data l;
+		Buffer.reset buf;
+		try str l catch { Exit -> throw Error(Unterminated_string,p1) };
+		var p2 = Lexer.curpos l;
+		(Const String(Buffer.string buf) , Lexer.punion p1 p2)
+	});
+	("/\\*", function(l) {
+		var p1 = Lexer.curpos l;
+		var buf = Lexer.data l;
+		Buffer.reset buf;
+		try comment l catch { Exit -> throw Error(Unclosed_comment,p1) };
+		var p2 = Lexer.curpos l;
+		(Comment(Buffer.string buf) , Lexer.punion p1 p2)
+	});
+	("'\\\\n'", function(l) { mk l Const(Char '\n') });
+	("'\\\\t'", function(l) { mk l Const(Char '\t') });
+	("'\\\\r'", function(l) { mk l Const(Char '\r') });
+	("'\\\\''", function(l) { mk l Const(Char '\'') });
+	("'\\\\\\\\'", function(l) { mk l Const(Char '\\') });
+	("'\\\\\"'", function(l) { mk l Const(Char '"') });
+	("'[^\\\\]'", function(l) { mk l Const(Char (String.get Lexer.current(l) 1)) });
+	("'\\\\[0-9][0-9][0-9]'", function(l) {
+		var s = String.sub (Lexer.current l) 2 3;
+		var n = int s;
+		if n > 255 then error l Invalid_escaped_character(n);
+		mk l (Const (Char (chr n)))
+	});
+	("//[^\r\n]*\n?", function(l) {
+		var s = Lexer.current l;
+		var len = String.length s;
+		var n = (if String.get s (len - 1) == '\r' then 3 else 2);
+		mk l CommentLine(String.sub s 0 (len - n))
+	});
+	("\\[<", function(l) { mk l StreamOpen });
+	(">]", function(l) { mk l StreamClose });
+	("->", function(l) { mk l Arrow });
+	(binop + binop + "?", mk_binop);
+	(">>>" , mk_binop);
+	("===" , mk_binop);
+	("!==" , mk_binop);
+	("or" , mk_binop);
+	("and" , mk_binop);
+	("xor" , mk_binop);
+	(ident , mk_ident);
+	(modident , function(l) { mk l Const(Constr (Lexer.current l)) });
+] (function(l) {
+	match Lexer.char l {
+	| None -> mk l Eof
+	| Some c -> error l (Invalid_character c)
+	}
+});
+

@@ -1,0 +1,11 @@
+S9 LIB  (string-upcase string)    ==>  string
+        (string-downcase string)  ==>  string
+
+        (load-from-library "string-case.scm")
+
+Return a fresh string containing the characters of STRING, but
+with the case of alphabetic characters converted. STRING-UPCASE
+converts characters to upper case, STRING-DOWNCASE to lower case.
+
+(string-upcase "Hello, World!")    ==>  "HELLO, WORLD!"
+(string-downcase "Hello, World!")  ==>  "hello, world!"

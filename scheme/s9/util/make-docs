@@ -1,0 +1,82 @@
+#!/bin/sh
+
+tmp=/tmp/make-doc.tmp.$$
+tmp2=/tmp/make-doc.tmp2.$$
+sigs=/tmp/make-doc.sigs.$$
+prose=/tmp/make-doc.prose.$$
+exms=/tmp/make-doc.exms.$$
+
+cleanup() {
+	rm -f $tmp $tmp2 $sigs $prose $exms
+}
+
+trap cleanup 1 2 3
+
+format() {
+	sed -e '1,/^;$/d' <$1 >$tmp
+	sed -ne '1,/^;$/p' <$tmp | sed -e 's/^; //' -e '$d' >$sigs
+	sed -e '1,/^;$/d' \
+	    -e 's/; (load-from-library/;         (load-from-library/' \
+	    <$tmp >$tmp2 && mv -f $tmp2 $tmp
+
+	sed -ne '1,/^;.*Example)*:/p' <$tmp | \
+		sed -e 's/^; //' -e 's/^;$//' -e '$d' >$prose
+
+	sed -ne '/^;.*Example)*:/,/^$/p' <$tmp | sed -e '$d' | \
+		sed -e 's/^;$//' | \
+		sed -e 's/^.............//' >$exms
+
+	sed -e '1s/^/S9 LIB  /' -e '2,$s/^/        /' <$sigs
+	echo
+	cat $prose
+	cat $exms
+}
+
+if [ ! -d help-new ]; then mkdir help-new; fi
+
+for file in lib/*.scm contrib/*.scm ext/*.scm; do
+	if echo $file | grep -- '-test.scm' >/dev/null 2>&1; then
+		continue
+	fi
+	format $file >help-new/$(basename $file .scm)
+	echo $file
+done
+
+cd help-new
+
+rm -f	curses		\
+	fluid-let-sr	\
+	format		\
+	io-tools	\
+	list-tools	\
+	math-tools	\
+	set-tools	\
+	string-tools	\
+	syntax-rules	\
+	unix		\
+	unix-tools	\
+	vector-tools
+
+mv -f amk runstar
+mv -f array make-array
+mv -f bitops bit0
+mv -f bitwise-ops bitwise-and
+mv -f char-canvas make-canvas
+mv -f hof complement
+mv -f hash-table make-hash-table
+mv -f letcc letslashcc
+mv -f matcher define-matcher
+mv -f setters pushb
+mv -f rb-tree make-rbt
+mv -f records record
+mv -f regex re-comp
+mv -f simple-modules module
+mv -f s9sos define-class
+mv -f standard-error standard-error-port
+mv -f streams make-stream
+mv -f string-case string-upcase
+mv -f symbols r4rs-procedures
+mv -f threads thread-create
+mv -f time-ops time-add
+
+cleanup

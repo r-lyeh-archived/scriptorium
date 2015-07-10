@@ -1,0 +1,15 @@
+S9 LIB  (string-locate string1 string2)     ==>  offset | #f
+        (string-ci-locate string1 string2)  ==>  offset | #f
+
+        (load-from-library "string-locate.scm")
+
+Attempt to locate the pattern STRING1 in the text STRING2. Return
+the offset of the first occurrence of STRING1 in STRING2 or #F,
+if STRING2 does not contain STRING1.
+
+This program is based on "A Very Fast Substring Search Algorithm",
+Daniel M. Sunday, CACM v33, #8, August 1990 and the
+SUBSTRING-SEARCH-MAKER procedure by Ken Dickey (1990).
+
+(string-locate "test" "This is a test string")     ==>  10
+(string-locate "TEST" "This is a test string")     ==>  #f

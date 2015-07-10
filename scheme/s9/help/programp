@@ -1,0 +1,8 @@
+S9 LIB  (program? object)  ==>  boolean
+
+        (load-from-library "programp.scm")
+
+Return #T, if OBJECT is a syntactically correct Scheme program.
+This program does not implement all of R4RS. Caveat utilitor.
+
+(program? '(let ((x 1)) (cons x x)))  ==>  #t

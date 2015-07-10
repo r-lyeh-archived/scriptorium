@@ -1,0 +1,102 @@
+'\"
+'\" Copyright 1989 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: ExprLong.3,v 1.1.1.1 2001/04/29 20:35:56 karll Exp $
+'\" 
+.so man.macros
+.HS Tcl_ExprLong tcl
+.BS
+.SH NAME
+Tcl_ExprLong, Tcl_ExprDouble, Tcl_ExprBool, Tcl_ExprString \- evaluate an expression
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.VS
+.sp
+int
+\fBTcl_ExprLong\fR(\fIinterp, string, longPtr\fR)
+.sp
+int
+\fBTcl_ExprDouble\fR(\fIinterp, string, doublePtr\fR)
+.sp
+int
+\fBTcl_ExprBoolean\fR(\fIinterp, string, booleanPtr\fR)
+.sp
+int
+\fBTcl_ExprString\fR(\fIinterp, string\fR)
+.SH ARGUMENTS
+.AS Tcl_Interp *booleanPtr
+.AP Tcl_Interp *interp in
+Interpreter in whose context to evaluate \fIstring\fR.
+.AP char *string in
+Expression to be evaluated.  Must be in writable memory (the expression
+parser makes temporary modifications to the string during parsing, which
+it undoes before returning).
+.AP long *longPtr out
+Pointer to location in which to store the integer value of the
+expression.
+.AP int *doublePtr out
+Pointer to location in which to store the floating-point value of the
+expression.
+.AP int *booleanPtr out
+Pointer to location in which to store the 0/1 boolean value of the
+expression.
+.BE
+
+.SH DESCRIPTION
+.PP
+These four procedures all evaluate a string expression, returning
+the result in one of four different forms.
+The expression is given by the \fIstring\fR argument, and it
+can have any of the forms accepted by the \fBexpr\fR command.
+The \fIinterp\fR argument refers to an interpreter used to
+evaluate the expression (e.g. for variables and nested Tcl
+commands) and to return error information.  \fIInterp->result\fR
+is assumed to be initialized in the standard fashion when any
+of the procedures are invoked.
+.PP
+For all of these procedures the return value is a standard
+Tcl result:  \fBTCL_OK\fR means the expression was succesfully
+evaluated, and \fBTCL_ERROR\fR means that an error occurred while
+evaluating the expression.  If \fBTCL_ERROR\fR is returned then
+\fIinterp->result\fR will hold a message describing the error.
+If an error occurs while executing a Tcl command embedded in
+\fIstring\fR, then that error will be returned.
+.PP
+If the expression is successfully evaluated, then its value will
+be returned in one of four forms, depending on which procedure
+is invoked.
+\fBTcl_ExprLong\fR stores an integer value at \fI*longPtr\fR.
+If the expression's actual value was a floating-point number,
+then it is truncated to an integer.
+If the expression's actual value was a non-numeric string then
+an error is returned.
+.PP
+\fBTcl_ExprDouble\fR stores a floating-point value at \fI*doublePtr\fR.
+If the expression's actual value was an integer, it is converted to
+floating-point.
+If the expression's actual value was a non-numeric string then
+an error is returned.
+.PP
+\fBTcl_ExprBoolean\fR stores a 0/1 integer value at \fI*booleanPtr\fR.
+If the expression's actual value was an integer or floating-point
+number, then \fBTcl_ExprBoolean\fR stores 0 at \fI*booleanPtr\fR if
+the value was zero and 1 otherwise.
+If the expression's actual value was a non-numeric string then
+an error is returned.
+.PP
+\fBTcl_ExprString\fR returns the value of the expression as a
+string stored in \fIinterp->result\fR.
+If the expression's actual value was an integer or floating-point
+number, then \fBTcl_ExprString\fR converts it to string (using \fBsprintf\fR
+with a ``%d'' or ``%g'' converter).
+
+.SH KEYWORDS
+boolean, double, evaluate, expression, integer, string
+.VE

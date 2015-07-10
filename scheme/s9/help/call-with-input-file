@@ -1,0 +1,17 @@
+R4RS 6.10  (call-with-input-file string procedure^1)   ==>  object
+           (call-with-output-file string procedure^1)  ==>  object
+
+PROCEDURE^1 should be a procedure of one argument, and STRING should
+be a string naming a file. For CALL-WITH-INPUT-FILE, the file must
+already exist; for CALL-WITH-OUTPUT-FILE, the effect is unspecified
+if the file already exists. These procedures call PROCEDURE^1 with
+one argument: the port obtained by opening the named file for input
+or output.  If the file cannot be opened, an error is signalled.
+If the procedure returns, then the port is closed automatically and
+the value yielded by the procedure is returned. If the procedure
+does not return, then the port will not be closed automatically
+unless it is possible to prove that the port will never again be
+used for a read or write operation.
+
+S9fES silently overwrites the existing file when the file specified
+in STRING already exists.

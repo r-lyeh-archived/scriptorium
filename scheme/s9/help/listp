@@ -1,0 +1,11 @@
+R4RS 6.3  (list? object)  ==>  boolean
+
+Returns #T if OBJECT is a list, otherwise returns #F. By definition,
+all lists have finite length and are terminated by the empty list.
+
+(list? '(a b c))      ==>  #t
+(list? '())           ==>  #t
+(list? '(a . b))      ==>  #f
+(let ((x (list 'a)))
+  (set-cdr! x x)
+  (list? x))          ==>  #f

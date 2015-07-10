@@ -1,0 +1,7 @@
+S9 LIB  (stddev list)  ==>  real
+
+        (load-from-library "stddev.scm")
+
+Return the standard deviation of the given list of values.
+
+(stddev '(1 1 2 1 1))  ==>  0.4

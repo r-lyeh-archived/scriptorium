@@ -1,0 +1,35 @@
+S9 EXT  (sys:lstat string)  ==>  alist | #f
+        (sys:stat string)   ==>  alist | #f
+
+Return the file status of the file STRING or #F if the file
+cannot be accessed. When STRING references a symbolic link,
+return information about the linked rather than the file
+referenced by it. The association list return in case of
+success has the following members:
+
+        ((name  . string)    ; file name
+         (size  . integer)   ; size in bytes
+         (uid   . integer)   ; UID of owner
+         (gid   . integer)   ; GID of owner
+         (mode  . integer)   ; access bits
+         (ctime . integer)   ; inode change time
+         (atime . integer)   ; access time
+         (mtime . integer)   ; modification time
+         (dev   . integer)   ; device ID of containing device
+         (ino   . integer)   ; inode number
+         (nlink . integer))  ; number of (hard) links
+
+SYS:STAT dereferences symlinks while SYS:LSTAT operates on the
+symlinks themselves.
+
+(sys:stat "s9.c")  ==>  ((name . "s9.c")
+                         (size . 91450)
+                         (uid . 1001)
+                         (gid . 1001)
+                         (mode . 33188)
+                         (ctime . 1272258596)
+                         (atime . 0)
+                         (mtime . 1272258596)
+                         (dev . 83)
+                         (ino . 496912)
+                         (nlink . 1))

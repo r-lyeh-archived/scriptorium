@@ -1,0 +1,9 @@
+S9 EXT  (sys:command-line)  ==>  list
+
+Return the command line arguments passed to the S9 interpeter
+after the "--" argument. Each argument will be packaged in a
+separate string.
+
+(sys:command-line)  ==>  ()             ; s9
+(sys:command-line)  ==>  ("a" "b" "c")  ;    s9 -- a b c
+                                        ; or s9 -f prog a b c

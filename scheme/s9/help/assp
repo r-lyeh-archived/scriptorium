@@ -1,0 +1,9 @@
+S9 LIB  (assp procedure^2 object alist)  ==>  object | #f
+
+Find the first member X of an alist for which
+
+      (procedure^2 object (car X))
+
+holds. When no such member exists, return #F.
+
+(assp char=? #\b '((#\a . 1) (#\b . 2)))  ==>  (#\b . 2)

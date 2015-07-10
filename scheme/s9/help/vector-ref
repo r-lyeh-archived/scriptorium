@@ -1,0 +1,6 @@
+R4RS 6.8  (vector-ref vector integer)  ==>  object
+
+INTEGER must be a valid index of VECTOR. VECTOR-REF returns the
+contents of the element at the INTEGER'th position of VECTOR.
+
+(vector-ref '#(1 1 2 3 5 8 13 21) 5) ==>  8

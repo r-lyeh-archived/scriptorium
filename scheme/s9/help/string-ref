@@ -1,0 +1,4 @@
+R4RS 6.7  (string-ref string integer)  ==>  char
+
+INTEGER must be a valid index of STRING. STRING-REF returns character
+at the INTEGER'th position of STRING using zero-origin indexing.

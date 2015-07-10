@@ -1,0 +1,11 @@
+S9 EXT  (sys:access string integer)  ==>  boolean
+
+Test whether the file named in STRING can be accessed in the
+way encoded in INTEGER. INTEGER may have one of these values:
+
+        sys:access-f-ok  test if the file exists
+        sys:access-r-ok  test if the file can be read
+        sys:access-w-ok  test if the file can be written
+        sys:access-x-ok  test if the file can be executed
+
+(sys:access "." sys:access-f-ok)  ==>  true

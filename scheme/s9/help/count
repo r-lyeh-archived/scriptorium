@@ -1,0 +1,5 @@
+S9 LIB  (count pair)  ==>  integer
+
+Count atomic members of a pair.
+
+(count '(a (b (c)) d . e))  ==>  5

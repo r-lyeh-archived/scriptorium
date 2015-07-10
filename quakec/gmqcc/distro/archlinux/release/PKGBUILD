@@ -1,0 +1,38 @@
+# Contributor: matthiaskrgr <matthiaskrgr _strange_curverd_character_ freedroid D0T org>
+# Contributor: Wolfgang Bumiller <blub@speed.at>
+
+pkgname=gmqcc
+pkgver=0.3.5
+pkgrel=1
+pkgdesc="An Improved Quake C Compiler"
+arch=('i686' 'x86_64')
+depends=('glibc')
+url="https://github.com/graphitemaster/gmqcc.git"
+license=('MIT')
+source=(gmqcc-$pkgver.zip::https://github.com/graphitemaster/gmqcc/zipball/$pkgver)
+sha1sums=('69085478f48f04eefbd2a088c1bd8c266b59f952')
+
+_gitname=graphitemaster-gmqcc-7f2b206/
+
+build() {
+	msg "Starting compilation..."
+	cd "$srcdir"/"$_gitname"
+
+	msg "Compiling..."
+	make
+}
+
+check() {
+	cd "$srcdir"/"$_gitname"
+	make check
+}
+
+package() {
+	cd "$srcdir"/"$_gitname"
+	msg "Compiling and installing to pkgdir this time..."
+	make install DESTDIR=$pkgdir PREFIX=/usr
+	msg "Compiling done."
+
+	install -dm755 ${pkgdir}/usr/share/licenses/gmqcc
+	install -m644 LICENSE ${pkgdir}/usr/share/licenses/gmqcc/LICENSE
+}

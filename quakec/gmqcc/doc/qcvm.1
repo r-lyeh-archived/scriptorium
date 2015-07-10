@@ -1,0 +1,107 @@
+.\" qcvm mdoc manpage
+.Dd January 31, 2013
+.Dt QCVM 1 PRM
+.Os
+.Sh NAME
+.Nm qcvm
+.Nd A standalone QuakeC VM binary executor
+.Sh SYNOPSIS
+.Nm qcvm
+.Op Cm options
+.Op Cm parameters
+.Ar program-file
+.Sh DESCRIPTION
+.Nm qcvm
+is an executor for QuakeC VM binary files created using a QC
+compiler such as gmqcc(1) or fteqcc. It provides a small set of
+builtin functions, and by default executes the
+.Fn main
+function if there is one. Some options useful for debugging are
+available as well.
+.Sh OPTIONS
+There are 2 types of options. Options for the executor, and parameter
+options used to add parameters which are passed to the main function
+on execution.
+.Bl -tag -width Ds
+.It Fl h , Fl -help
+Show a usage message and exit.
+.It Fl trace
+Trace the execution. Each instruction will be printed to stdout before
+executing it.
+.It Fl profile
+Perform some profiling. This is currently not really implemented, the
+option is available nonetheless.
+.It Fl info
+Print information from the program's header instead of executing.
+.It Fl disasm
+Disassemble the program by function instead of executing.
+.It Fl disasm-func Ar function
+Search for and disassemble the given function.
+.It Fl printdefs
+List all entries from the program's defs-section. Effectively
+listing all the global variables of the program.
+This option disables execution.
+.It Fl printfields
+List all entries from the program's fields-section. Listing all
+entity-fields declared in the program.
+This option disables execution.
+.It Fl printfuns
+List functions and some information about their parameters.
+This option disables execution. With a verbosity level of 1, builtin
+numbers are printed. With a verbosity of 2, the function's sizes are
+printed as well. This takes a little longer since the size is found by
+searching for a
+.Ql DONE
+instruction in the code.
+.It Fl v
+Increase verbosity level, can be used multiple times.
+.It Fl vector Ar 'x y z'
+Append a vector parameter to be passed to
+.Fn main Ns .
+.It Fl float Ar number
+Append a float parameter to be passed to
+.Fn main Ns .
+.It Fl string Ar 'text'
+Append a string parameter to be passed to
+.Fn main Ns .
+.El
+.Sh BUILTINS
+The following builtin functions are available:
+.Bl -ohang
+.It Li 1) void print(string...) = #1;
+.Bd -unfilled -offset indent -compact
+Print the passed strings to stdout. At most 8 strings are allowed.
+.Ed
+.It Li 2) string ftos(float) = #2;
+.D1 Convert a float to a string.
+.It Li 3) entity spawn() = #3;
+.D1 Spawn an entity.
+.It Li 4) void remove(entity) = #4;
+.D1 Remove an entity.
+.It Li 5) string vtos(vector) = #5;
+.D1 Convert a vector to a string.
+.It Li 6) void error(string...) = #6;
+.D1 Print strings to stdout and then exit with an error (limited to 8 arguments)
+.It Li 7) float vlen(vector) = #7;
+.D1 Get the length of a vector.
+.It Li 8) string etos(entity) = #8;
+.D1 Get the entity ID as string.
+.It Li 9) float stof(string) = #9;
+.D1 Convert a string to a float.
+.It Li 10) string strcat(string, string) = #10;
+.D1 Concatenate two strings, returning a tempstring.
+.It Li 11) float strcmp(string, string) = #11;
+.Li 12) float strncmp(string, string, float) = #11;
+.D1 Compare two strings. Returns the same as the corresponding C functions.
+.It Li 12) vector normalize(vector) = #12;
+.D1 Normalize a vector so its length is 1.
+.It Li 13) float sqrt(float) = #13;
+.D1 Get a value's square root.
+.El
+.Sh SEE ALSO
+.Xr gmqcc 1
+.Sh AUTHOR
+See <http://graphitemaster.github.com/gmqcc>.
+.Sh BUGS
+Please report bugs on <http://github.com/graphitemaster/gmqcc/issues>,
+or see <http://graphitemaster.github.com/gmqcc> on how to contact us.

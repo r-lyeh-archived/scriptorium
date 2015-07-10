@@ -1,0 +1,6 @@
+S9 LIB  (unsort list seed)  ==>  list
+
+Unsort a list of integers. SEED must be a number in the range
+0..(- (length LIST) 1). The original list is not changed.
+
+(unsort '(1 2 3 4 5) 1)  ==>  (1 3 5 4 2)

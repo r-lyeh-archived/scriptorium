@@ -1,0 +1,5 @@
+S9 LIB  Convenience file to load additional tree/DAG-processing procedures.
+        
+        (load-from-library "t-sort.scm")
+        (load-from-library "tree-copy.scm")
+

@@ -1,0 +1,19 @@
+S9 EXT  (sys:catch-errors boolean)  ==>  unspecific
+
+When a SYS-UNIX extension procedure called by an S9 program fails,
+the interpreter will normally generate an error condition and
+abort program execution. When #T is passed to SYS:CATCH-ERRORS,
+though, procedures will return #F instead of aborting program
+execution and procedures that normally succeed silently will
+return #T in case of success. E.g.:
+
+    (sys:rmdir "non-existent-directory")  ==>  undefined
+    (sys:strerror (sys:errno))            ==>  "No such file or directory"
+    (sys:catch-errors #t)
+    (sys:errno)                           ==>  0
+    (sys:rmdir "non-existent-directory")  ==>  #f
+    (sys:strerror (sys:errno))            ==>  "No such file or directory"
+
+SYS:CATCH-ERRORS will also reset SYS:ERRNO when applied to #T.
+
+(sys:catch-errors #t)  ==>  unspecific

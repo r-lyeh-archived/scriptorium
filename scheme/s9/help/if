@@ -1,0 +1,18 @@
+R4RS 4.1.5  (if <test> <consequent> <alternate>)  ==>  object
+            (if <test> <consequent>)              ==>  object
+
+Syntax: <Test>, <consequent>, and <alternate> may be arbitrary
+expressions.
+
+Semantics: An IF expression is evaluated as follows: first, <test>
+is evaluated. If it yields a true value (see section see section
+6.1 Booleans), then <consequent> is evaluated and its value is
+returned. Otherwise <alternate> is evaluated and its value is
+returned. If <test> yields a false value and no <alternate> is
+specified, then the result of the expression is unspecified.
+
+(if (> 3 2) 'yes 'no)  ==>  yes
+(if (> 2 3) 'yes 'no)  ==>  no
+(if (> 3 2)
+    (- 3 2)
+    (+ 3 2))           ==>  1

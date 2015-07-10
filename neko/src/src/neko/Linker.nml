@@ -1,0 +1,215 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+ 
+open Neko.Bytecode;
+
+type context {
+	globals : global array;
+	opcodes : opcode array;
+	debug : (int, int) array;
+	debug_files : string array;
+	loaded : (string, int option) Hashtbl.t;
+	mutable version : int option;
+	mutable have_debug : bool;
+}
+
+var neko_path : string list = neko "@List.@make($loader.path)";
+
+function file_open(file) {
+	function rec loop(l) {
+		match l {
+		| [] -> throw Error("File not found : " + file)
+		| p :: l ->
+			try
+				IO.read_file (p + file) true;
+			catch { _ -> loop l }
+		}
+	}
+	loop ("" :: neko_path)
+}
+
+function rec do_link(ctx,module) {
+	print (module + "\n");
+	var ch = file_open (module + ".n");
+	var globals, opcodes = Neko.Bytecode.read ch;
+	IO.close_in ch;
+	var debug = &None;
+	var funcs = &[];
+	var version = &0;
+	var gtbl = Array.map (function(g) {
+		match g {
+		| GlobalVar _ ->
+			var k = Array.length ctx.globals;
+			Array.add ctx.globals g;
+			k
+		| GlobalFunction (p,nargs) ->
+			var k = Array.length ctx.globals;
+			Array.add ctx.globals g;
+			funcs := (p,nargs,k) :: *funcs;
+			k
+		| GlobalString _
+		| GlobalFloat _ ->
+			try
+				Array.index ctx.globals g
+			catch {
+				Not_found ->
+					var k = Array.length ctx.globals;
+					Array.add ctx.globals g;
+					k
+			}
+		| GlobalDebug(files,inf) ->
+			ctx.have_debug := true;
+			debug := Some (files,inf);
+			-1
+		| GlobalVersion v ->
+			if ctx.version == None then {
+				ctx.version := Some v;
+				Array.add ctx.globals GlobalVersion(v);
+			}
+			version := v;
+			-1
+		}
+	}) globals;
+	match ctx.version {
+	| None ->
+		ctx.version := Some (*version);
+	| Some v2 ->
+		if v2 != (*version) then throw Error("Linking modules with different version");
+	}
+	var mid = Array.length ctx.globals;
+	var module_fid = Array.length ctx.debug_files;
+	Array.add ctx.debug_files module;
+	Array.add ctx.globals (GlobalVar module);
+	List.iter (Array.add ctx.opcodes) [AccNull; Push; AccBuiltin "new"; Call 1; SetGlobal mid];
+	Array.append (Array.make 8 (module_fid,0)) ctx.debug;
+	Hashtbl.add ctx.loaded module None;
+	var nops = Array.length opcodes;
+	var opmap = Array.make nops (-1);
+	var debug = match *debug { 
+		| None -> Array.make (nops*2) (module_fid,0)
+		| Some(files,inf) ->
+			var fmap = Array.map (function(f) {
+				var p = Array.length ctx.debug_files;
+				Array.add ctx.debug_files f;
+				p
+			}) files;
+			Array.map (function((f,p)) { (fmap.[f],p) }) inf
+	};
+	var debug_pos = &0;
+	var jumps = &[];
+	function op(o) {
+		Array.add ctx.opcodes o;
+		Array.add ctx.debug (Array.get debug (*debug_pos));
+		debug_pos := *debug_pos + 1;
+		if Neko.Bytecode.op_param o then {
+			Array.add ctx.debug (Array.get debug (*debug_pos));
+			debug_pos := *debug_pos + 1;
+		}
+	}
+	function jump(mkop,p,i) {
+		var k = Array.length ctx.opcodes;
+		op (Jump 0);
+		jumps := (mkop,k,p,i) :: *jumps
+	}
+	function rec loop((p,l)) {
+		match l {
+		| [] -> assert()
+		// $loader.loadmodule("name",$loader)
+		| (AccGlobal str) ::
+		  Push ::
+		  (AccBuiltin "loader") ::
+		  Push ::
+		  (AccBuiltin "loader") ::
+		  Push ::
+		  (AccField "loadmodule") ::
+		  (ObjCall 2) ::
+		  l ->
+			match Array.get globals str {
+			| GlobalString s ->
+				var mid = try Hashtbl.find ctx.loaded s catch { Not_found -> Some (do_link ctx s) };
+				match mid {
+				| None -> throw Error("Recursive loading " + module + " => " + s)
+				| Some i ->
+					op (AccGlobal i);
+					debug_pos := *debug_pos + 11;
+					(p + 8, l)
+				}
+			| _ ->
+				throw Error("Cannot link not constant file")
+			}
+		| o :: l ->
+			Array.set opmap p (Array.length ctx.opcodes);
+			match o {
+			| AccBuiltin "exports" ->
+				op (AccGlobal mid)
+			| AccGlobal g ->
+				op (AccGlobal (Array.get gtbl g));
+			| SetGlobal g ->
+				op (SetGlobal (Array.get gtbl g));
+			| Jump i ->
+				jump Jump p i
+			| JumpIf i ->
+				jump JumpIf p i
+			| JumpIfNot i ->
+				jump JumpIfNot p i
+			| Trap i ->
+				jump Trap p i
+			| _ ->
+				op o
+			}
+			(p+1 , l)
+		}
+	}
+	var l = &(0,Array.list opcodes);
+	while snd (*l) != [] {
+		l := loop (*l)
+	}
+	List.iter (function((op,k,p,i)) {
+		var ik = Array.get opmap (p + i) - Array.get opmap p;
+		Array.set ctx.opcodes k op(ik)
+	}) (*jumps);
+	List.iter (function((p,nargs,k)) {
+		Array.set ctx.globals k (GlobalFunction (Array.get opmap p) nargs)
+	}) (*funcs);
+	Hashtbl.replace ctx.loaded module (Some mid);
+	Array.add ctx.opcodes (AccGlobal mid);
+	Array.add ctx.debug (module_fid,0);
+	Array.add ctx.debug (module_fid,0);
+	mid
+}
+
+function link(output,modules) {
+	var ctx = {
+		globals = Array.create();
+		opcodes = Array.create();
+		debug = Array.create();
+		debug_files = Array.create();
+		loaded = Hashtbl.create();
+		have_debug = false;
+		version = None;
+	};
+	List.iter (function(m) { ignore(do_link ctx m) }) modules;
+	if ctx.have_debug then Array.add ctx.globals (GlobalDebug ctx.debug_files ctx.debug);
+	var ch = IO.write_file output true;
+	Neko.Bytecode.write ch (ctx.globals,ctx.opcodes);
+	IO.close_out ch
+}

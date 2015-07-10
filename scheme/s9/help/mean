@@ -1,0 +1,8 @@
+S9 LIB  (mean list)  ==>  real
+
+        (load-from-library "mean.scm")
+
+Mean (average) function, returns the arithmetic mean value of a
+list of reals.
+
+(mean '(1 2 3 4 5 6))  ==>  3.5

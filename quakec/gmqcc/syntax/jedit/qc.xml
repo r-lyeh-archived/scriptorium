@@ -1,0 +1,271 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE MODE SYSTEM "xmode.dtd">
+
+<MODE>
+    <PROPS>
+        <PROPERTY NAME="commentStart" VALUE="/*" />
+        <PROPERTY NAME="commentEnd" VALUE="*/" />
+        <PROPERTY NAME="lineComment" VALUE="//" />
+        <PROPERTY NAME="wordBreakChars" VALUE=",+-=&lt;&gt;/?^&amp;*" />
+
+        <!-- Auto indent -->
+        <PROPERTY NAME="indentOpenBrackets" VALUE="{" />
+        <PROPERTY NAME="indentCloseBrackets" VALUE="}" />
+        <PROPERTY NAME="unalignedOpenBrackets" VALUE="(" />
+        <PROPERTY NAME="unalignedCloseBrackets" VALUE=")" />
+        <PROPERTY NAME="indentNextLine"
+            VALUE="(?!^\s*(#|//)).*(\b(if|while|for)\s*\(.*\)|\b(else|do)\b)[^{;]*$" />
+        <PROPERTY NAME="unindentThisLine"
+            VALUE="^\s*((case\b.*|[\p{Alpha}_][\p{Alnum}_]*)\s*:(?!:)).*$" />
+        <PROPERTY NAME="electricKeys" VALUE=":" />
+    </PROPS>
+
+    <RULES
+        IGNORE_CASE="FALSE"
+        HIGHLIGHT_DIGITS="TRUE" DIGIT_RE="[0-9][0-9a-zA-Z]*">
+        <EOL_SPAN TYPE="KEYWORD2" AT_WHITESPACE_END="TRUE" DELEGATE="CPP">#</EOL_SPAN>
+
+        <IMPORT DELEGATE="LEX"/>
+        <IMPORT DELEGATE="CORE"/>
+    </RULES>
+
+    <RULES SET="LEX" IGNORE_CASE="FALSE">
+        <IMPORT DELEGATE="COMMENTS" />
+        <IMPORT DELEGATE="C_LEXER" />
+    </RULES>
+
+    <!-- Comments, Trigraph, Alternate-Tokens -->
+    <RULES SET="C_LEXER"
+        IGNORE_CASE="FALSE"
+        HIGHLIGHT_DIGITS="TRUE" DIGIT_RE="[0-9][0-9a-zA-Z]*">
+
+        <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE" ESCAPE="\">
+            <BEGIN>L"</BEGIN>
+            <END>"</END>
+        </SPAN>
+        <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE" ESCAPE="\">
+            <BEGIN>"</BEGIN>
+            <END>"</END>
+        </SPAN>
+        <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE" ESCAPE="\">
+            <BEGIN>L'</BEGIN>
+            <END>'</END>
+        </SPAN>
+        <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE" ESCAPE="\">
+            <BEGIN>'</BEGIN>
+            <END>'</END>
+        </SPAN>
+
+        <!-- Trigraphs -->
+        <SEQ TYPE="LITERAL4">??(</SEQ>
+        <SEQ TYPE="LITERAL4">??/</SEQ>
+        <SEQ TYPE="LITERAL4">??)</SEQ>
+        <SEQ TYPE="LITERAL4">??'</SEQ>
+        <SEQ TYPE="LITERAL4">??&lt;</SEQ>
+        <SEQ TYPE="LITERAL4">??!</SEQ>
+        <SEQ TYPE="LITERAL4">??&gt;</SEQ>
+        <SEQ TYPE="LITERAL4">??-</SEQ>
+        <SEQ TYPE="LITERAL4">??=</SEQ>
+
+        <!-- Alternate tokens -->
+        <SEQ TYPE="LITERAL4">&lt;:</SEQ>
+        <SEQ TYPE="LITERAL4">:&gt;</SEQ>
+        <SEQ TYPE="LITERAL4">&lt;%</SEQ>
+        <SEQ TYPE="LITERAL4">%&gt;</SEQ>
+        <SEQ TYPE="LITERAL4">%:</SEQ>
+
+        <!-- Labels.
+            This is a part of core language syntax, but must be here
+            because it can't work after SEQ for ':'. -->
+        <MARK_PREVIOUS AT_WHITESPACE_END="TRUE"
+            MATCH_TYPE="OPERATOR"
+            TYPE="LABEL">:</MARK_PREVIOUS>
+
+        <!-- Function-like macro or function calls.
+            This can't work after SEQ for '('. -->
+        <MARK_PREVIOUS
+            TYPE="FUNCTION"
+            MATCH_TYPE="OPERATOR">(</MARK_PREVIOUS>
+
+        <SEQ TYPE="OPERATOR">=</SEQ>
+        <SEQ TYPE="OPERATOR">!</SEQ>
+        <SEQ TYPE="OPERATOR">+</SEQ>
+        <SEQ TYPE="OPERATOR">-</SEQ>
+        <SEQ TYPE="OPERATOR">/</SEQ>
+        <SEQ TYPE="OPERATOR">*</SEQ>
+        <SEQ TYPE="OPERATOR">&gt;</SEQ>
+        <SEQ TYPE="OPERATOR">&lt;</SEQ>
+        <SEQ TYPE="OPERATOR">%</SEQ>
+        <SEQ TYPE="OPERATOR">&amp;</SEQ>
+        <SEQ TYPE="OPERATOR">|</SEQ>
+        <SEQ TYPE="OPERATOR">^</SEQ>
+        <SEQ TYPE="OPERATOR">~</SEQ>
+        <SEQ TYPE="OPERATOR">?</SEQ>
+        <SEQ TYPE="OPERATOR">:</SEQ>
+        <SEQ TYPE="OPERATOR">.</SEQ>
+        <SEQ TYPE="OPERATOR">,</SEQ>
+        <SEQ TYPE="OPERATOR">[</SEQ>
+        <SEQ TYPE="OPERATOR">]</SEQ>
+        <SEQ TYPE="OPERATOR">)</SEQ>
+        <SEQ TYPE="OPERATOR">}</SEQ>
+        <SEQ TYPE="OPERATOR">{</SEQ>
+        <SEQ TYPE="OPERATOR">;</SEQ>
+
+        <KEYWORDS>
+            <LITERAL2>__FILE__</LITERAL2>
+            <LITERAL2>__LINE__</LITERAL2>
+            <LITERAL2>__DATE__</LITERAL2>
+            <LITERAL2>__RANDOM__</LITERAL2>
+            <LITERAL2>__RANDOM_LAST</LITERAL2>
+            <LITERAL2>__COUNT__</LITERAL2>
+            <LITERAL2>__COUNT_LAST</LITERAL2>
+        </KEYWORDS>
+    </RULES>
+
+    <!-- Core language -->
+    <RULES SET="CORE"
+        IGNORE_CASE="FALSE"
+        HIGHLIGHT_DIGITS="TRUE" DIGIT_RE="[0-9][0-9a-zA-Z]*">
+        <KEYWORDS>
+            <!-- Types -->
+            <KEYWORD3>float</KEYWORD3>
+            <KEYWORD3>vector</KEYWORD3>
+            <KEYWORD3>string</KEYWORD3>
+            <KEYWORD3>entity</KEYWORD3>
+            <KEYWORD3>enum</KEYWORD3>
+            <KEYWORD3>.float</KEYWORD3>
+            <KEYWORD3>.int</KEYWORD3>
+            <KEYWORD3>.vector</KEYWORD3>
+            <KEYWORD3>.string</KEYWORD3>
+            <KEYWORD3>.entity</KEYWORD3>
+            <KEYWORD3>.void</KEYWORD3>
+            <KEYWORD3>typedef</KEYWORD3>
+
+            <KEYWORD1>break</KEYWORD1>
+            <KEYWORD1>case</KEYWORD1>
+            <KEYWORD1>continue</KEYWORD1>
+            <KEYWORD1>default</KEYWORD1>
+            <KEYWORD1>do</KEYWORD1>
+            <KEYWORD1>else</KEYWORD1>
+            <KEYWORD1>for</KEYWORD1>
+            <KEYWORD1>goto</KEYWORD1>
+            <KEYWORD1>if</KEYWORD1>
+            <KEYWORD1>return</KEYWORD1>
+            <KEYWORD1>switch</KEYWORD1>
+            <KEYWORD1>void</KEYWORD1>
+            <KEYWORD1>while</KEYWORD1>
+            <KEYWORD1>nil</KEYWORD1>
+
+            <LITERAL2>FALSE</LITERAL2>
+            <LITERAL2>TRUE</LITERAL2>
+            <LITERAL2>...</LITERAL2>
+        </KEYWORDS>
+    </RULES>
+
+    <!-- Different comment styles. -->
+    <RULES SET="COMMENTS">
+        <!-- Doxygen comment, Javadoc style -->
+        <SEQ TYPE="COMMENT1">/**/</SEQ>
+        <SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">
+            <BEGIN>/**&lt;</BEGIN>
+            <END>*/</END>
+        </SPAN>
+        <SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">
+            <BEGIN>/**</BEGIN>
+            <END>*/</END>
+        </SPAN>
+        <EOL_SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">///&lt;</EOL_SPAN>
+        <EOL_SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">///</EOL_SPAN>
+
+        <!-- Doxygen comment, Qt style -->
+        <SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">
+            <BEGIN>/*!&lt;</BEGIN>
+            <END>*/</END>
+        </SPAN>
+        <SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">
+            <BEGIN>/*!</BEGIN>
+            <END>*/</END>
+        </SPAN>
+        <EOL_SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">//!&lt;</EOL_SPAN>
+        <EOL_SPAN TYPE="COMMENT3" DELEGATE="doxygen::DOXYGEN">//!</EOL_SPAN>
+
+        <!-- C style comment -->
+        <SPAN TYPE="COMMENT1">
+            <BEGIN>/*</BEGIN>
+            <END>*/</END>
+        </SPAN>
+        <EOL_SPAN TYPE="COMMENT1">//</EOL_SPAN>
+    </RULES>
+
+    <!-- Preprocessor specific rules -->
+    <RULES SET="CPP"
+        IGNORE_CASE="FALSE"
+        HIGHLIGHT_DIGITS="TRUE" DIGIT_RE="[0-9][0-9a-zA-Z]*">
+
+        <EOL_SPAN_REGEXP HASH_CHAR="include" TYPE="MARKUP" DELEGATE="INCLUDE">include\b</EOL_SPAN_REGEXP>
+        <EOL_SPAN_REGEXP HASH_CHAR="define" TYPE="MARKUP" DELEGATE="DEFINE">define\b</EOL_SPAN_REGEXP>
+        <EOL_SPAN_REGEXP HASH_CHAR="endif" TYPE="MARKUP" DELEGATE="LEX">endif\b</EOL_SPAN_REGEXP>
+        <EOL_SPAN_REGEXP HASH_CHAR="elif" TYPE="MARKUP" DELEGATE="CONDITION">elif\b</EOL_SPAN_REGEXP>
+        <EOL_SPAN_REGEXP HASH_CHAR="if" TYPE="MARKUP" DELEGATE="CONDITION">if\b</EOL_SPAN_REGEXP>
+
+        <IMPORT DELEGATE="LEX"/>
+
+        <!-- Directives -->
+        <KEYWORDS>
+            <MARKUP>undef</MARKUP>
+            <MARKUP>ifdef</MARKUP>
+            <MARKUP>ifndef</MARKUP>
+            <MARKUP>else</MARKUP>
+            <MARKUP>error</MARKUP>
+            <MARKUP>warning</MARKUP>
+            <MARKUP>pragma</MARKUP>
+            <MARKUP>$frame</MARKUP>
+            <MARKUP>$model</MARKUP>
+        </KEYWORDS>
+    </RULES>
+
+    <!-- After #include directive -->
+    <!-- "\"s are not escaped. -->
+    <RULES SET="INCLUDE"
+        IGNORE_CASE="FALSE"
+        HIGHLIGHT_DIGITS="TRUE" DIGIT_RE="[0-9][0-9a-zA-Z]*">
+        <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+            <BEGIN>&lt;</BEGIN>
+            <END>&gt;</END>
+        </SPAN>
+        <SPAN TYPE="LITERAL1" NO_LINE_BREAK="TRUE">
+            <BEGIN>"</BEGIN>
+            <END>"</END>
+        </SPAN>
+        <IMPORT DELEGATE="LEX"/>
+    </RULES>
+
+    <!-- After #define directive -->
+    <!-- Almost same as the normal code,
+        except two additional operators # and ##. -->
+    <RULES SET="DEFINE"
+        IGNORE_CASE="FALSE"
+        HIGHLIGHT_DIGITS="TRUE" DIGIT_RE="[0-9][0-9a-zA-Z]*">
+        <SEQ TYPE="OPERATOR">#</SEQ>
+        <IMPORT DELEGATE="LEX"/>
+        <IMPORT DELEGATE="CORE"/>
+    </RULES>
+
+    <!-- After #if or #elif directive -->
+    <!-- All constant expressions and a special operator
+        'defined' is available. But the core language elements
+        (such as operator 'sizeof', type casting, etc...) are not. -->
+    <RULES SET="CONDITION"
+        IGNORE_CASE="FALSE"
+        HIGHLIGHT_DIGITS="TRUE" DIGIT_RE="[0-9][0-9a-zA-Z]*">
+        <IMPORT DELEGATE="LEX"/>
+        <KEYWORDS>
+            <KEYWORD2>defined</KEYWORD2>
+            <KEYWORD2>TRUE</KEYWORD2>
+            <KEYWORD2>FALSE</KEYWORD2>
+            <KEYWORD2>true</KEYWORD2>
+            <KEYWORD2>false</KEYWORD2>
+        </KEYWORDS>
+    </RULES>
+</MODE>

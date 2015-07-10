@@ -1,0 +1,6 @@
+S9 EXT  (sys:utimes string)   ==>  unspecific
+
+Set the access and modification time of the file STRING to
+the current time.
+
+(sys:utimes "file")  ==>  unspecific

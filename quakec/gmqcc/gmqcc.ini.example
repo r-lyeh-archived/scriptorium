@@ -1,0 +1,732 @@
+#This configuration file is similar to a regular .ini file. Comments start
+#with hashtags or semicolons, sections are written in square brackets and
+#in each section there can be arbitrary many key-value pairs.
+
+#There are 3 sections currently: ‘flags’, ‘warnings’, ‘optimizations’.
+#They contain a list of boolean values of the form ‘VARNAME = true’ or
+#‘VARNAME = false’.  The variable names are the same as for the corre‐
+#sponding -W, -f or -O flag written with only capital letters and dashes
+#replaced by underscores.
+
+[flags]
+    #Add some additional characters to the string table in order to
+    #compensate for a wrong boundcheck in some specific version of the
+    #darkplaces engine.
+
+    DARKPLACES_STRING_TABLE_BUG = true
+
+
+    #When assigning to field pointers of type .vector the common be‐
+    #haviour in compilers like fteqcc is to only assign the x-compo‐
+    #nent of the pointer. This means that you can use the vector as
+    #such, but you cannot use its y and z components directly. This
+    #flag fixes this behaviour. Before using it make sure your code
+    #does not depend on the buggy behaviour.
+
+    ADJUST_VECTOR_FIELDS = true
+
+
+    #Enable a partially fteqcc-compatible preprocessor. It supports
+    #all the features used in the Xonotic codebase. If you need more,
+    #write a ticket.
+
+    FTEPP = true
+
+
+    #Enable some predefined macros. This only works in combination
+    #with '-fftepp' and is currently not included by '-std=fteqcc'.
+    #The following macros will be added:
+    #
+    #   __LINE__
+    #   __FILE__
+    #   __COUNTER__
+    #   __COUNTER_LAST__
+    #   __RANDOM__
+    #   __RANDOM_LAST__
+    #   __DATE__
+    #   __TIME__
+    #   __FUNC__
+    #
+    #Note that __FUNC__ is not actually a preprocessor macro, but is
+    #recognized by the parser even with the preprocessor disabled.
+    #
+    #Note that fteqcc also defines __NULL__ which becomes the first
+    #global. Assigning it to a vector does not yield the same result
+    #as in gmqcc where __NULL__ is defined to nil (See -funtyped-nil
+    #), which will cause the vector to be zero in all components. With
+    #fteqcc only the first component will be 0, while the other two
+    #will become the first to of the global return value. This behav‐
+    #ior is odd and relying on it should be discouraged, and thus is
+    #not supported by gmqcc.
+
+    FTEPP_PREDEFS = false
+
+
+    #Enable math constant definitions. This only works in combination
+    #with '-fftepp' and is currently not included by '-std=fteqcc'.
+    #The following macros will be added:
+    #
+    # M_E
+    # M_LOG2E
+    # M_LOG10E
+    # M_LN2
+    # M_LN10
+    # M_PI
+    # M_PI_2
+    # M_PI_4
+    # M_1_PI
+    # M_2_PI
+    # M_2_SQRTPI
+    # M_SQRT2
+    # M_SQRT1_2
+    # M_TAU
+
+    FTEPP_MATHDEFS = false
+
+
+    #Enable indirect macro expansion. This only works in combination
+    #with '-fftepp' and is currently not included by '-std=fteqcc'.
+    #Enabling this behavior will allow the preprocessor to operate more
+    #like the standard C preprocessor in that it will allow arguments
+    #of macros which are macro-expanded to be substituted into the
+    #definition of the macro. As an example:
+    #
+    #   #define STR1(x) #x
+    #   #define STR2(x) STR1(x)
+    #   #define THE_ANSWER 42
+    #   #define THE_ANSWER_STR STR2(THE_ANSWER) /* "42" */
+    #
+    #With this enabled, an expansion of THE_ANSWER_STR will yield
+    #the string "42". With this disabled an expansion of THE_ANSWER_STR
+    #will yield "THE_ANSWER"
+
+    FTEPP_INDIRECT_EXPANSION = false
+
+
+    #Allow switch cases to use non constant variables.
+
+    RELAXED_SWITCH = true
+
+
+    #Perform early out in logical AND and OR expressions. The final
+    #result will be either a 0 or a 1, see the next flag for more pos‐
+    #sibilities.
+
+    SHORT_LOGIC = true
+
+
+    #In many languages, logical expressions perform early out in a
+    #special way: If the left operand of an AND yeilds true, or the
+    #one of an OR yields false, the complete expression evaluates to
+    #the right side.  Thus ‘true && 5’ evaluates to 5 rather than 1.
+
+    PERL_LOGIC = false
+
+
+    #Enable the underscore intrinsic: Using ‘_("A string constant")’
+    #will cause the string immediate to get a name with a "dotrans‐
+    #late_" prefix. The darkplaces engine recognizes these and trans‐
+    #lates them in a way similar to how gettext works.
+
+    TRANSLATABLE_STRINGS = true
+
+
+    #Don't implicitly convert initialized variables to constants. With
+    #this flag, the const keyword is required to make a constant.
+
+    INITIALIZED_NONCONSTANTS = false
+
+
+    #If this flag is not set, (and it is set by default in the qcc and
+    #fteqcc standards), assigning function pointers of mismatching
+    #signatures will result in an error rather than a warning.
+
+    ASSIGN_FUNCTION_TYPES = true
+
+
+    #Produce a linenumber file along with the output .dat file.
+
+    LNO = false
+
+
+    #Use C's operator precedence for ternary expressions. Unless your
+    #code depends on fteqcc-compatible behaviour, you'll want to use
+    #this option.
+
+    CORRECT_TERNARY = true
+
+
+    #Normally vectors generate 4 defs, once for the vector, and once
+    #for its components with _x, _y, _z suffixes. This option prevents
+    #components from being listed.
+
+
+    SINGLE_VECTOR_DEFS = true
+
+
+    #Most QC compilers translate ‘if(a_vector)’ directly as an IF on
+    #the vector, which means only the x-component is checked. This
+    #option causes vectors to be cast to actual booleans via a NOT_V
+    #and, if necessary, a NOT_F chained to it.
+    #
+    #   if (a_vector) // becomes
+    #   if not(!a_vector)
+    #   // likewise
+    #   a = a_vector && a_float // becomes
+    #   a = !!a_vector && a_float
+
+    CORRECT_LOGIC = true
+
+
+    #An empty string is considered to be true everywhere. The NOT_S
+    #instruction usually considers an empty string to be false, this
+    #option effectively causes the unary not in strings to use NOT_F
+    #instead.
+
+    TRUE_EMPTY_STRINGS = false
+
+
+    #An empty string is considered to be false everywhere. This means
+    #loops and if statements which depend on a string will perform a
+    #NOT_S instruction on the string before using it.
+
+    FALSE_EMPTY_STRINGS = true
+
+
+    #Enable utf8 characters. This allows utf-8 encoded character con‐
+    #stants, and escape sequence codepoints in the valid utf-8 range.
+    #Effectively enabling escape sequences like '\{x2211}'.
+
+    UTF8 = true
+
+
+    #When a warning is treated as an error, and this option is set
+    #(which it is by default), it is like any other error and will
+    #cause compilation to stop. When disabling this flag by using
+    #-fno-bail-on-werror, compilation will continue until the end, but
+    #no output is generated. Instead the first such error message's
+    #context is shown.
+
+    BAIL_ON_WERROR = false
+
+
+    #Allow loops to be labeled, and allow 'break' and 'continue' to
+    #take an optional label to decide which loop to actually jump out
+    #of or continue.
+    #
+    #   for :outer (i = 0; i < n; ++i) {
+    #       while (inner) {
+    #           ...;
+    #           if (something)
+    #               continue outer;
+    #       }
+    #   }
+
+    LOOP_LABELS = true
+
+
+    #Adds a global named 'nil' which is of no type and can be assigned
+    #to anything. No typechecking will be performed on assignments.
+    #Assigning to it is forbidden, using it in any other kind of
+    #expression is also not allowed.
+    #
+    #Note that this is different from fteqcc's __NULL__: In fteqcc,
+    #__NULL__ maps to the integer written as '0i'. It's can be
+    #assigned to function pointers and integers, but it'll error about
+    #invalid instructions when assigning it to floats without enabling
+    #the FTE instruction set. There's also a bug which allows it to be
+    #assigned to vectors, for which the source will be the global at
+    #offset 0, meaning the vector's y and z components will contain
+    #the OFS_RETURN x and y components.#
+    #
+    #In that gmqcc the nil global is an actual global filled with
+    #zeroes, and can be assigned to anything including fields, vectors
+    #or function pointers, and they end up becoming zeroed.
+
+
+    UNTYPED_NIL = true
+
+
+    #Various effects, usually to weaken some conditions.
+    #   with -funtyped-nil
+    #       Allow local variables named ‘nil’.  (This will not
+    #       allow declaring a global of that name.)
+
+    PERMISSIVE = false
+
+
+    #Allow variadic parameters to be accessed by QC code. This can be
+    #achieved via the '...' function, which takes a parameter index
+    #and a typename.
+    #
+    #Example:
+    #
+    #   void vafunc(string...count) {
+    #       float i;
+    #       for (i = 0; i < count; ++i)
+    #           print(...(i, string), "\n");
+    #   }
+
+    VARIADIC_ARGS = true
+
+
+    #Most Quake VMs, including the one from FTEQW or up till recently
+    #Darkplaces, do not cope well with vector instructions with over‐
+    #lapping input and output. This option will avoid producing such
+    #code.
+
+    LEGACY_VECTOR_MATHS = false
+
+
+    #Usually builtin-numbers are just immediate constants. With this
+    #flag expressions can be used, as long as they are compile-time
+    #constant.
+    #
+    #Example:
+    #
+    #   void printA() = #1;   // the usual way
+    #   void printB() = #2-1; // with a constant expression
+
+    EXPRESSIONS_FOR_BUILTINS = true
+
+
+    #Enabiling this option will allow assigning values or expressions
+    #to the return keyword as if it were a local variable of the same
+    #type as the function's signature's return type.
+    #
+    #Example:
+    #
+    #   float bar() { return 1024; }
+    #   float fun() {
+    #       return = bar();
+    #       return; // returns value of bar (this can be omitted)
+    #   }
+
+    RETURN_ASSIGNMENTS = true
+
+
+    #When passing on varargs to a different functions, this turns some
+    #static error cases into warnings. Like when the caller's varargs
+    #are restricted to a different type than the callee's parameter.
+    #Or a list of unrestricted varargs is passed into restricted
+    #varargs.
+
+    UNSAFE_VARARGS = false
+
+
+    #Always use STORE_F, LOAD_F, STOREP_F when accessing scalar variables.
+    #This is somewhat incorrect assembly instruction use, but in all engines
+    #they do exactly the same. This makes disassembly output harder to read,
+    #breaks decompilers, but causes the output file to be better compressible.
+
+    TYPELESS_STORES = false
+
+
+    #In commutative instructions, always put the lower-numbered operand first.
+    #This shaves off 1 byte of entropy from all these instructions, reducing
+    #compressed size of the output file.
+
+    SORT_OPERANDS = false
+
+
+    #Emulate OP_STATE operations in code rather than using the instruction.
+    #The desired fps can be set via -state-fps=NUM, defaults to 10.
+
+    EMULATE_STATE = false
+
+
+    #Turn on arithmetic exception tests in the compiler. In constant expressions
+    #which trigger exceptions like division by zero, overflow, underflow, etc,
+    #the following flag will produce diagnostics for what triggered that
+    #exception.
+    ARITHMETIC_EXCEPTIONS = false
+
+    #Split vector-literals which are only used dirctly as function parameters
+    #into 3 floats stored separately to reduce the number of globals at the
+    #expense of additional instructions.
+    SPLIT_VECTOR_PARAMETERS = false
+
+[warnings]
+    #Generate a warning about variables which are declared but never
+    #used.  This can be avoided by adding the ‘noref’ keyword in front
+    #of the variable declaration. Additionally a complete section of
+    #unreferenced variables can be opened using ‘#pragma noref 1’ and
+    #closed via ‘#pragma noref 0’.
+
+    UNUSED_VARIABLE = false
+
+
+    #Generate a warning if it is possible that a variable can be used
+    #without prior initialization. Note that this warning is not nec‐
+    #essarily reliable if the initialization happens only under cer‐
+    #tain conditions. The other way is not possible: that the warning
+    #is not generated when uninitialized use is possible.
+
+    USED_UNINITIALIZED = false
+
+
+    #Generate an error when an unrecognized control sequence in a
+    #string is used. Meaning: when there's a character after a back‐
+    #slash in a string which has no known meaning.
+
+    UNKNOWN_CONTROL_SEQUENCE = false
+
+
+    #Warn when using special extensions which are not part of the
+    #selected standard.
+
+    EXTENSIONS = false
+
+
+    #Generally QC compilers ignore redeclaration of fields. Here you
+    #can optionally enable a warning.
+
+    FIELD_REDECLARED = false
+
+
+    #Functions which aren't of type void will warn if it possible to
+    #reach the end without returning an actual value.
+
+    MISSING_RETURN_VALUES = false
+
+
+    #Warn about a function call with an invalid number of parameters.
+
+    INVALID_PARAMETER_COUNT = false
+
+
+    #Warn when a locally declared variable shadows variable.
+
+    LOCAL_SHADOWS = false
+
+
+    #Warn when the initialization of a local variable turns the vari‐
+    #able into a constant. This is default behaviour unless
+    #-finitialized-nonconstants is used.
+
+    LOCAL_CONSTANTS = false
+
+
+    #There are only 2 known global variables of type void:
+    #‘end_sys_globals’ and ‘end_sys_fields’.  Any other void-variable
+    #will warn.
+
+    VOID_VARIABLES = false
+
+
+    #A global function which is not declared with the ‘var’ keyword is
+    #expected to have an implementing body, or be a builtin. If nei‐
+    #ther is the case, it implicitly becomes a function pointer, and a
+    #warning is generated.
+
+    IMPLICIT_FUNCTION_POINTER = false
+
+
+    #Currently there's no way for an in QC implemented function to
+    #access variadic parameters. If a function with variadic parame‐
+    #ters has an implementing body, a warning will be generated.
+
+    VARIADIC_FUNCTION = false
+
+
+    #Generate warnings about ‘$frame’ commands, for instance about
+    #duplicate frame definitions.
+
+    FRAME_MACROS = false
+
+
+    #Warn about statements which have no effect. Any expression which
+    #does not call a function or assigns a variable.
+
+    EFFECTLESS_STATEMENT = false
+
+
+    #The ‘end_sys_fields’ variable is supposed to be a global variable
+    #of type void.  It is also recognized as a field but this will
+    #generate a warning.
+
+    END_SYS_FIELDS = false
+
+
+    #Warn when assigning to a function pointer with an unmatching sig‐
+    #nature. This usually happens in cases like assigning the null
+    #function to an entity's .think function pointer.
+
+    ASSIGN_FUNCTION_TYPES = false
+
+
+    #Show warnings created using the preprocessor's '#warning' directive
+
+    CPP = true
+
+
+    #Warn if there's a preprocessor #if spanning across several files.
+
+    MULTIFILE_IF = true
+
+
+    #Warn about multiple declarations of globals. This seems pretty
+    #common in QC code so you probably do not want this unless you
+    #want to clean up your code.
+
+    DOUBLE_DECLARATION = false
+
+
+    #The combination of const and var is not illegal, however differ‐
+    #ent compilers may handle them differently. We were told, the
+    #intention is to create a function-pointer which is not assigna‐
+    #ble.  This is exactly how we interpret it. However for this
+    #interpretation the ‘var’ keyword is considered superfluous (and
+    #philosophically wrong), so it is possible to generate a warning
+    #about this.
+
+    CONST_VAR = true
+
+
+    #Warn about multibyte character constants, they do not work right
+    #now.
+
+    MULTIBYTE_CHARACTER = false
+
+
+    #Warn if a ternary expression which contains a comma operator is
+    #used without enclosing parenthesis, since this is most likely not
+    #what you actually want. We recommend the -fcorrect-ternary
+    #option.
+
+    TERNARY_PRECEDENCE = false
+
+
+    #Warn when encountering an unrecognized ‘#pragma’ line.
+
+    UNKNOWN_PRAGMAS = true
+
+
+    #Warn about unreachable code. That is: code after a return state‐
+    #ment, or code after a call to a function marked as 'noreturn'.
+
+    UNREACHABLE_CODE = true
+
+
+    #Enable some warnings added in order to help debugging in the com‐
+    #piler.  You won't need this.
+
+    DEBUG = false
+
+
+    #Warn on an unknown attribute. The warning will inlclude only the
+    #first token inside the enclosing attribute-brackets. This may
+    #change when the actual attribute syntax is better defined.
+
+    UNKNOWN_ATTRIBUTE = true
+
+
+    #Warn when using reserved names such as ‘nil’.
+
+    RESERVED_NAMES = true
+
+
+    #Warn about global constants (using the ‘const’ keyword) with no
+    #assigned value.
+
+    UNINITIALIZED_CONSTANT = true
+
+
+    #Warn about global variables with no initializing value. This is
+    #off by default, and is added mostly to help find null-values
+    #which are supposed to be replaced by the untyped 'nil' constant.
+
+    UNINITIALIZED_GLOBAL = true
+
+
+    #Warn when a variables is redeclared with a different qualifier.
+    #For example when redeclaring a variable as 'var' which was previ‐
+    #ously marked 'const'.
+
+    DIFFERENT_QUALIFIERS = true
+
+
+    #Similar to the above but for attributes like ‘[[noreturn]]’.
+
+    DIFFERENT_ATTRIBUTES = true
+
+
+    #Warn when a function is marked with the attribute "[[depre‐
+    #cated]]". This flag enables a warning on calls to functions
+    #marked as such.
+
+    DEPRECATED = true
+
+
+    #Warn about possible mistakes caused by missing or wrong parenthe‐
+    #sis, like an assignment in an 'if' condition when there's no
+    #additional set of parens around the assignment.
+
+    PARENTHESIS = true
+
+
+    #When passing variadic parameters via ...(N) it can happen that
+    #incompatible types are passed to functions. This enables several
+    #warnings when static typechecking cannot guarantee consistent
+    #behavior.
+
+    UNSAFE_TYPES = true
+
+
+    #When compiling original id1 QC there is a definition for `break`
+    #which conflicts with the 'break' keyword in GMQCC. Enabling this
+    #print a warning when the definition occurs. The definition is
+    #ignored for both cases.
+
+    BREAKDEF = true
+
+
+    #When compiling original QuakeWorld QC there are instances where
+    #code overwrites constants. This is considered an error, however
+    #for QuakeWorld to compile it needs to be treated as a warning
+    #instead, as such this warning only works when -std=qcc.
+
+    CONST_OVERWRITE = true
+
+
+    #Warn about the use of preprocessor directives inside macros.
+
+    DIRECTIVE_INMACRO = true
+
+
+    #When using a function that is not explicitly defined, the compiler
+    #will search its intrinsics table for something that matches that
+    #function name by appending "__builtin_" to it. This behaviour may
+    #be unexpected, so enabling this will produce a diagnostic when
+    #such a function is resolved to a builtin.
+
+    BUILTINS = true
+
+
+    #When comparing an inexact value such as `1.0/3.0' the result is
+    #pathologically wrong. Enabling this will trigger a compiler warning
+    #on such expressions.
+    INEXACT_COMPARES = true
+
+
+[optimizations]
+    #Some general peephole optimizations. For instance the code `a = b
+    #+ c` typically generates 2 instructions, an ADD and a STORE. This
+    #optimization removes the STORE and lets the ADD write directly
+    #into A.
+
+    PEEPHOLE = true
+
+
+    #Tail recursive function calls will be turned into loops to avoid
+    #the overhead of the CALL and RETURN instructions.
+
+    TAIL_RECURSION = true
+
+
+    #Make all functions which use neither local arrays nor have locals
+    #which are seen as possibly uninitialized use the same local sec‐
+    #tion.  This should be pretty safe compared to other compilers
+    #which do not check for uninitialized values properly. The problem
+    #is that there's QC code out there which really doesn't initialize
+    #some values. This is fine as long as this kind of optimization
+    #isn't used, but also, only as long as the functions cannot be
+    #called in a recursive manner. Since it's hard to know whether or
+    #not an array is actually fully initialized, especially when ini‐
+    #tializing it via a loop, we assume functions with arrays to be
+    #too dangerous for this optimization.
+
+    OVERLAP_LOCALS = true
+
+
+    #This promotes locally declared variables to "temps". Meaning when
+    #a temporary result of an operation has to be stored somewhere, a
+    #local variable which is not 'alive' at that point can be used to
+    #keep the result. This can reduce the size of the global section.
+    #This will not have declared variables overlap, even if it was
+    #possible.
+
+    LOCAL_TEMPS = true
+
+
+    #Causes temporary values which do not need to be backed up on a
+    #CALL to not be stored in the function's locals-area. With this, a
+    #CALL to a function may need to back up fewer values and thus exe‐
+    #cute faster.
+
+    GLOBAL_TEMPS = true
+
+
+    #Don't generate defs for immediate values or even declared con‐
+    #stants.  Meaning variables which are implicitly constant or qual‐
+    #ified as such using the 'const' keyword.
+
+    STRIP_CONSTANT_NAMES = true
+
+
+    #Aggressively reuse strings in the string section. When a string
+    #should be added which is the trailing substring of an already
+    #existing string, the existing string's tail will be returned
+    #instead of the new string being added.
+    #
+    #For example the following code will only generate 1 string:
+    #
+    #   print("Hello you!\n");
+    #   print("you!\n"); // trailing substring of "Hello you!\n"
+    #
+    #There's however one limitation. Strings are still processed in
+    #order, so if the above print statements were reversed, this opti‐
+    #mization would not happen.
+
+    OVERLAP_STRINGS = true
+
+
+    #By default, all parameters of a CALL are copied into the parame‐
+    #ter-globals right before the CALL instructions. This is the easi‐
+    #est and safest way to translate calls, but also adds a lot of
+    #unnecessary copying and unnecessary temporary values. This opti‐
+    #mization makes operations which are used as a parameter evaluate
+    #directly into the parameter-global if that is possible, which is
+    #when there's no other CALL instruction in between.
+
+    CALL_STORES = true
+
+
+    #Usually an empty RETURN instruction is added to the end of a void
+    #typed function. However, additionally after every function a DONE
+    #instruction is added for several reasons. (For example the qcvm's
+    #disassemble switch uses it to know when the function ends.). This
+    #optimization replaces that last RETURN with DONE rather than
+    #adding the DONE additionally.
+
+    VOID_RETURN = true
+
+
+    #Because traditional QC code doesn't allow you to access individ‐
+    #ual vector components of a computed vector without storing it in
+    #a local first, sometimes people multiply it by a constant like
+    #‘'0 1 0'’ to get, in this case, the y component of a vector. This
+    #optimization will turn such a multiplication into a direct compo‐
+    #nent access. If the factor is anything other than 1, a float-mul‐
+    #tiplication will be added, which is still faster than a vector
+    #multiplication.
+
+    VECTOR_COMPONENTS = true
+
+
+    #For constant expressions that result in dead code (such as a
+    #branch whos condition can be evaluated at compile-time), this
+    #will eliminate the branch and else body (if present) to produce
+    #more optimal code.
+
+    CONST_FOLD_DCE = true
+
+
+    #For constant expressions we can fold them to immediate values.
+    #this option cannot be disabled or enabled, the compiler forces
+    #it to stay enabled by ignoring the value entierly. There are
+    #plans to enable some level of constant fold disabling, but right
+    #now the language can't function without it. This is merley here
+    #as an exercise to the reader.
+
+    CONST_FOLD = true

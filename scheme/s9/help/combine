@@ -1,0 +1,13 @@
+S9 LIB  (combine integer list)   ==>  list
+        (combine* integer list)  ==>  list
+        
+        (load-from-library "combine.scm")
+
+Create k-combinations of the elements of the given list. K (the
+size of the combinations) is specified in the integer argument.
+COMBINE creates combinations without repetition, and COMBINE*
+creates combinations with repetition.
+
+(combine 2 '(a b c))   ==>  ((a b) (a c) (b c))
+(combine* 2 '(a b c))  ==>  ((a a) (a b) (a c)
+                             (b b) (b c) (c c))

@@ -1,0 +1,26 @@
+S9fES  (exponent number)  ==>  integer
+       (mantissa number)  ==>  integer
+
+EXPONENT returns the exponent of a real number and MANTISSA
+returns its mantissa:
+
+        real = (* mantissa (expt 10 exponent))
+
+S9fES stores real numbers in such a format that the mantissa
+is always in integer and no trailing (yet significant) zeros
+are kept in the mantissa, e.g. 1000.0 would have a mantissa
+of 1 and an exponent of 3. This differs from the external
+form of real numbers, where exponent and mantissa are scaled
+to one single digit in front of the decimal point.
+
+Integers have an exponent of zero and a mantissa that is
+equal to their value.
+
+(exponent 12300.0)  ==>  2
+(mantissa 12300.0)  ==>  123
+
+(exponent 123.456)  ==>  -3
+(mantissa 123.456)  ==>  123456
+
+(exponent 123)  ==>  0
+(mantissa 123)  ==>  123

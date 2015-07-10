@@ -1,0 +1,18 @@
+R4RS 6.2  (equal? object1 object2)  ==>  boolean
+
+EQUAL? recursively compares the contents of pairs, vectors, and
+strings, applying eqv? on other objects such as numbers and symbols.
+A rule of thumb is that objects are generally EQUAL? if they print
+the same. EQUAL? may fail to terminate if its arguments are circular
+data structures.
+
+(equal? 'a 'a)               ==>  #t
+(equal? '(a) '(a))           ==>  #t
+(equal? '(a (b) c)
+        '(a (b) c))          ==>  #t
+(equal? "abc" "abc")         ==>  #t
+(equal? 2 2)                 ==>  #t
+(equal? (make-vector 5 'a)
+        (make-vector 5 'a))  ==>  #t
+(equal? (lambda (x) x)
+        (lambda (y) y))      ==>  unspecified

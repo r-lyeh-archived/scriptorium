@@ -1,0 +1,20 @@
+R4RS 6.4  (symbol->string symbol)  ==>  string
+
+Returns the name of SYMBOL as a string. If the symbol was part of
+an object returned as the value of a literal expression (section
+see section 4.1.2 Literal expressions) or by a call to the READ
+procedure, and its name contains alphabetic characters, then the
+string returned will contain characters in the implementation's
+preferred standard case--some implementations will prefer upper
+case, others lower case. If the symbol was returned by STRING->SYMBOL,
+the case of characters in the string returned will be the same as
+the case in the string that was passed to STRING->SYMBOL. It is an
+error to apply mutation procedures like STRING-SET! to strings
+returned by this procedure.
+
+The following examples assume that the implementation's standard
+case is lower case:
+
+(symbol->string 'flying-fish)                ==>  "flying-fish"
+(symbol->string 'Martin)                     ==>  "martin"
+(symbol->string (string->symbol "Malvina"))  ==>  "Malvina"

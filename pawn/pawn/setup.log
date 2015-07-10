@@ -1,0 +1,301 @@
+Output folder: D:\prj\painkiller\101-hello\pawn
+Extract: readme.txt
+Extract: LICENSE
+Extract: NOTICE
+Extract: history.txt
+Output folder: D:\prj\painkiller\101-hello\pawn\bin
+Extract: amxArgs.dll
+Extract: amxDGram.dll
+Extract: amxFile.dll
+Extract: amxFixed.dll
+Extract: amxFloat.dll
+Extract: amxProcess.dll
+Extract: amxString.dll
+Extract: amxTime.dll
+Extract: callout.dll
+Extract: pawn.ico
+Extract: pawncc.exe
+Extract: pawnrun.exe
+Extract: pawndbg.exe
+Output folder: D:\prj\painkiller\101-hello\pawn\include
+Extract: amxdll.inc
+Extract: args.inc
+Extract: console.inc
+Extract: core.inc
+Extract: datagram.inc
+Extract: default.inc
+Extract: file.inc
+Extract: fixed.inc
+Extract: float.inc
+Extract: process.inc
+Extract: rational.inc
+Extract: string.inc
+Extract: time.inc
+Created uninstaller: D:\prj\painkiller\101-hello\pawn\uninstall.exe
+Create folder: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Uninstall.lnk
+Output folder: D:\prj\painkiller\101-hello\pawn\bin
+Extract: quincy.exe
+Extract: pawndbgc.exe
+Extract: grep.exe
+Extract: grep.txt
+Extract: ANDANTE.FON
+Create folder: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Pawn IDE (Quincy).lnk
+Output folder: D:\prj\painkiller\101-hello\pawn\doc
+Extract: Quincy_User_Guide.aux
+Extract: Quincy_User_Guide.pdf
+Extract: infotips.lst
+Create folder: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Quincy User Guide.lnk
+Output folder: D:\prj\painkiller\101-hello\pawn\examples\quincy
+Extract: Getting started.tut
+Extract: Interfacing with networks or processes.tut
+Extract: Reverse-Polish Notation calulator.tut
+Extract: States and automatons.tut
+Extract: a peer-to-peer chat program.tut
+Extract: an interactive comment parser.tut
+Extract: calculating the day of the week.tut
+Extract: celsius to fahrenheit.tut
+Extract: desktop calculator.tut
+Extract: faculty numbers.tut
+Extract: fibonacci numbers.tut
+Extract: greatest common divisor.tut
+Extract: hello world.tut
+Extract: improved pedestrian crossing lights.tut
+Extract: julian day numbers and dates.tut
+Extract: message queue.tut
+Extract: obfuscating text.tut
+Extract: pedestrian crossing lights.tut
+Extract: samples.toc
+Extract: sets (intersection, union).tut
+Extract: sieve of eratosthenes.tut
+Extract: the towers of hanoi.tut
+Extract: word count.tut
+Output folder: D:\prj\painkiller\101-hello\pawn\doc
+Extract: Pawn_Porting_Guide.pdf
+Extract: Pawn_Language_Guide.aux
+Extract: Pawn_Language_Guide.pdf
+Extract: Pawn_Getting_Started.pdf
+Extract: Fixed_Point_Support.aux
+Extract: Fixed_Point_Support.pdf
+Extract: Floating_Point_Support.aux
+Extract: Floating_Point_Support.pdf
+Extract: File_IO_Support.aux
+Extract: File_IO_Support.pdf
+Extract: Arguments_Support.aux
+Extract: Arguments_Support.pdf
+Extract: Network_Datagram_Exchange.aux
+Extract: Network_Datagram_Exchange.pdf
+Extract: String_Manipulation.aux
+Extract: String_Manipulation.pdf
+Extract: Time_Functions.aux
+Extract: Time_Functions.pdf
+Extract: Process_and_library_control.aux
+Extract: Process_and_library_control.pdf
+Create folder: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Introduction to programming.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Pawn Porting Guide.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Pawn - The Language.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Fixed Point Support Library.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Floating Point Support Library.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\File IO Support Library.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Script Arguments Support Library.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Network Datagram Exchange Module.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\String Manipulation Library.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Time Functions Library.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Process and library control.lnk
+Output folder: D:\prj\painkiller\101-hello\pawn\doc
+Extract: Pawn_Implementer_Guide.pdf
+Extract: Pawn_Remote_Debugging_Guide.pdf
+Create folder: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Pawn - Implementer's Guide.lnk
+Create shortcut: C:\Users\r-lyeh\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Pawn\Documentation\Pawn - Remote Debugging Guide.lnk
+Output folder: D:\prj\painkiller\101-hello\pawn\examples
+Extract: argument.p
+Extract: c2f.p
+Extract: cards.p
+Extract: chat.p
+Extract: comment.p
+Extract: faculty.p
+Extract: fib.p
+Extract: gcd.p
+Extract: gtkcalc.p
+Extract: hanoi.p
+Extract: hello.p
+Extract: hello2.p
+Extract: julian.p
+Extract: ones.p
+Extract: queue.p
+Extract: quine.p
+Extract: randlist.p
+Extract: readfile.p
+Extract: rot13.p
+Extract: rpn.p
+Extract: rpnparse.inc
+Extract: set.p
+Extract: sieve.p
+Extract: stack.inc
+Extract: strtok.inc
+Extract: traffic.p
+Extract: traffic2.p
+Extract: turtle.p
+Extract: wcount.p
+Extract: weekday.p
+Output folder: D:\prj\painkiller\101-hello\pawn\xml
+Extract: pawndoc.css
+Extract: pawndoc.xsl
+Output folder: D:\prj\painkiller\101-hello\pawn\source
+Extract: CMakeLists.txt
+Extract: LICENSE
+Extract: NOTICE
+Extract: readme.txt
+Output folder: D:\prj\painkiller\101-hello\pawn\source\amx
+Extract: CMakeLists.txt
+Extract: amx.c
+Extract: amx.h
+Extract: amxDGram.def
+Extract: amxDGram.rc
+Extract: amxFile.rc
+Extract: amxFixed.def
+Extract: amxFixed.rc
+Extract: amxFloat.def
+Extract: amxFloat.rc
+Extract: amxProcess.def
+Extract: amxProcess.rc
+Extract: amxargs.c
+Extract: amxargs.rc
+Extract: amxaux.c
+Extract: amxaux.h
+Extract: amxcons.c
+Extract: amxcons.h
+Extract: amxcore.c
+Extract: amxdbg.c
+Extract: amxdbg.h
+Extract: amxdef.asm
+Extract: amxdefn.asm
+Extract: amxdgram.c
+Extract: amxexec.asm
+Extract: amxexec_arm7.s
+Extract: amxexec_arm7_gas.s
+Extract: amxexec_gcc.c
+Extract: amxexec_thumb2.s
+Extract: amxexec_thumb2_gas.s
+Extract: amxexecn.asm
+Extract: amxfile.c
+Extract: amxfile.def
+Extract: amxfixed.c
+Extract: amxfloat.c
+Extract: amxgc.c
+Extract: amxgc.h
+Extract: amxjitr.asm
+Extract: amxjits.asm
+Extract: amxjitsn.asm
+Extract: amxpool.c
+Extract: amxpool.h
+Extract: amxprocess.c
+Extract: amxstring.c
+Extract: amxstring.def
+Extract: amxstring.rc
+Extract: amxtime.c
+Extract: amxtime.def
+Extract: amxtime.rc
+Extract: dllmain.c
+Extract: fixed.c
+Extract: float.c
+Extract: fpattern.c
+Extract: fpattern.h
+Extract: keeloq.c
+Extract: keeloq.h
+Extract: minGlue.h
+Extract: minIni.c
+Extract: minIni.h
+Extract: osdefs.h
+Extract: pawndbg.c
+Extract: pawnrun.c
+Extract: term_ga.c
+Extract: term_ga.h
+Extract: termwin.c
+Extract: termwin.h
+Output folder: D:\prj\painkiller\101-hello\pawn\source\amx\examples
+Extract: logfile.cpp
+Extract: power.c
+Extract: prun1.c
+Extract: prun2.c
+Extract: prun3.c
+Extract: prun4.c
+Extract: prun5.c
+Extract: prun_jit.c
+Extract: readme.txt
+Output folder: D:\prj\painkiller\101-hello\pawn\source\amx\obj
+Extract: amxexecc.obj
+Extract: amxexecs.obj
+Extract: amxjitr.obj
+Extract: amxjits.obj
+Output folder: D:\prj\painkiller\101-hello\pawn\source\amxdll
+Extract: AMX16.DLL
+Extract: LICENSE
+Extract: amx16.def
+Extract: amx16.lib
+Extract: amx16.mak
+Extract: amx32.def
+Extract: amx32.dll
+Extract: amx32.imp
+Extract: amx32.lbc
+Extract: amx32.mak
+Extract: amx32b.lib
+Extract: amx32m.exp
+Extract: amx32m.lib
+Extract: amx32w.lib
+Extract: amxdll.c
+Extract: amxdll.fed
+Extract: amxdll.rc
+Extract: balloon.c
+Extract: balloon.h
+Extract: library.txt
+Extract: prun-dll.c
+Extract: readme.txt
+Output folder: D:\prj\painkiller\101-hello\pawn\source\compiler
+Extract: CMakeLists.txt
+Extract: libpawnc.c
+Extract: libpawnc.def
+Extract: libpawnc.def.borland
+Extract: libpawnc.lbc
+Extract: lstring.c
+Extract: lstring.h
+Extract: memfile.c
+Extract: memfile.h
+Extract: pawncc.c
+Extract: pawncc.def
+Extract: pawncc.def.borland
+Extract: pawncc.rc
+Extract: pawndisasm.c
+Extract: sc.h
+Extract: sc1.c
+Extract: sc2.c
+Extract: sc3.c
+Extract: sc4.c
+Extract: sc5.c
+Extract: sc5.scp
+Extract: sc6.c
+Extract: sc7.c
+Extract: sc7.scp
+Extract: scexpand.c
+Extract: sci18n.c
+Extract: sclist.c
+Extract: scmemfil.c
+Extract: scpack.c
+Extract: scstate.c
+Extract: scstub.c
+Extract: scvars.c
+Extract: svnrev.h
+Output folder: D:\prj\painkiller\101-hello\pawn\source\linux
+Extract: binreloc.c
+Extract: binreloc.h
+Extract: getch.c
+Extract: getch.h
+Extract: sclinux.h
+Output folder: D:\prj\painkiller\101-hello\pawn\source\cmake_modules
+Extract: FindDyncall.cmake
+Extract: FindwxW.cmake
+Completed

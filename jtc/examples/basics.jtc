@@ -1,0 +1,61 @@
+// examples of the basic syntax
+
+pi = 3.14159 // numbers are always doubles
+
+greeting = "Hello World!" // string
+
+square = function(x) { // functions are first class citizens
+    return x*x
+}
+
+arr = [pi greeting nil] // array types
+arr[2] = square //replace the nil element (indices start at 0)
+arr += [23] // append
+length = size(arr) // use the size operator to find an arrays length
+
+// tables are associative containers that can use any object as key
+table = {
+    "pi" = 3.14159
+    23 = "twenty three"
+    "bar" = square
+}
+table.e = 2.71 // equivalent to table["e"] = 2.71
+table.bar = function() { print(this.e, "\n") }
+table.bar()
+
+// flow control uses C style
+if(pi > 2) {
+    print("pi is greater than 2\n")
+} else {
+    print("pi is less or equal 2\n")
+}
+
+x = 2
+while(x < 1024) {
+    print(x = square(x) ", ")
+}
+print("\n")
+
+//no ++ or -- operators
+for(i = 0;i<size(arr);i+=1) {
+    print(arr[i] ", ")
+}
+print("\n")
+
+// for each syntax
+for(value : arr) {
+    print(value ", ")
+}
+print("\n")
+
+// for each on tables has no specific order
+for(value : table) {
+    print(value ", ")
+}
+print("\n")
+
+// iterate over key value pairs
+for(key, value : table) {
+    print(key " = " value  ", ")
+}
+print("\n")

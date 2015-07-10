@@ -1,0 +1,20 @@
+R4RS 6.5.5  (integer? object)  ==>  boolean
+            (number? object)   ==>  boolean
+            (real? object)     ==>  boolean
+
+These numerical type predicates can be applied to any kind of
+argument, including non-numbers. They return #t if the object is
+of the named type, and otherwise they return #f. In general, if a
+type predicate is true of a number then all higher type predicates
+are also true of that number. Consequently, if a type predicate is
+false of a number, then all lower type predicates are also false
+of that number.
+
+(real? 3)          ==>  #t
+(real? -2.5)       ==>  #t
+(real? #e1e10)     ==>  #t
+(integer? 3)       ==>  #t
+(integer? 3.0)     ==>  #t
+
+Note: The behavior of these type predicates on inexact numbers is
+unreliable, since any inaccuracy may affect the result.

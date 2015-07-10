@@ -1,0 +1,8 @@
+S9 LIB  (median list)  ==>  real
+
+        (load-from-library "median.scm")
+
+Median (middle value) function, returns the value in the middle of
+a sorted list of values. The input list does not have to be sorted.
+
+(mean '(1 2 3 4 5 6))  ==>  3.5

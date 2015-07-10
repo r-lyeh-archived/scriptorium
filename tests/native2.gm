@@ -1,0 +1,10 @@
+iterations = 10000000;
+
+
+length = 0;
+for (i = 0; i < iterations; i += 1)
+{
+    length = StrLen(s);
+}
+
+print("Length: " + (iterations * length));

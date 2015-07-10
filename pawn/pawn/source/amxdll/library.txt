@@ -1,0 +1,16 @@
+There are different libraries for a range of C/C++ compilers.
+
+If your compiler is not listed, check whether the compiler vendor supplies
+a utility to create a LIB file from a DLL.
+
+amx16.lib       For 16-bit C/C++ compilers for Microsoft Windows (Borland C++,
+                Microsoft Visual C/C++ 1.5 or earlier)
+
+amx32b.lib      Borland C++ 5.0 and up, 32-bit
+
+amx32l.lib      LCC-Win32, 32-bit
+
+amx32m.lib      Microsoft Visual C/C++, version 2.0 and up (32-bit)
+
+amx32w.lib      Watcom C/C++ 10.5 and up, 32-bit
+

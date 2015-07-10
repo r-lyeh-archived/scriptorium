@@ -1,0 +1,55 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+function _load(name,nargs) : 'a {
+	neko("return $loader.loadprim('std@math_'+name,nargs)");
+}
+
+function _lload(name,nargs) : 'a {
+	neko("return try $loader.loadprim('std@math_'+name,nargs) catch e function(_) $throw(e)");
+}
+
+var atan2 : float -> float -> float = _load("atan2",2);
+var pow : float -> float -> float = _load("pow",2);
+var abs : float -> float = _load("abs",1);
+var iabs : int -> int = _load("abs",1);
+
+var ceil : float -> int = _load("ceil",1);
+var floor : float -> int = _load("floor",1);
+var round : float -> int = _load("round",1);
+
+var fceil : float -> float = _lload("fceil",1);
+var ffloor : float -> float = _lload("ffloor",1);
+var fround : float -> float = _lload("fround",1);
+var fint : float -> int = _lload("int",1);
+
+var pi : float = neko "$loader.loadprim('std@math_pi',0)()";
+
+var sqrt : float -> float = _load("sqrt",1);
+var atan : float -> float = _load("atan",1);
+var cos : float -> float = _load("cos",1);
+var sin : float -> float = _load("sin",1);
+var tan : float -> float = _load("tan",1);
+var log : float -> float = _load("log",1);
+var exp : float -> float = _load("exp",1);
+var acos : float -> float = _load("acos",1);
+var asin : float -> float = _load("asin",1);

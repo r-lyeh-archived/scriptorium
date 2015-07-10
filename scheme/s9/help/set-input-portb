@@ -1,0 +1,5 @@
+S9fES  (set-input-port! input-port)    ==>  unspecific
+       (set-output-port! output-port)  ==>  unspecific
+
+Change the default input and output ports by mutating the values
+returned by CURRENT-INPUT-PORT and CURRENT-OUTPUT-PORT respectively.

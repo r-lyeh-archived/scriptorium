@@ -1,0 +1,14 @@
+S9 EXT  (sys:chown string integer1|string2|#f int2|str3|#f)  ==> unspecific
+
+Change the ownership for the file STRING to user ID INTEGER1
+and the group ID INT2.
+
+When a symbolic user or group name is supplied the place of
+a numeric user/group ID, the name will be looked up in the user
+database and converted to numeric ID. When the placeholder #F
+is given in the place of an ID, the corresponding ID will be
+left unchanged.
+
+(sys:chown "file" 0 0)        ==>  unspecific
+(sys:chown "file" "root" #f)  ==>  unspecific
+(sys:chown "file" #f #f)      ==>  unspecific   ; null operation

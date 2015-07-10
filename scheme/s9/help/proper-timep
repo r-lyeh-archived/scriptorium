@@ -1,0 +1,6 @@
+S9 LIB  (proper-time? time-list)  ==>  boolean
+
+Return #T if the given TIME-LIST is a proper TIME-LIST as defined
+by the UNIX-TIME->TIME procedure. Otherwise return #F.
+
+(proper-time? '(3 1970 1 1 0 0 0))  ==>  #t

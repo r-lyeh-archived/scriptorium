@@ -1,0 +1,37 @@
+S9 EXT  (sys:change-mode integer1 integer2|string)  ==>  integer
+        (sys:chmod string1 string2|integer)         ==>  unspecific
+
+When INTEGER2 is supplied change the access bits of the file
+STRING to the mode INTEGER.
+
+When STRING2 is supplied the place of INTEGER, it describes the
+new mode symbolically rather than numerically. The string must be
+in a form that is accepted by SYS:CHANGE-MODE in its second argument.
+
+SYS:CHANGE-MODE applies the modifiers specified in STRING to the
+file mode specified in INTEGER1. When the second argument is
+also an integer, it just returns that second integer. A string
+of modifiers must be either an octal number or have one of the
+following formats:
+
+        pattern+bits
+        pattern-bits
+        pattern=bits
+
+PATTERN is any combination of the letters u,g,o (denoting User,
+Group, and Others), and BITS is any combination of the letters
+r,w,x,s,t (denoting Read, Write, eXecute permission plus the
+Set UID/GID bits and the Text bit). The letter 'a' may be used
+to abbreviate 'ugo'. Multiple modifiers may be separated by
+commas.
+
+Using an equal sign assigns the given permissions, a plus sign
+adds them, and a minus sign removes them. The Text flag may be
+set with "+t" or "=t" and cleared with "-t". Any leading 'u',
+'g', or 'o' will be ignored. The "o+s" and "o-s" patterns are
+null-operations.
+
+(sys:change-mode #o555 "u=rw,go-x")  ==>  #o644
+(sys:chmod #o644 "file")             ==>  unspecific
+(sys:chmod "ug=rw,o=r" "file")       ==>  unspecific
+(sys:chmod "a+rw,a-x,o-w" "file")    ==>  unspecific

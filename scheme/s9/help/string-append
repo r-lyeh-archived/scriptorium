@@ -1,0 +1,4 @@
+R4RS 6.7  (string-append string ...)  ==>  string
+
+Returns a newly allocated string whose characters form the
+concatenation of the given strings.

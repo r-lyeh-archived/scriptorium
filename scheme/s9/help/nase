@@ -1,0 +1,7 @@
+S9 LIB  (nase string)  ==>  unspecific
+        (nase)         ==>  unspecific
+
+The NASE procedure implements a Scheme-centric text editor.
+If specified, it loads the file STRING into an editing buffer.
+
+(nase "foo.scm")

@@ -1,0 +1,269 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+open Neko.Ast
+
+type ctx {
+	ch : IO.output;
+	mutable level : int;
+	mutable tabs : bool;
+}
+
+function create(ch) {
+	{
+		ch = ch;
+		level = 0;
+		tabs = true;
+	}
+}
+
+function newline(ctx) {
+	IO.write_char ctx.ch '\n';
+	ctx.tabs := false;
+}
+
+function level(ctx,b) {
+	ctx.level := ctx.level + (if b then 1 else -1);
+	newline ctx
+}
+
+function printf(ctx) {
+	if !ctx.tabs then {
+		IO.write ctx.ch (String.make (ctx.level * 4) ' ');
+		ctx.tabs := true;
+	};
+	IO.printf ctx.ch
+}
+
+function rec print_list(ctx,sep,f,x) {
+	match x {
+	| [] -> ()
+	| x :: [] -> f x
+	| x :: l ->
+		f x;
+		printf ctx "%s" sep;
+		print_list ctx sep f l
+	}
+}
+
+function print(ctx,n) {
+	printf ctx "%s" n
+}
+
+function rec print_ast(ctx,binop,(e,p)) {
+	var print_rec = print_ast ctx false;
+	match e {
+	| EConst c ->
+		printf ctx "%s" (s_constant c)
+	| EBlock el ->
+		print ctx "{";
+		level ctx true;
+		List.iter (function(e) {
+			print_rec e;
+			if ctx.tabs then {
+				print ctx ";";
+				newline ctx;
+			}
+		}) el;
+		ctx.level := ctx.level - 1;
+		print ctx "}";
+		newline ctx;
+	| EParenthesis e when !ctx.tabs ->
+		print ctx "{ ";
+		print_rec e;
+		print ctx " }";
+	| EParenthesis e ->
+		print ctx "( ";
+		print_rec e;
+		print ctx " )";
+	| EField (e,s) ->
+		print_rec e;
+		printf ctx ".%s" s;
+	| ECall (e,el) ->
+		print_rec e;
+		print ctx "(";
+		print_list ctx "," print_rec el;
+		print ctx ")";
+	| EArray (e1,e2) ->
+		print_rec e1;
+		print ctx "[";
+		print_rec e2;
+		print ctx "]"
+	| EVars vl ->
+		print ctx "var ";
+		print_list ctx ", " (function((n,v)) {
+			printf ctx "%s" n;
+			match v {
+			| None -> ()
+			| Some e ->
+				print ctx " = ";
+				print_rec e
+			}
+		}) vl;
+		print ctx ";";
+		newline ctx
+	| EWhile(cond,e,NormalWhile) ->
+		print ctx "while ";
+		print_rec cond;
+		level_expr ctx e false;
+	| EWhile (cond,e,DoWhile) ->
+		print ctx "do ";
+		level_expr ctx e false;
+		print ctx "while ";
+		print_rec cond;
+		newline ctx
+	| EIf (cond,e,e2) ->
+		print ctx "if ";
+		print_rec cond;
+		level_expr ctx e (e2 == None);
+		match e2 {
+		| None -> ()
+		| Some e ->
+			print ctx "else";
+			level_expr ctx e false
+		}
+	| ETry (e,id,e2) ->
+		print ctx "try";
+		level_expr ctx e false;
+		printf ctx "catch %s" id;
+		level_expr ctx e2 false;
+	| EFunction (params,e) ->
+		print ctx "function(";
+		print_list ctx "," (printf ctx "%s") params;
+		print ctx ")";
+		level_expr ctx e false;
+	| EBinop (op,e1,e2) ->
+		var tabs = ctx.tabs;
+		if binop then (if tabs then print ctx "(" else print ctx "{");
+		print_ast ctx true e1;
+		printf ctx " %s " op;
+		print_ast ctx true e2;
+		if binop then (if tabs then print ctx ")" else print ctx "}");
+	| EReturn None ->
+		print ctx "return;";
+	| EReturn (Some e) ->
+		print ctx "return ";
+		print_rec e;
+	| EBreak None ->
+		print ctx "break;";
+	| EBreak (Some e) ->
+		print ctx "break ";
+		print_rec e;
+	| EContinue ->
+		print ctx "continue"
+	| ENext (e1,e2) ->
+		print_rec e1;
+		print ctx ";";
+		newline ctx;
+		print_rec e2
+	| EObject [] ->
+		print ctx "$new(null)"
+	| EObject fl ->
+		print ctx "{";
+		level ctx true;
+		function rec loop(x) {
+			match x {
+			| [] -> assert()
+			| [(f,e)] ->
+				printf ctx "%s => " f;
+				print_rec e;
+				newline ctx;
+			| (f,e) :: l ->
+				printf ctx "%s => " f;
+				print_rec e;
+				print ctx ", ";
+				newline ctx;
+				loop l
+			}
+		};
+		loop fl;
+		level ctx false;
+		print ctx "}"
+	| ELabel s ->
+		printf ctx "%s:" s
+	| ESwitch (e,cases,eo) ->
+		print ctx "switch ";
+		print_rec e;
+		print ctx "{";
+		newline ctx;
+		List.iter (function((e1,e2)) {
+			print_rec e1;
+			print ctx " => ";
+			level ctx true;
+			print_rec e2;
+			level ctx false;
+		}) cases;
+		match eo {
+		| None -> ()
+		| Some e ->
+			print ctx "default => ";
+			level ctx true;
+			print_rec e;
+			level ctx false
+		}
+		print ctx "}";
+		newline ctx
+	}
+}
+
+function rec level_expr(ctx,(e,p),closed) {
+	match e {
+	| EBlock _ ->
+		if ctx.tabs then print ctx " ";
+		print_ast ctx false (e,p)
+	| EParenthesis e ->
+		if ctx.tabs then print ctx " ";
+		print ctx "{";
+		level ctx true;
+		print_ast ctx false e;
+		level ctx false;
+		print ctx "}";
+	| _ ->
+		level ctx true;
+		print_ast ctx false (e,p);
+		if closed then print ctx ";";
+		level ctx false
+	}
+}
+
+function print(ctx,ast) {
+	match fst ast {
+	| EBlock el ->
+		List.iter (function(e) {
+			print_ast ctx false e;
+			if ctx.tabs then {
+				print ctx ";";
+				newline ctx;
+			}
+		}) el;
+	| _ ->
+		print_ast ctx false ast
+	}
+}
+
+function to_string(ast) {
+	var ch , str = IO.write_string();
+	var ctx = create ch;
+	print ctx ast;
+	IO.close_out ch;
+	str()
+}

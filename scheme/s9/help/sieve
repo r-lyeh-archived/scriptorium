@@ -1,0 +1,6 @@
+S9 LIB  (sieve integer)  ==>  list
+
+Given an INTEGER N, generate a list of all prime numbers less
+than N. INTEGER must be positive.
+
+(sieve 20)  ==>  (2 3 5 7 11 13 17 19)

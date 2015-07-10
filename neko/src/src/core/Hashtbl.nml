@@ -1,0 +1,61 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+type ('a,'b) t;
+
+function hash(x:'a) : int {
+	neko("$hkey(x)")
+}
+
+function create() : ('a,'b) t {
+	neko("$hnew(0)")
+}
+
+function length(h : ('a,'b) t) : int {
+	neko("$hcount(h)")
+}
+
+function find(h : ('a,'b) t,k : 'a) : 'b {
+	var v = neko("$hget(h,k,@Core.@compare)");
+	if neko("v == null") then throw Not_found;
+	v
+}
+
+function exists(h : ('a,'b) t,k : 'a) : bool {
+	neko("$hmem(h,k,@Core.@compare)");
+}
+
+function add(h : ('a,'b) t, k : 'a, v : 'b) : void {
+	neko("$hadd(h,k,v)");
+}
+
+function remove(h : ('a,'b) t,k : 'a) : void {
+	neko("$hremove(h,k,@Core.@compare)");
+}
+
+function replace(h : ('a,'b) t,k : 'a,v : 'b) : void {
+	neko("$hset(h,k,v,@Core.@compare)");
+}
+
+function iter(f : 'a -> 'b -> void,h : ('a,'b) t) : void {
+	neko("$hiter(h,f)");
+}

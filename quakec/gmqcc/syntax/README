@@ -1,0 +1,24 @@
+Here exists some syntax highlighting configuration files for various
+text editors. Inside each directory exists some documentaiton on how
+you can install the configuration file correctly.
+
+Currently the supported text editors:
+    geany
+    kate
+    kwrite        - uses kate syntax highlighting
+    kdevelop      - uses kate syntax highlighting
+    QtCreator     - supports kate syntax highlighting
+    gtksourceview - main source viewer in GNOME
+    gedit         - uses gtksourceview
+    sandy         - uses gtksourceview
+    nano
+    jedit
+
+
+Other text editors we plan to provide syntax highlighting configuration
+files for (but never got around to figuring out)
+    vim
+    emacs
+
+If your text editor is not supported and you'd like to create syntax
+highlighting support for it, don't hesitate to share it with us.

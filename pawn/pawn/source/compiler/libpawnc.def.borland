@@ -1,0 +1,8 @@
+LIBRARY       PAWNC
+DESCRIPTION   'Pawn compiler'
+
+EXPORTS Compile
+        pc_compile       = _pc_compile
+        pc_addconstant   = _pc_addconstant
+        pc_addtag        = _pc_addtag
+        pc_enablewarning = _pc_enablewarning

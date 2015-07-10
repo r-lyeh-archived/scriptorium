@@ -1,0 +1,6 @@
+LIBRARY       AMX32
+
+DESCRIPTION  'Pawn Abstract Machine'
+
+
+EXPORTS

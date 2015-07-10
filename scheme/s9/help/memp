@@ -1,0 +1,9 @@
+S9 LIB  (memp procedure^2 object list)  ==>  list | #f
+
+Find the first tail X of LIST for which
+
+      (procedure^2 object (car X))
+
+holds. When no such tail exists, return #F.
+
+(memp char=? #\b '(#\a #\b #\c))  ==>  (#\b #\c)

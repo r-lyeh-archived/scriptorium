@@ -1,0 +1,263 @@
+S9 LIB  (format #t string-f object ...)           ==>  #t
+        (format #f string-f object ...)           ==>  string
+        (format string string-f object ...)       ==>  string
+        (format output-port string-f object ...)  ==>  #t
+
+Format prints according to the formatting instruction in STRING-F.
+If the first argument is #T, the output is to the current output
+port and #T is returned. If the argument is #F, a formatted string
+is returned as the result of the call. If the first argument is is
+a string, the output is appended to that string, returning a fresh
+string. Otherwise the first argument must be an output port (to
+which the output will be sent) and #T is returned.
+
+Characters in the STRING-F argument are printed as if they were
+output by the DISPLAY procedure with the exception of those prefixed
+by a tilde (~). When a tilde is found in STRING-F, FORMAT fetches
+the next argument from its argument list, formats it according to
+the instructions encoded in the tilde command, and prints it.
+
+In case of a formatting error FORMAT prints a message on the current
+output port and aborts.
+
+The tilde commands of the STRING-F argument have the following
+general form:
+
+        directive  :=  ~[<parameter>,...][:][@]<command-character>
+        parameter  :=  [-|+]{0..9}...  |  '<character>  |  v  |  #
+
+Parameters are positional. When specifying only the first parameters
+of a command, the remaining parameters can be omitted, as in
+
+        ~10D  or  ~10,'xD
+
+But when, for example, the first and the third parameters is to
+be specified, an empty parameter has to be included, as in
+
+        ~10,,,'.D
+
+Default values are assumed for parameters that are not specified.
+
+The FORMAT procedure described here is a subset of the CommonLISP
+format command. Its supports the commands described in the following.
+
+PARAMETERS
+
+Common parameters include the following:
+
+mincol      specifies the minimum size of an output field, e.g.:
+            (format #f "~5A" 'z)  ==>  "z    "
+
+colinc      is a CL FORMAT parameter that is being ignored.
+
+minpad      is the minimum number of padding characters attached, e.g.:
+            (format #f "~,,3A" 'z)  ==>  "z   "
+
+padchar     changes the padding character (which defaults to #\space):
+            (format #f "~,,3,'_A" 'z)  ==>  "z___"
+
+comma-char  change the numeric group separator (default: #\,):
+            (format #f "~,,'':D" 1234567)  ==>  "1'234'567"
+
+comma-int   change the numeric group interval (default: 3):
+            (format #f "~,,'',6:D" 1234567)  ==>  "1'234567"
+
+When both mincol and minpad are specified, the length of the output
+field will be limited to mincol unless the object to print alone is
+longer than mincol:
+
+        (format #f "~5,,3'_A" 'zzz)     ==>  "zzz__"
+
+When the object alone is longer than mincol, minpad padding characters
+will be added:
+
+        (format #f "~5,,3,'_A" 'z12345)  ==>  "z12345___"
+
+The special parameter V fetches its value from the following FORMAT
+argument:
+
+        (format #f "~V,,,'_A" 5 'foo)  ==>  "foo__"
+
+The special parameter # inserts the number of remaining arguments.
+
+COMMANDS
+
+~A    mincol,colinc,minpad,padchar                         Aesthetic
+      Output is formatted in the same way as by DISPLAY.
+~@A   Insert padding characters on the left.
+~:A   Generate READ-proof output.
+      (format #f "~5,,,'_@A" #\X)  ==>  "____X"
+
+~B    mincol,padchar,comma-char,comma-int                  Binary
+      Print the binary representation of a number.
+~@B   Print the binary base prefix (#b).
+~:B   print separate groups of digits.
+      (format #f "~,,' 4:B" #b10101100)  ==>  "1010 1100"
+
+~C    char                                                 Character
+      Print next argument as a single characher.
+      When char is specified, print the character
+      with the goven ASCII code.
+~@C   Print that character in the same way as WRITE.
+      (format #f "~32@C")  ==>  "#\\space"
+
+~D    mincol,padchar,comma-char,comma-int                  Decimal
+      Print the decimal representation of a number.
+~@D   Print the decimal base prefix (#d).
+~:D   print separate groups of digits.
+      (format #f "~,,''3:D" 1234567)  ==>  "1'234'567"
+
+~K    (see ~?)
+
+~O    mincol,padchar,comma-char,comma-int                  Octal
+      Print the octal representation of a number.
+~@O   Print the octal base prefix (#o).
+~:O   print separate groups of digits.
+      (format #f "~@O" #o411)  ==>  "#o411"
+
+~P    (no parameters)                                      Plural
+      When the current argument equals 1, print nothing,
+      when it is not 1, print "s".
+~@P   Print "y" instead of "" and "ies" instead of "s".
+~:P   Re-use the previous argument instead of fetching
+      a new one.
+~:@P  Combination of the above.
+      (format #f "~D thing~:@P" 2)  ==>  "2 thingies"
+
+~R    N,mincol,padchar,comma-char,comma-int                Radix
+      Print the radix-N representation of a number.
+      Note: Only N in {2,8,10,16} is supported!
+~@R   Print radix prefix; BROKEN, do not use!
+~:R   print separate groups of digits.
+      (format #f "~16R" #x3039)  ==>  "3039"
+
+~S    ~mincol,colinc,minpad,padcharS                       Standard
+      Output is formatted in the same way as by WRITE.
+~@S   Insert padding characters on the left.
+~:S   Generate READ-proof output.
+      (format #f "~5,,,'_@S" #\X)  ==>  "__#\\X"
+
+~T    N                                                    Tabulator
+      Print N tabulation characters (default: one).
+      (format #f "~2T")
+
+~X    mincol,padchar,comma-char,comma-int                  Hexa-decimal
+      Print the hexa-decimal representation of a number.
+~@X   Print the hexa-decimal base prefix (#x).
+~:X   print separate groups of digits.
+      (format #f "~,,' ,4:X" #xdeadbeef)  ==>  "dead beef"
+
+~#\newline                                                 Ignore Newline
+      Ignore a newline character in STRING-F.
+      The newline character and all subsequent #\space
+      characters will be replaced by a single #\space.
+~@#\newline
+      The #\newline will be included, but subsequent
+      spaces will be discarded.
+~:#\newline
+      The #\newline will be discarded, but subsequent
+      spaces will be included.
+
+~%    N                                                    Newline
+      Print N newline characters (default: one).
+      (format #f "~2%")
+
+~&    (see ~%)
+
+~(~)  (no parameters)                                      Case Conversion
+      ~(text~)    converts "text" to lower case.
+      ~:(text~)   capitizes all words in "text".
+      ~@(text~)   capitizes the first word in "text".
+      ~:@(text~)  converts "text" to upper case.
+      (format #f "~(~A~)" "HELLO world")    ==>  "hello world"
+      (format #f "~:(~A~)" "HELLO world")   ==>  "Hello World"
+      (format #f "~@(~A~)" "HELLO world")   ==>  "Hello world"
+      (format #f "~:@(~A~)" "HELLO world")  ==>  "HELLO WORLD"
+
+~*    N                                                    Go To Argument
+      Jump N (default: 1) arguments forward.
+~:*   Jump N (default: 1) arguments backward.
+~@*   Jump to the Nth (default: 0) argument.
+      (format #f "~A~2@*~A" 'foo 'bar 'baz)  ==>  "foobaz"
+
+~?    (no parameters)                                      Indirection
+      Fetch the format commands from the next argument
+      and the objects to be printed by the commands from
+      a list in the argument after the next one.
+~@?   Instead of fetching the objects from a list, keep
+      consuming FORMAT arguments.
+      (format #f "~?"  "~A ~S" '(#\1 #\2))  ==>  "1 #\\2"
+      (format #f "~@?" "~A ~S"   #\1 #\2 )  ==>  "1 #\\2"
+
+~[text0~;...~;textN~:;text~]                               Conditional Expr
+      Fetch a numeric argument from the argument list
+      and output the Nth text between "~[" and "~]". The
+      individual texts are separated by "~;". When there
+      is no N'th text, output nothing. When there is no
+      Nth text, but a "~:;text" (default) clause exists,
+      output the text of that clause.
+      (format #f "~[foo~;bar~;baz~]" 1)  ==>  "bar"
+
+~:[alternative~;consequent~]                               Conditional Expr
+      Print the consequent part if the current argument is
+      true (not #F) and otherwise print the alternative
+      part.
+      (format #f "~:[no~;yes~]" 1)  ==>  "yes"
+
+~@[consequent~]                                            Conditional Expr
+      The consequent is output only when the current
+      argument is true. When the argument is true, it
+      will not be consumed.
+      (format #f "~@[~A bar~]" #f)   ==>  ""
+      (format #f "~@[~Abar~]" 'foo)  ==>  "foobar"
+
+~N[...~] (see ~[~])                                        Conditional Expr
+      Fetch the Nth text instead of taking the number
+      from an argument.
+
+~^                                                         Escape
+      Stop formatting when no more arguments are available.
+      When ~^ appears inside of an iteration command, only
+      the innermost iteration command will terminate.
+      (format #f "done~^, ~D matches")  ==>  "done"
+      (format #f "done~^, ~D matches" 17)
+        ==>  "done, 17 matches"
+      ~N^     escapes if N=0.
+      ~N,M^   escapes if N=M.
+      ~N,M,K^ escapes if N<M<K.
+      Of course at least one of N,M,K should be a "v" (value
+      of next argument) or "#" (number of remaining arguments)
+      parameter, e.g.:
+      (format #f "~0,v,1^~D matches" 0)    ==>  ""
+      (format #f "~0,v,1^~D matches" 2 2)  ==>  "2 matches"
+
+~_    N                                                    Blanks
+      Print N blank characters (default: one).
+      (format #f "~2_")  ==>  "  "
+
+~{text~}                                                   Iteration
+      Apply "text" to all members of the next argument,
+      which must be a list.
+      (format #f "members:~{ ~A~}" '(foo bar baz))
+        ==>  "members: foo bar baz"
+~N{   Limit output to N members at most.
+      (format #f "members:~2{ ~A~}" '(foo bar baz))
+        ==>  "members: foo bar"
+~:{   Iterate over a list of sublists. Individual arguments
+      are taken from the sublists:
+      (format #f "coordinates:~:{ ~S~S~}" '((a 1) (e 2) (b 7)))
+        ==> "coordinates: a1 e2 b7"
+~@{   Iterate over FORMATs arguments.
+      (format #f "members:~@{ ~A~}" 'foo 'bar 'baz)
+        ==>  "members: foo bar baz"
+~:@{  Like ~:{, but fetch sublists from FORMATs arguments.
+      (format #f "coordinates:~:@{ ~S~S~}" '(a 1) '(e 2) '(b 7))
+        ==> "coordinates: a1 e2 b7"
+
+~|    N                                                    Page Separator
+      Print N page separators (default: one).
+      (format #f "~2|")
+
+~~    N                                                    Tilde
+      Print N tilde characters (default: one).
+      (format #f "~5~")  ==>  "~~~~~"

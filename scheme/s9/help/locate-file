@@ -1,0 +1,22 @@
+S9fES  (locate-file string)  ==>  string | #f
+
+Attempt to locate the file specified in STRING in a pre-defined set
+of directories. The directories to search are stored in the
+*LIBRARY-PATH* variable as a colon-separated list of paths. LOCATE-FILE
+appends a slash (/) and the given file name to each path of
+*LIBRARY-PATH* and then checks the existence of the resulting fully
+qualified file name by using FILE-EXISTS?. It returns the first
+fully qualified file name that exists or #F in case the file could
+not be located.
+
+; Given *LIBRARY-PATH* == .:/u/s9fes
+; and hello.scm in /u/s9fes/examples
+
+(locate-file "examples/hello.scm")  ==>  "/u/s9fes/examples/hello.scm"
+(locate-file "non-existent")        ==>  #f
+
+Rationale: LOCATE-FILE is intended to locate files that belong to
+the S9fES system, like extension library files, user library files,
+and help files. The value of *LIBRARY-PATH* is initialized when
+the Scheme system starts up, for example by copying it from the
+S9FES_LIBRARY_PATH environment variable.

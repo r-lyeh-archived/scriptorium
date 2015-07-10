@@ -1,0 +1,6 @@
+S9 LIB  (factor integer)  ==>  list
+
+Factor an integer down to its constituent primes.
+The resulting list has the form ((base exponent) ...)
+
+(factor 24)  ==>  ((3 1) (2 3))

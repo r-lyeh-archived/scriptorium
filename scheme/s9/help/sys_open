@@ -1,0 +1,48 @@
+S9 EXT  (sys:close integer)         ==>  unspecific
+        (sys:creat string integer)  ==>  integer
+        (sys:creat string)          ==>  integer
+        (sys:open string integer)   ==>  integer
+
+Open and close files on the Unix file system. SYS:OPEN opens
+the file STRING in mode INTEGER. The file must exist. The
+following modes are portable:
+
+        sys:read-only  (0)
+        sys:write-only (1)
+        sys:read+write (2)
+
+SYS:OPEN returns a file descriptor for accessing the given file.
+
+SYS:CREAT creates a new file named STRING and assigns the
+permission bits specified in INTEGER to it. (The permission
+bits are also affected by SYS:UMASK; see there.) When the
+file exists, it will be truncated to zero bytes. SYS:CREAT
+returns a file descriptor for accessing the new file. When
+no access bits are passed to SYS:CREAT, it defaults to #o644
+(rw-r--r--).
+
+SYS:CLOSE closes the file descriptor INTEGER.
+
+Use SYS:MAKE-INPUT-PORT and SYS:MAKE-OUTPUT-PORT to convert
+Unix file descriptors into I/O ports.
+
+Note: There is no need to apply SYS:CLOSE to a descriptor that
+has been assigned to an I/O port, because the file will be
+closed automatically when the port is garbage-collected. The
+file descriptor is also closed implicitly when the CLOSE-INPUT-PORT
+or CLOSE-OUTPUT-PORT procedures are applied to a port created by
+SYS:MAKE-INPUT-PORT or SYS:MAKE-OUTPUT-PORT.
+
+; This example will overwrite "tmpfile"!
+;
+(let* ((ofd (sys:creat "tmpfile" #o644))
+       (out (sys:make-output-port ofd)))
+  (display "foo" out)
+  (newline out)
+  (sys:flush out)
+  (sys:close ofd)
+  (let* ((ifd (sys:open "tmpfile" sys:read-only))
+         (in  (sys:make-input-port ifd))
+         (obj (read in)))
+    (sys:close ifd)
+    obj))                                   ==>  foo

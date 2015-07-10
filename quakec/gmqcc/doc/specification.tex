@@ -1,0 +1,759 @@
+\documentclass{article}
+
+%%% PACKAGES
+\usepackage{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[parfill]{parskip}
+\usepackage{subfig}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{sectsty}
+
+%%% GEOMETRY FOR DOCUMENT
+\geometry{a4paper}
+
+%%% HEADERS/FOOTERS APPEARANCE
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{}\chead{}\rhead{}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+
+%%% ToC APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+%%% listing language definitions
+%%% BNF for now, QuakeC will be later
+\definecolor{keyword1}{RGB}{0,102,153}
+\definecolor{keyword2}{RGB}{0,153,102}
+\definecolor{keyword3}{RGB}{0,153,255}
+\definecolor{comment}{RGB}{204,0,0}
+\definecolor{function}{RGB}{153,102,255}
+\definecolor{digit}{RGB}{255,0,0}
+\definecolor{string}{RGB}{255,0,204}
+\definecolor{rule}{RGB}{192,192,192}
+\definecolor{back}{RGB}{250,250,250}
+
+\lstdefinelanguage{bnf}{
+  keywordstyle={\color{keyword2}\bfseries},
+  keywords={},
+  otherkeywords={::=,|},
+  morecomment=[s][\color{comment}]{(*}{*)},
+  stringstyle=\color{string},
+  showstringspaces=false,
+  frame=none,
+  rulecolor=\color{rule},
+  backgroundcolor=\color{back}
+}
+
+%% Title Information %%
+\title{The GMQCC QuakeC Programming Language}
+\author{Dale Weiler}
+\date{\today}
+
+\begin{document}
+
+%% Title Page %%
+\maketitle
+\thispagestyle{empty}
+\raggedright
+\abstract
+This document specifies the form and establishes the interpretation of programs written in
+the GMQCC QuakeC programming language variant (refereed simply as QuakeC throughout this
+document). It specifies:
+\begin{itemize}
+	\item the representation of QuakeC programs;
+	\item the syntax and constraints of the QuakeC language;
+	\item the semantic rules for interpreting QuakeC programs;
+	\item the representation of input data to be processed by QuakeC programs;
+	\item the representation of output data produced by QuakeC programs;
+	\item the restrictions and limits imposed by a conforming implementation of QuakeC.
+\end{itemize}
+This document does not specify
+\begin{itemize}
+	\item the mechanism by which QuakeC programs are transformed for use by a data-
+	      processing system;
+	\item the mechanism by which QuakeC programs are invoked for use by a data-processing
+	      system;
+	\item the mechanism by which input data are transformed for use by a QuakeC program;
+	\item the size or complexity of a program and its data that will exceed the capacity
+	      of any specific data-processing system or the capacity of a particular
+	      execution environment;
+	\item all minimal requirements of a data-processing system that is capable of
+	      supporting a conforming implementation.
+\end{itemize}
+
+%% Table Of Contents %%
+\newpage
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+
+%% Begin Contents %%
+\raggedright % No weird TEX spacing on lines to fill page
+
+%% -> Terms, definitions, and symbols %%
+\section{Terms, definitions, and symbols}
+\subsection*{argument}
+Expression in the comma-separated list bounded by the parentheses in a function call
+expression, or a sequence of preprocessing tokens in the comma-separated list bounded
+by the parentheses in a function-like macro invocation.
+
+\subsection*{behavior}
+External appearance or action
+
+\subsection*{implementation-defined behavior}
+Unspecified behavior where each implementation documents how the choice is made.
+
+\subsection*{undefined behavior}
+Behavior, upon use of a non-portable or erroneous program construct or of erroneous data,
+for which this document imposes no actual requirements.
+
+\subsection*{unspecified behavior}
+Use of an unspecified value, or other behavior where this document provides two or more
+possibilities and imposes no further requirements on which is chosen in any instance.
+
+\subsection*{constraint}
+Restriction, either syntactic or semantic, by which the exposition of language elements
+is to be interpreted.
+
+\subsection*{diagnostic message}
+Message belonging to an implementation-defined subset of the implementation's message
+output.
+
+\subsection*{object}
+Region of data storage in the execution environment, the contents of which can represent
+values.
+
+\subsection*{parameter}
+Object declared as part of a function declaration or definition that acquires a value on
+entry to the function, or an identifier from the comma-separated list bounded by the
+parentheses immediately following the macro name in a function-like macro definition.
+
+\subsection*{recommended practice}
+Specification that is strongly recommended as being in keeping with the intent of this
+document, but that may be impractical for some implementations.
+
+\subsection*{value}
+Precise meaning of the contents of an object when interpreted as having a specific type.
+
+\subsection*{implementation}
+Particular set of software, running in a particular translation environment under
+particular control options, that performs translation of programs for, and supports
+execution of functions in, a particular execution environment.
+
+\subsection*{implementation-defined value}
+Unspecified value where each implementation documents how the choice is made.
+
+\subsection*{unspecified value}
+Valid value of the relevant type where this document imposes no requirements on which
+value is chosen in any instance.
+
+%% -> Conformance %%
+\section{Conformance}
+In this document, "shall" is to be interpreted as a requirement on an implementation
+or on a program; conversely, "shall not" is to be interpreted as a prohibition. \\
+If a "shall" or "shall not" requirement that appears outside of a constraint is violated,
+the behavior is undefined.  Undefined behavior is otherwise indicated in this document by
+the words "undefined behavior" or by the omission of any explicit definition of behavior.
+There is no difference in emphasis among these three; they all describe "behavior that is
+undefined".
+
+%% -> Enviroment %%
+\section{Environment}
+An implementation that translates QuakeC source files and executes QuakeC programs in two
+data processing-system environments, which will be called the translation environment and
+the execution environment in this document. Their characteristics define and constrain the
+results of executing QuakeC programs constructed according to the syntactic and semantic
+rules for conforming implementations.
+\subsection{Conceptual models}
+\subsubsection{Translation environment}
+\paragraph*{Translation steps}
+The precedence among the syntax rules of translation is specified by the following steps
+\begin{enumerate}
+	\item Physical source file characters are mapped, in an implementation-defined manner,
+	      to the source character set (introducing new-line characters for end-of-line
+	      indicators) if necessary.  Trigraph and digraph sequences are replaced by their
+	      corresponding single-character internal representations.
+	\item The source file is decomposed into preprocessing tokens and sequences of white-
+	      space characters (including comments). A source file shall not end in a partial
+	      preprocessing token or in a partial comment. Each comment is replaced by one
+	      space character. New-line characters are retained. Whether each nonempty
+	      sequences of white-space characters other than new-line is retained or replaced
+	      by one space character is implementation-defined.
+	\item Preprocessing directives are executed, macro invocations are expanded 
+	      recursively. A \#include preprocessing directive causes the named header or
+	      source file to be processed from step one through step three, recursively. All
+	      preprocessing directives are then deleted.
+	\item Each source character set member and escape sequence in character constants and
+	      string literals is converted to the corresponding member of the execution
+	      character set; if there is no corresponding member, it is converted to an
+	      implementation-defined member other than the null character.
+	\item Adjacent string literal tokens are concatenated.
+	\item White-space characters seperating tokens are no longer significant. Each
+	      preprocessing token is converted into a token. The resulting tokens are then
+	      syntactically and semantically analyzed and translated.	    		      
+\end{enumerate}
+\subparagraph*{Footnotes}
+Implementations shall behave as if these steps occur separately, even though many are likely
+to be folded together in practice. Source files need not be stored as file, nor need there
+be any one-to-one correspondence between these items and any external representation. The
+description is conceptual only, and does not specify any particular implementation.
+
+\paragraph*{Diagnostics}
+A conforming implementation shall produce at least on diagnostic message(identified in an
+implementation-defined manner) if a source file contains a violation of any syntax rule or
+constraint, even if the behavior is also explicitly specified as undefined or
+implementation-defined. Diagnostic messages need not be produced in other circumstances.
+
+%% ->-> Execution environments %%
+\subsubsection{Execution environment}
+A conforming execution environment shall provide at minimal the following 15 definitions
+for built in functions, with an accompanying header or source file that defines them.
+\begin{enumerate}
+	\item entity ()                                spawn
+	\item void   (entity)                          remove
+	
+	\item string (float)                           ftos
+	\item string (vector)                          vtos
+	\item string (entity)                          etos
+	\item float  (string)                          stof
+	
+	\item void   (string, ...)                     dprint
+	\item void   (entity)                          eprint
+	
+	\item float  (float)                           rint
+	\item float  (float)                           floor
+	\item float  (float)                           ceil
+	\item float  (float)                           fabs
+	\item float  (float)                           sin
+	\item float  (float)                           cos
+	\item float  (float)                           sqrt
+\end{enumerate}
+The numbers of which these built-ins are assigned is implementation-defined;
+an implementation is allowed to use these built-ins however it sees fit.
+
+\pagebreak
+%% -> Language %%
+\section{Language}
+\subsection{Notation}
+The syntax notation used in this document is that of a BNF specification.  A set of
+derivation rules, often written as:
+\begin{lstlisting}[language=bnf]
+	symbol ::= expression
+\end{lstlisting}
+Where symbol is a nonterminal, and the expression consists of one or more sequences of
+symbols; more sequences are separated by a vertical bar \textbar, indicating a choice,
+the whole being a possible substitution for the symbol on the left.  Symbols that never
+appear on the left side are terminals.
+\linebreak
+
+This document defines language syntax throughout it's way at defining language
+constructs If you're interested in a summary of the language syntax, one is given in 
+annex A.
+
+%% -> Concepts %%
+\subsection{Concepts}
+%% ->-> Scopes of identifiers %%
+\subsubsection{Scopes of identifiers}
+An identifier can denote an object; a function, or enumeration; a label name; a macro
+name; or a macro parameter. The same identifier can denote different items at different
+points in the program. A member of an enumeration is called an enumeration constant.
+Macro names and macro parameters are not considered further here, because prior to the
+semantic phase of program translation any occurrences of macro names in the source file
+are replaced by the preprocessing token sequences that constitute their macro definitions.
+\linebreak
+
+For each different item that an identifier designates, the identifier is visible (i.e, 
+can be used) only within a region of program text called its scope.  Different items 
+designated by the same identifier either have different scopes, or are in different name
+spaces. There are four kinds of scopes: function, file, block and function prototype.
+(A function prototype is a declaration of a function that declares the types of its
+parameters.)
+\linebreak
+
+A label name is the only kind of identifier that has function scope.  It can be used (in 
+a goto statement) anywhere in the function in which it appears, and is declared
+implicitly by its syntactic appearance (prefixed by a colon :, and suffixed with a 
+statement).
+\linebreak
+
+Every other identifier has scope determined by the placement of its declaration (in a 
+declarator or type specifier).  If the declarator or type specifier that declares the 
+identifier appears outside any block or list of parameters, the identifier has file 
+scope,  which terminates at the end of the file.  If the declartor or type specifier that
+declares the identifier appears inside a block or within the list of parameter
+declarations in a  function definition, the identifier has block scope, which terminates
+at the end of the  associated block.  If the declarator or type specifier that declares 
+the identifier appears  within the list of parameter declarations in a function prototype
+(not part of a function definition), the identifier has function prototype scope, which 
+terminates at the end of the function declarator.  If an identifier designates two 
+different items in the same  name space, the scopes might overlap.  If so, the scope of 
+one item (the inner scope) will be a strict subset of the scope of the other item (the 
+outer scope). Within the inner scope, the identifier designates the item declared in the
+inner scope; the item declared in the  outer scope is hidden (and not visible) within 
+the inner scope.
+\linebreak
+
+Unless explicitly stated otherwise, where this document uses the term "identifier" to 
+refer to some item (as opposed to the syntactic construct), it refers to the item in the 
+relevant name space whose declaration is visible at the point the identifier occurs.
+\linebreak
+
+Two identifiers have the same scope if and only if their scopes terminate at the same 
+point.
+\linebreak
+
+Each enumeration constant has scope that begins just after the appearance of its defining
+enumerator in an enumerator list. Any other identifier has scope that begins just after 
+the completion of its declarator.
+
+%% ->-> Name spaces of identifiers %%
+\subsubsection{Name spaces of identifiers}
+If more than one declaration of a particular identifier is visible at any point in a 
+source file, the syntactic context disambiguates uses that refer to different items. 
+Thus, there  are separate name spaces for various categories of identifiers, as follows:
+\linebreak
+\begin{itemize}
+	\item Label names (disambiguated by the syntax of the label declaration and use);
+	\item Enumerations (disambiguated by following the keyword enum);
+	\item All other identifiers, called ordinary identifiers (declared in ordinary
+	      declarators or as enumeration constants).
+\end{itemize}
+
+%% ->-> Types %%
+\subsubsection{Types}
+The meaning of a value stored in an object returned by a function is determined by the 
+type  of the expression used to access it. (An identifier declared to be an object is the simplest
+such expression; the type is specified in the declaration of the identifier.)  Types are 
+partitioned into object types (types that fully describe objects), function types(types 
+that  describe functions), and incomplete types(types that describe objects but lack 
+information).
+\linebreak
+
+An object declared type bool is large enough to store the values 0 and 1.
+\linebreak
+
+An object declared type float is a real type; An object declared type vector is a 
+comprised set of three floats that respectively represent the \underline{x,y,z} 
+components of a three-dimensional vector.
+\linebreak
+
+An enumeration comprises a set of named integer constant values.  Each distinct 
+enumeration constitutes a different enumerated type.
+\linebreak
+
+Enumeration types and float are collectively called arithmetic types. Each arithmetic 
+type belongs to one type domain.
+\linebreak
+
+The void type comprises an empty set of values; it is an incomplete type that cannot be
+completed.
+\linebreak
+
+A number of derived types can be constructed from the object, function and incomplete 
+types, as follows:
+\linebreak
+
+\begin{itemize}
+	\item An array type describes a contiguously allocated nonempty set of objects with a 
+          particular object type, called the element type. Array types are characterized 
+          by their element type and by the number of elements in the array.  An array type
+          is said to be derived	from its element type, and if its element is type T, the 
+          array type is sometimes called "array of T".  The construction of an array type
+          from an element type is called "array type derivation".
+	\item A function type describes a function with a specified return type. A function
+          type is characterized by its return type and the number and types of its
+          parameters. A function type is said to be derived from its return type, and if 
+          its return type is T, the function type is sometimes called "function returning
+          T". The construction of a function type from a return type is called "function
+          type derivation".
+\end{itemize}
+
+Arithmetic types are collectively called scalar types. Arrays and vectors are 
+collectively called aggregate types.
+\linebreak
+
+An array of unknown size is an incomplete type.  It is completed, for an identifier of 
+that type, by specifying the size in a later declaration.  Arrays are required to have 
+known constant size.
+\linebreak
+
+A type is characterized by its type category, which is either the outermost derivation 
+of a derived type (as noted above in the construction of derived types), or the type 
+itself if the type consists of no derived types.
+\linebreak
+
+Any type so far mentioned is an unqualified type.  Each unqualified type has several 
+qualified versions of its type, corresponding to the combinations of one, two, or all 
+two of const and volatile qualifiers.  The qualified or unqualified versions of a type 
+are distinct types that belong to the same type category and have the same representation.
+A derived type is not qualified by the qualifiers (if any) of the type from which it 
+is derived.
+\linebreak
+
+%% ->-> Compatible types and composite type %%
+\subsubsection{Compatible types and composite type}
+Two types have compatible type if their types are the same.
+\linebreak
+
+All declarations that refer to the same object or function shall have compatible type; 
+otherwise the behavior is undefined.
+\linebreak
+
+A composite type can be constructed from two types that are compatible; it is a type that 
+is compatible with both of the two types and satisfies the following conditions:
+\begin{itemize}
+	\item If one type is an array, the composite type is an array of that size.
+	\item If only one type is a function type with a parameter type list(a function 
+	      prototype), the composite type is a function prototype with the parameter type 
+	      list.
+	\item If both types are function types with parameter type lists, the type of each 
+	      parameter in the composite parameter type list is the composite type of the 
+	      corresponding parameters.
+\end{itemize}
+These rules apply recursively to types from which the two types are derived.
+\linebreak
+
+%% ->Conversions %%
+\subsection{Conversions}
+Several operators convert operand values from one type to another automatically. This 
+sub-clause specifies the result required from such an implicit conversion.
+\linebreak
+
+Conversion from an operand value to a compatible type causes no change to the value or
+the representation.
+\linebreak
+
+TODO: Specify all implicit conversions.
+
+%% ->->Aritmetic operands %%
+\subsubsection{Arithmetic operands}
+\paragraph*{Boolean type}
+When any scalar value is converted to bool, the result is 0 if the value compares equal 
+to 0; otherwise the result is 1.
+
+%% ->->Other operands %%
+\subsubsection{Other operands}
+\paragraph{Lvalues, arrays and function designators}
+An lvalue is an expression with an object type or an incomplete type other than void; 
+if an lvalue does not designate an object when it is evaluated, the behavior is undefined.
+When an object is said to have a particular type, the type is specified by the lvalue 
+used to designate the object.  A modifiable lvalue is an lvalue that does not have an 
+array type, does not have an incomplete type, and does not have a const-qualified type.
+\linebreak
+
+Except when it is the operand of the unary \& operator, the ++ operator, the -- operator,
+or the left operand of the . operator or an assignment operator, an lvalue that does not 
+have array type is converted to the value stored in the designated object (and is no 
+longer an lvalue).  If the lvalue has qualified type, the value has the unqualified 
+version of the type of the lvalue; otherwise, the value has the type of the lvalue. If 
+the lvalue has an incomplete type and does not have array type, the behavior is undefined.
+\linebreak
+
+A function designator is an expression that has function type.
+
+\paragraph*{void}
+The (nonexistent) value of a void expression (an expression that has type void) shall not 
+be used in any way, and implicit conversions (except to void) shall not be applied to 
+such an expression.  If an expression of any other type is evaluated as a void expression,
+its value or designator is discarded. (A void expression is only evaluated for its 
+side effects.)
+\pagebreak
+
+\subsection{Lexical elements}
+\paragraph*{Syntax}
+\begin{lstlisting}[language=bnf]
+token ::= keyword    
+        | identifier
+        | constant   
+        | string-literal
+        | punctuator
+preprocessing-token ::= header-name 
+                      | identifier
+                      | pp-number   
+                      | string-literal
+                      | punctuator
+\end{lstlisting}
+\paragraph*{Constraints}
+Each preprocessing token that is converted to a token shall have the lexical form of a 
+keyword, an identifier, a constant, a string literal, or a punctuator.
+
+\paragraph*{Semantics}
+A token is the minimal lexical element of the language in translation steps six and seven.
+The categories of tokens are: keywords, identifiers, constants, string literals, and
+punctuators. A preprocessing token is the minimal lexical element of the language in
+translation steps three through five. The categories of preprocessing tokens are: header
+names, identifiers, preprocessing numbers, string literals, punctuators and other single
+non-white-space characters that do not lexically match the other preprocessing token
+categories. If a ' or a " character matches the last category, the behavior is undefined.
+Preprocessing tokens can be separated by white space; this consists of comments (described
+later), or white-space characters (space, horizontal tab, new-line, vertical tab, and form
+-feed), or both. In certain circumstances during translation step four, white space (or
+the absence thereof) serves as more than preprocessing token separation. White space may 
+appear within a preprocessing token only as part of a header name or between the quotation
+characters in a string literal.
+\linebreak
+
+If the input stream has been parsed into preprocessing tokens up to a given character, the
+next preprocessing token is the longest sequence of characters that could constitute a
+preprocessing token. There is one exception to this rule: header name preprocessing tokens
+are recognized only within \#include preprocessing directives and in implementation-defined
+locations within \#pragma directives. In such contexts, a sequence of characters that
+could be either a header name or string literal is recognized as the former.
+
+%% ->-> Keywords %%
+\subsubsection{Keywords}
+\paragraph*{Syntax}
+\begin{lstlisting}[language=bnf]
+keyword ::= enum     | break  | return   | void
+          | case     | float  | volatile | for
+          | while    | const  | goto     | bool
+          | continue | if     | static   | default
+          | inline   | do     | switch   | else
+          | vector   | entity
+\end{lstlisting}
+\paragraph*{Semantics}
+The above tokens (case sensitive) are reserved (in translation step seven and eight) for 
+use as keywords, and shall not be used otherwise.
+
+%% ->->Identifiers %%
+\subsubsection{Identifiers}
+\begin{lstlisting}[language=bnf]
+identifier ::= nondigit
+             | identifier nondigit
+             | identifier digit
+             
+nondigit ::= _ | a | b | c | d | e | f | g | h | i 
+           | j | k | l | m | n | o | p | q | r | s
+           | t | u | v | w | x | y | z | A | B | C
+           | D | E | F | G | H | I | J | K | L | M
+           | N | P | Q | R | S | T | U | V | W | X
+           | Y | Z
+
+digit ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+\end{lstlisting}
+\paragraph*{Semantics}
+An identifier is a sequence of nondigit characters (including the underscore \_, the lower
+case and upper case Latin letters, and other characters) and digits, which designates one
+or more items. Lowercase and uppercase letters are distinct. There is a specific limit of
+65535 characters for an identifier.
+\linebreak
+
+When preprocessing tokens are converted to tokens during translation step six, if a 
+preprocessing token could not be converted to either a keyword or an identifier, it is
+converted to a keyword.
+
+\paragraph*{Predefined identifiers}
+Any identifiers that begin with the prefix \_\_builtin, or are within the reserved name
+space are reserved by the implementation.
+
+%% ->->Constants %%
+\subsubsection{Constants}
+\begin{lstlisting}[language=bnf]
+constant             ::= integer-constant
+                       | floating-constant
+                       | enumeration-constant
+                       | character-constant
+                       | vector-constant
+           
+integer-constant     ::= decimal-constant
+                       | octal-constant
+                       | hexadecimal-constant
+                   
+decimal-constant     ::= nonzero-digit
+                       | decimal-constant digit
+                   
+octal-constant       ::= 0
+                       | octal-constant octal-digit
+                   
+hexadecimal-constant ::= hexdecimal-prefix
+                         hexadecimal-digit
+                       | hexadecimal-digit
+                         hexadecimal-constant
+
+hexadecimal-prefix:  ::= 0x | 0X
+
+nonzero-digit        ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+                       | 9
+                       
+octal-digit          ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+
+hexadecimal-digit    ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+                       | 8 | 9 | a | b | c | d | e | f
+                       | A | B | C | D | E | F
+\end{lstlisting}
+
+%% ->-> String literals %%
+\subsubsection{String literals}
+\begin{lstlisting}[language=bnf]
+string-literal  := " s-char-sequence "
+
+s-char-sequence := s-char
+                 | s-char-sequence s-char
+                 
+s-char          := ` | ! | @ | # | $ | % | ^ | & | *
+                 | ( | ) | _ | - | + | = | { | } | [
+                 | ] | | | : | ; | ' | < | , | > | .
+                 | ? | / | 1 | 2 | 3 | 4 | 5 | 6 | 7
+                 | 8 | 9 | 0 | q | w | e | r | t | y
+                 | u | i | o | p | a | s | d | f | g
+                 | h | j | k | l | z | x | c | v | b 
+                 | n | m | Q | W | E | R | T | Y | U
+                 | I | O | P | A | S | D | F | G | |
+                 | H | J | K | L | Z | X | C | V | B
+                 | N | M
+\end{lstlisting}
+\paragraph*{Description}
+A character string literal is a sequence of zero or more characters enclosed in 
+double-quotes, as in "xyz".
+\linebreak
+
+The same considerations apply to each element of the sequence in a character string
+literal as if it where an integer character constant, except that the single-quote 
+' is representable either by itself or by the escape sequence \textbackslash', but 
+the double-quote " shall be represented by the escape sequence \textbackslash".
+
+\paragraph*{Semantics}
+In translation stage six, the character sequences specified by any sequence of adjacent 
+character string literal tokens are concatenated into a single character sequence.
+
+%% ->-> Punctuators %%
+\subsubsection{Punctuators}
+TODO: BNF
+
+A punctuator is a symbol that has independent syntactic and semantic significance. 
+Depending on context, it may specify an operation to be performed (which in turn 
+may yield a value or a function designator, produce a side effect, or some combination 
+thereof) in which case it is known as an operator (other forms of operator also exist 
+in some contexts). An operand is an item on which an operator acts.
+\linebreak
+
+TODO: Trigraphs \& Digraphs
+
+\subsubsection{Header names}
+TODO
+\subsubsection{Preprocessing numbers}
+TODO
+\subsubsection{Comments}
+Except within a character constant, a string literal, or a comment, the characters /* 
+introduce a comment.  The contents of such a comment are examined only to identify 
+characters and to find the characters */ that terminate it.
+\linebreak
+
+Except within a character constant, a string literal, or a comment, the characters // 
+introduce a comment that includes all characters up to, but not including, the next 
+new-line character.  The contents of such a comment are examined only to identify 
+characters and to find the terminating new-line character.
+\linebreak
+
+%% -> Expressions %%
+\subsection{Expressions}
+An expression is a sequence of operators and operands that specifies computation of a 
+value, or that designates an object or function, or that generates side effects, or that 
+performs a combination thereof.
+\linebreak
+
+Between the previous and next sequence point an object shall have its stored value 
+modified at most once by the evaluation of an expression. Furthermore, the prior value 
+shall be read only to determine the value to be stored.
+\linebreak
+
+The grouping of operators and operands is indicated by the syntax. Except as specified 
+later (for the function call (), \&\&, \textbar\textbar ?:, and comma operators), the 
+order of evaluation of sub-expressions and the order in which side effects take place 
+are both unspecified.
+\linebreak
+
+Some operators (the unary \textasciitilde operator, and the binary operators \textless
+\textless, \textgreater\textgreater, \&, \^, and \textbar, collectively describe bitwise 
+operators) are required to have operands that are either integer, or floating point with
+zero points of decimal precision.
+\linebreak
+
+If an exceptional condition occurs during the evaluation of an expression (that is, if 
+the result is not mathematically defined or not in the range or representable values for 
+its type), the behavior is undefined.
+
+%% ->-> Primary expressions %%
+\subsubsection{Primary expressions}
+\paragraph*{Syntax}
+\begin{lstlisting}[language=bnf]
+primary-expression ::= identifier
+                     | constant
+                     | string-literal
+                     ( expression )
+\end{lstlisting}
+\paragraph*{Semantics}
+An identifier is a primary expression, provided it has been declared as designating an 
+object(in which case it is an lvalue) or a function(in which case it is a function 
+designator).
+\linebreak
+
+A constant is a primary expression. Its type depends on its form and value.
+\linebreak
+
+A string literal is a primary expression.  It is an lvalue.
+\linebreak
+
+A parenthesized expression is a primary expression.  Its type and value identical to 
+those of the unparenthesized expression.  It is an lvalue, a function designator, or a 
+void expression if the unparenthesized expression is, respectively, an lvalue, a 
+function designator, or a void expression.
+
+%% ->-> Constant expressions %%
+\subsubsection{Constant expressions}
+\paragraph*{Syntax}
+\begin{lstlisting}[language=bnf]
+constant-expression ::= conditional-expression
+\end{lstlisting}
+\paragraph*{Description}
+A constant expression can be evaluated during translation rather than runtime, and
+accordingly may be used in any place that a constant may be.
+\paragraph*{Constraints}
+\begin{itemize}
+	\item Constant expressions shall not contain assignment, increment, decrement,
+		  function-call, or comma operators, except when contained within a subexpression
+		  that is not evaluated.
+	\item Each constant expression shall evaluate to a constant that is in range of
+		  representable values for its type.
+\end{itemize}
+\paragraph*{Semantics}
+An expression that evaluates to a constant is required in several contexts. If a floating
+point expression is evaluated in the translation environment, the arithmetic precision range
+shall be as great is if the expression were being evaluated in the execution environment.
+\linebreak
+
+An integer constant expression shall have integer type and shall only have operands that 
+are integer constants, enumeration constants, character constants, and floating constants
+that are the immediate operand of casts. Cast operators in an integer constant expression 
+shall only convert arithmetic types to integer types.
+\linebreak
+
+More latitude is permitted for constant expressions in initializers. Such a constant expression
+shall be, or evaluate to an arithmetic constant expression.
+\linebreak
+
+An arithmetic constant expression shall have arithmetic type and shall only have operands that
+are integer constants, floating constants, enumeration constants, and character constants. Cast
+operators in an arithmetic constant expression shall only convert arithmetic types to arithmetic
+types.
+\linebreak
+
+An implementation may accept other forms of constant expressions.
+\linebreak
+
+The semantic rules for the evaluation of a constant expression are the same as for nonconstant
+expressions.
+
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+\end{document}

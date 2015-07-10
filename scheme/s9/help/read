@@ -1,0 +1,22 @@
+R4RS 6.10.2  (read)             ==>  object
+             (read input-port)  ==>  object
+
+READ converts external representations of Scheme objects into the
+objects themselves. That is, it is a parser for the nonterminal
+<datum> (see sections see section 7.1.2 External representations
+and see section 6.3 Pairs and lists). READ returns the next object
+parsable from the given input port, updating port to point to the
+first character past the end of the external representation of the
+object.
+
+If an end of file is encountered in the input before any characters
+are found that can begin an object, then an end of file object is
+returned. The port remains open, and further attempts to read will
+also return an end of file object. If an end of file is encountered
+after the beginning of an object's external representation, but the
+external representation is incomplete and therefore not parsable,
+an error is signalled.
+
+The INPUT-PORT argument may be omitted, in which case it defaults
+to the value returned by CURRENT-INPUT-PORT. It is an error to read
+from a closed port.

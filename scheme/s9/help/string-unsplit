@@ -1,0 +1,6 @@
+S9 LIB  (string-unsplit char list)  ==>  string
+
+Unsplit a list of strings, giving a new string. CHAR is placed between
+each two elements of LIST.
+
+(string-unsplit #\: '("" "a" "b" "" "c"))  ==>  ":a:b::c"

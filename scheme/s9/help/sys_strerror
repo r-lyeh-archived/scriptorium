@@ -1,0 +1,7 @@
+S9 EXT  (sys:strerror integer)  ==>  string
+
+Create a fresh string explaining the Unix error condition encoded
+in INTEGER. Valid condition codes are delivered by the SYS:ERRNO
+procedure.
+
+(sys:strerror 2)  ==>  "No such file or directory"

@@ -1,0 +1,16 @@
+S9 LIB  (fluid-let ((variable expression) ...) expression ...)  ==>  object
+
+Bind variables dynamically, i.e. assign a dynamic (rather than
+a lexical/static) value to each given variable. The variables
+must be defined outside of FLUID-LET. The difference between
+LET and FLUID-LET is as follows:
+
+(let ((a 0))                   (let ((a 0))
+  (let ((f (lambda () a)))       (let ((f (lambda () a)))
+    (let ((a 1))                   (fluid-let ((a 1))
+      (f))))         ==> 0           (f))))         ==> 1
+
+(let ((a 0))
+  (let ((f (lambda () a)))
+    (fluid-let ((a 1))
+      (f))))                ==>  1

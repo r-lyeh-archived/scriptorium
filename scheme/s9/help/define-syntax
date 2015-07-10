@@ -1,0 +1,57 @@
+R4RS Appendix  (define-syntax <keyword> <transformer>)     ==>  unspecific
+S9fES          (define-syntax <symbol> <procedure>)        ==>  unspecific
+S9fES          (define-syntax (<sym1> <sym2> ...) <body>)  ==>  unspecific
+
+Syntax: The <keyword> is an identifier, and <transformer> should be
+an instance of SYNTAX-RULES.
+
+Semantics: The top-level syntactic environment is extended by binding
+the <keyword> to the specified transformer.
+
+(define-syntax let*
+  (syntax-rules ()
+    ((let* () body1 body2 ...)
+     (let () body1 body2 ...))
+    ((let* ((name1 val1) (name2 val2) ...)
+       body1 body2 ...)
+     (let ((name1 val1))
+       (let* ((name2 val2) ...)
+         body1 body2 ...)))))
+
+In addition to the above the DEFINE-SYNTAX implementation of S9fES
+allows to bind an ordinary procedure to a syntactic keyword. Its forms
+are similar to those of DEFINE. The first form binds a <symbol> to a
+<procedure>, which is specified as its second argument. The other form
+binds <sym1> to the form
+
+(lambda (<sym2> ...) <body>).
+
+The procedures bound by DEFINE-SYNTAX may be variadic.
+
+Procedures bound by DEFINE-SYNTAX are commonly called "macros". They
+receive their arguments in textual (unevaluated) form and they are
+called at "read time." When an expression containing a macro application
+is being read, the macro is applied to its arguments before the
+containing expression is evaluated. The application of the macro is
+replaced by the value returned by the macro.
+
+(define-syntax when
+  (lambda (pred . conseq)
+    `(if ,pred (begin ,@conseq))))
+
+(when (= 1 1)
+      (display "true")
+      #t)               ==>  #t
+
+Macros may not recurse directly, but they may implement recursion
+internally using LETREC or by rewriting their own applications. The
+following macro, for example, does not work, because D is undefined
+in the body of D:
+
+(define-syntax (d x) (and (pair? x) (d (cdr x)))) ; WRONG!
+
+The following version does work, though, because the macro gets
+rewritten to another application of itself, which is subsequently
+evaluated:
+
+(define-syntax (d x) (and (pair? x) `(d ,(cdr x)))) ; OK

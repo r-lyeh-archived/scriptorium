@@ -1,0 +1,21 @@
+S9fES  (stats form)  ==>  list
+
+Evaluate the given FORM and return a list containing its
+normal form plus the resources used to compute that normal
+form:
+
+        - reduction steps
+        - conses allocated
+        - total nodes allocated
+        - garbage collections
+
+Each resource count will be returned as a group of integers
+representing ones, thousands, millions, etc. Note that FORM
+must be quoted or it will be evaluated before passing it to
+STATS.
+
+(stats '(reverse '(1 2 3)))  ==>  ((3 2 1)
+                                   (0 0 0 0 4)   ; reductions
+                                   (0 0 0 0 3)   ; conses
+                                   (0 0 0 0 20)  ; nodes
+                                   (0 0 0 0 0))  ; GCs

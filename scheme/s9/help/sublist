@@ -1,0 +1,7 @@
+S9 LIB  (sublist list integer1 integer2)  ==>  list
+
+Return a fresh list formed from the members of LIST beginning with
+index INTEGER1 (inclusive) and ending with index INTEGER2 (exclusive).
+
+(sublist '(a b c d e) 2 4)  ==>  (c d)
+(sublist '(a b c d e) 2 2)  ==>  ()

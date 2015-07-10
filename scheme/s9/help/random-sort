@@ -1,0 +1,9 @@
+S9 LIB  (random-sort list)          ==>  list
+        (random-sort list integer)  ==>  list
+
+Create a random permutation of LIST and return it. When INTEGER
+is specified, use it to initialize a random state (see RANDOM).
+When no seed or the same seed is specified, RANDOM-SORT will
+always deliver the same permutation.
+
+(random-sort '(1 2 3 4 5))  ==>  (2 3 5 1 4)

@@ -1,0 +1,28 @@
+S9 LIB  (get-prop plist symbol)               ==>  object
+        (put-prop plist symbol object)        ==>  plist
+        (rem-prop plist symbol)               ==>  plist
+        (put-prop! <variable> symbol object)  ==>  plist
+        (rem-prop! <variable> symbol)         ==>  plist
+
+A property list (plist) is a list of the form
+
+      (symbol1 object1 symbol2 object2 ...)
+
+GET-PROP returns the object (property) following the given
+SYMBOL or #F if SYMBOL does not exist in an odd position
+in the PLIST.
+PUT-PROP returns a new plist in which the given OBJECT is
+the property associated with SYMBOL. When SYMBOL is already
+in the PLIST, the existing association will be removed.
+REM-PROP returns a new plist with the given SYMBOL and the
+associated property removed.
+
+PUT-PROP! adds a new property to the plist bound to the
+given <variable>. The variable will be bound to the new
+list. REM-PROP! removes a property from a plist that is
+bound to the <variable>.
+
+(get-prop '() 'foo)        ==>  #f
+(put-prop '() 'foo 42)     ==>  (foo 42)
+(get-prop '(foo 42) 'foo)  ==>  42
+(rem-prop '(foo 42) 'foo)  ==>  ()

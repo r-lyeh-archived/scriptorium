@@ -1,0 +1,6 @@
+R4RS 6.7  (make-string integer)       ==>  string
+          (make-string integer char)  ==>  string
+
+MAKE-STRING returns a newly allocated string of length INTEGER.
+If CHAR is given, then all elements of the string are initialized
+to CHAR, otherwise the contents of the string are unspecified.

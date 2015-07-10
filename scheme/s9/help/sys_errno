@@ -1,0 +1,8 @@
+S9 EXT  (sys:errno)  ==>  integer
+
+Return the error code set by the most recently called Unix extension
+procedure and reset the error code. Calling SYS:ERRNO repeatedly will
+deliver 0.
+
+(begin (sys:errno)
+       (sys:errno))  ==>  0

@@ -1,0 +1,5 @@
+S9 LIB  (flatten pair)  ==>  list
+
+Convert tree to flat list.
+
+(flatten '(a (b ((c) d . e))))  ==>  (a b c d e)

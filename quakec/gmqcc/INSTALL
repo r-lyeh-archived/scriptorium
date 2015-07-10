@@ -1,0 +1,62 @@
+                           Installing gmqcc
+
+1. Prerequisites
+    - A C-Compiler such as gcc or clang
+    - GNU Make or BSD Make
+
+2. Compilation
+    If using GNU make program
+        make
+
+    If using BSD make program, the BSDmakefile should be
+    used instead when you invoke make, if however it ignores BSDmakefile
+    you can supply it with -f.
+
+        make -f BSDmakefile
+
+    If no error appears, the following binary files will have been
+    created:
+        - gmqcc
+        - qcvm
+        - gmqpak
+
+3. Installation
+    The `install' target will install the 2 binaries to /usr/local/bin
+    by default.
+    The Makefile honors the following variables:
+
+        - DESTDIR: The installation directory root.
+        - PREFIX:  The installation prefix, default: /usr/local
+        - BINDIR:  Directory for binary executables,
+                   deafult: $PREFIX/bin
+
+    To install to /usr/local run:
+
+        make install
+
+    To install to /usr run:
+
+        make PREFIX=/usr install
+
+    To install to a package-staging directory such as $pkgdir when
+    writing a build script file:
+
+        make DESTDIR=$pkgdir install
+
+
+    ArchLinux PKGBUILDs (release and git build) can be found in the
+    respective folders in ./distro/archlinux
+    
+    ArchBSD PKGBUILDs (release and git build) can be found in the
+    respective folders in ./distro/archbsd
+
+    Slackware SlackBuilds (git build) can be found in ./distro/slackware
+    
+    Gentoo ebuilds (release) can be found in ./distro/gentoo, as well
+    as a README explaining how to build them
+    
+    Debian archives (git build) can be created invoking make in
+    ./distro/deb
+
+    Fedora spec files (release) can be found in ./distro/fedora, as well
+    as a README explaining how to build them.

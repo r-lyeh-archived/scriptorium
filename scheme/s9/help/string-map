@@ -1,0 +1,19 @@
+S9 LIB  (string-map procedure^1 string ...)   ==>  string
+        (string-map! procedure^1 string ...)  ==>  unspecific
+
+        (load-from-library "string-map.scm")
+
+Map a procedure over a string, giving a new string
+
+      (string (f (string-ref s i)) ...)
+
+where F is the given PROCEDURE and S is the string to map.
+STRING-MAP is to strings what MAP is to lists.
+
+STRING-MAP! does not create a fresh string, but changes the
+given one in situ.
+
+(string-map char-downcase "HELLO")  ==>  "hello"
+(let ((s (string-copy "HELLO!")))
+  (string-map! char-downcase s)
+  s)                                ==>  "hello!"

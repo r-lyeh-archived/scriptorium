@@ -1,0 +1,25 @@
+S9 LIB  (eval object1)          ==>  object
+        (eval object1 object2)  ==>  object
+
+Evaluate the Scheme expression represented by OBJECT1 and return its
+normal form. The expression is evaluated in the current environment,
+so local bindings are visible to EVAL:
+
+(letrec ((f (lambda (x)
+              (if (zero? x)
+		  1
+		  (* x (f (- x 1)))))))
+  (eval '(f 10)))                        ==>  3628800
+
+Note that the object representing the expression must be quoted, or
+it will in fact be evaluated *before* EVAL is called:
+
+(eval  (+ 1 2))  ==>  3    ;       3 is passed to EVAL
+(eval '(+ 1 2))  ==>  3    ; (+ 1 2) is passed to EVAL
+
+When OBJECT2 is passed to EVAL, it will be ignored. It is only accepted
+to offer compatibility with other Scheme systems, which may expect an
+environment to passed to them in the second argument.
+
+(eval '(memq 'c '(a b c d e)) 'whatever)  ==>  '(c d e)
+

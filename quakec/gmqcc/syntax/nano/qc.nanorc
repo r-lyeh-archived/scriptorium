@@ -1,0 +1,22 @@
+# Language:   QuakeC
+# Maintainer: Dale Weiler
+
+syntax "qc" "\.(qc|QC)$" "\.(qh|QH)$"
+color brightred "\<[A-Z_][0-9A-Z_]+\>" 
+color green "\<(float|string|enum|void|const|typedef|nil)\>"
+color brightyellow "\<(for|if|while|do|else|case|default|switch)\>"
+color magenta "\<(goto|continue|break|return)\>"
+color brightcyan "^[[:space:]]*#[[:space:]]*(define|include|(un|ifn?)def|endif|el(if|se)|if|warning|error|pragma)"
+color brightmagenta "'([^'\]|(\\["'abfnrtv\\]))'" "'\\(([0-3]?[0-7]{1,2}))'" "'\\x[0-9A-Fa-f]{1,2}'"
+
+color brightyellow "<[^= 	]*>" ""(\\.|[^"])*""
+
+## This string is VERY resource intensive!
+color brightyellow start=""(\\.|[^"])*\\[[:space:]]*$" end="^(\\.|[^"])*""
+
+## Comment highlighting
+color brightblue "//.*"
+color brightblue start="/\*" end="\*/"
+
+## Trailing whitespace
+color ,green "[[:space:]]+$"

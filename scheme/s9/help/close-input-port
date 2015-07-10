@@ -1,0 +1,8 @@
+R4RS 6.10  (close-input-port input-port)    ==>  unspecific
+           (close-output-port output-port)  ==>  unspecific
+
+Closes the file associated with INPUT-PORT or OUTPUT-PORT respectively,
+rendering the port incapable of delivering or accepting characters.
+
+These routines have no effect if the file has already been closed.
+The value returned is unspecified.

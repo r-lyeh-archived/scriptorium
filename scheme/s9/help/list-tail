@@ -1,0 +1,9 @@
+R4RS 6.3  (list-tail list integer)  ==>  list
+
+Returns the sublist of LIST obtained by omitting the first INTEGER
+elements. LIST-TAIL could be defined by
+
+(define (list-tail x k)
+  (if (zero? k)
+      x
+      (list-tail (cdr x) (- k 1))))

@@ -1,0 +1,14 @@
+S9 EXT  (curs:cursoff)                            ==>  unspecific
+        (curs:curson)                             ==>  unspecific
+        (curs:mvcur int_oy int_ox int_y int_x)    ==>  unspecific
+
+Curses routines for manipulating the hardware cursor. This is only
+a rough summary. See the curses(3) manual page or a curses tutorial
+of your choice for further information.
+
+CURS:CURSOFF makes the hardware cursor invisible.
+
+CURS:CURSOFF makes the hardware cursor visible.
+
+CURS:MVCUR moves the hardware cursor from position (INT_OY,INT_OX)
+to position (INT_Y,INT_X).

@@ -1,0 +1,10 @@
+R4RS 6.5.5  (zero? number)      ==>  boolean
+            (positive? number)  ==>  boolean
+            (negative? number)  ==>  boolean
+            (odd? integer)      ==>  boolean
+            (even? integer)     ==>  boolean
+
+These numerical predicates test a number for a particular property,
+returning #T or #F.
+
+See also: note 2 in description of =.

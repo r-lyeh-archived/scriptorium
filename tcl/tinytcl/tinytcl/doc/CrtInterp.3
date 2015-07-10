@@ -1,0 +1,50 @@
+'\"
+'\" Copyright 1989 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: CrtInterp.3,v 1.1.1.1 2001/04/29 20:35:54 karll Exp $
+'\" 
+.so man.macros
+.HS Tcl_CreateInterp tcl
+.BS
+.SH NAME
+Tcl_CreateInterp, Tcl_DeleteInterp \- create and delete Tcl command interpreters
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+Tcl_Interp *
+\fBTcl_CreateInterp\fR()
+.sp
+\fBTcl_DeleteInterp\fR(\fIinterp\fR)
+.SH ARGUMENTS
+.AS Tcl_Interp *interp
+.AP Tcl_Interp *interp in
+Token for interpreter to be destroyed.
+.BE
+
+.SH DESCRIPTION
+.PP
+\fBTcl_CreateInterp\fR creates a new interpreter structure and returns
+a token for it.  The token is required in calls to most other Tcl
+procedures, such as \fBTcl_CreateCommand\fR, \fBTcl_Eval\fR, and
+\fBTcl_DeleteInterp\fR.
+Clients are only allowed to access a few of the fields of
+Tcl_Interp structures;  see the Tcl_Interp
+and \fBTcl_CreateCommand\fR man pages for details.
+The new interpreter is initialized with no defined variables and only
+the built-in Tcl commands.  To bind in additional commands, call
+\fBTcl_CreateCommand\fR.
+.PP
+\fBTcl_DeleteInterp\fR destroys a command interpreter and releases all of
+the resources associated with it, including variables, procedures,
+and application-specific command bindings.  After \fBTcl_DeleteInterp\fR
+returns the caller should never again use the \fIinterp\fR token.
+
+.SH KEYWORDS
+command, create, delete, interpreter

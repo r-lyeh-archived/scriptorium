@@ -1,0 +1,51 @@
+S9fES  (bit-op integer1 integer2 integer3 ...)  ==>  integer | #f
+
+BIT-OP implements the bitwise operators summarized in the below
+table. The operation itself is passed to BIT-OP as INTEGER1
+(OP in the table) and the operands are passed as INTEGER2 (A)
+and INTEGER3 (B), etc.
+
+ Op | Result            | Common name
+-------------------------------------
+  0 |     0             | CLEAR
+  1 |     A  and     B  | AND
+  2 |     A  and not(B) |
+  3 |     A             |
+  4 | not(A) and     B  |
+  5 |                B  |
+  6 |     A  xor     B  | XOR
+  7 |     A  or      B  | OR
+  8 | not(A  or      B) | NOR
+  9 | not(A  xor     B) | NXOR
+ 10 |            not(B) | NOT*
+ 11 |     A  or  not(B) |
+ 12 | not(A)            | NOT*
+ 13 | not(A) or      B  |
+ 14 | not(A  and     B) | NAND
+ 15 | not(0)            | SET
+ 16 |     A  shl     B  | shift left
+ 17 |     A  shr     B  | shift right
+
+* NOT is a binary operation here, where the value of the other
+operand does not matter.
+
+When more than two operands are present, the operation will be
+performed on all operands, left-associatively, e.g.:
+
+(bit-op 16 1 2 3 4)  ==>  512  ; ((1 shl 2) shl 3) shl 4
+
+Note that BIT-OP operates only on an implementation-dependent subset
+of integers. The maximum value of an operand A or B is equal to the
+value of (bit-op 15 0 0). When passing a larger operand or a negative
+operand to BIT-OP, it will return #F. The same happens when OP is
+outside of the range 0..17.
+
+(bit-op  0 123 456)  ==>    0  ; clear
+(bit-op  1   7  10)  ==>    2  ; and
+(bit-op  7   7   8)  ==>   15  ; or
+(bit-op 16   1   8)  ==>  256  ; shift left
+
+(bit-op -1  0   0)  ==>  #f  ; wrong operator
+
+(let ((limit (bit-op 15 0 0)))
+  (bit-op 0 (+ 1 limit) 0))     ==>  #f  ; argument A too big

@@ -1,0 +1,12 @@
+R4RS 6.5.5  (+ number1 ...)  ==>  number
+            (+)              ==>  number
+            (* number1 ...)  ==>  number
+            (*)              ==>  number
+
+These procedures return the sum or product of their arguments.
+
+(+ 3 4)  ==>  7
+(+ 3)    ==>  3
+(+)      ==>  0
+(* 4)    ==>  4
+(*)      ==>  1

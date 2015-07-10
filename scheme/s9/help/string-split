@@ -1,0 +1,8 @@
+S9 LIB  (string-split char string)  ==>  list
+
+Split a string into substrings. CHAR is interpreted as a separator.
+Return a list containing all coherent sequences of non-separating
+characters contained in the given string. When multiple subsequent
+separators are found, empty strings will be generated.
+
+(string-split #\: "a::b:c:")  ==>  ("a" "" "b" "c" "")

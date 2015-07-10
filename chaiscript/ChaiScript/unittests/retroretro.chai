@@ -1,0 +1,7 @@
+auto x = [1, 2, 3, 4]
+auto r = retro(range(x))
+r.pop_back()
+auto r2 = retro(r)
+r2.pop_front()
+assert_equal(2, r.back())
+assert_equal(3, r2.front())

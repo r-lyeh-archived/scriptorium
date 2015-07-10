@@ -1,0 +1,5 @@
+S9 EXT  (sys:getcwd)  ==>  string
+
+Return the current working directory.
+
+(sys:getcwd)  ==>  "/u/home/nmh/src/s9"

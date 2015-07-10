@@ -1,0 +1,13 @@
+R4RS 6.9  (for-each procedure list1 list2 ...)  ==>  unspecific
+
+The arguments to FOR-EACH are like the arguments to MAP, but FOR-EACH
+calls PROCEDURE for its side effects rather than for its values.
+Unlike MAP, FOR-EACH is guaranteed to call PROCEDURE on the elements
+of the lists in order from the first element to the last, and the
+value returned by FOR-EACH is unspecified.
+
+(let ((v (make-vector 5)))
+  (for-each (lambda (i)
+              (vector-set! v i (* i i)))
+            '(0 1 2 3 4))
+  v)                                      ==>  #(0 1 4 9 16)

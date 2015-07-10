@@ -1,0 +1,5 @@
+S9 LIB  (sum integer1 integer2) ==> integer
+
+Compute the sum of a range of integers.
+
+(sum 2 5)  ==>  14

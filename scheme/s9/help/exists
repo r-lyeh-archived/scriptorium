@@ -1,0 +1,13 @@
+S9 LIB  (exists procedure list ...)  ==>  boolean
+
+Test whether a given property exists in a sequence of N lists.
+The property is expressed using the N-ary predicate P, which
+is given in the procedure argument. P is first applied to a
+list consisting of the first member of each given list. If P
+returns truth, EXISTS returns #T immediately. Otherwise it is
+applied to a list consisting of the second members of the given
+lists, etc. If P returns falsity for all sets of members, EXISTS
+returns #F.
+
+(exists < '(9 1) '(8 2) '(7 3))  ==>  #t
+; because (< 1 2 3)

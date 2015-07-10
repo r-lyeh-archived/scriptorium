@@ -1,0 +1,16 @@
+S9fES  (gensym symbol)  ==>  symbol
+       (gensym string)  ==>  symbol
+       (gensym)         ==>  symbol
+
+Return a fresh symbol that is guaranteed to be unique. When SYMBOL
+or STRING is passed to GENSYM, the returned symbol will have its
+characters as a prefix.
+
+(gensym)        ==>  g56
+(gensym "foo")  ==>  foo57
+(gensym 'bar)   ==>  bar58
+
+(let ((a (gensym))
+      (b (gensym))
+      (c (gensym)))
+  (list a b c))      ==>  (g63 g62 g61)

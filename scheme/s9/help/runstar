@@ -1,0 +1,17 @@
+S9 LIB  (run* (variable) query)  ==>  list
+        (run* () query)          ==>  list
+
+        (load-from-library "amk.scm")
+
+Run the given AMK (Another Micro Kanren) query and return its
+result, if any. See the book "Logic Programming in Scheme"[1]
+for an introduction to AMK. If a variable is given, return all
+values for that variable that satisfy the query.
+
+[1] http://www.lulu.com/shop/nils-m-holm/logic-programming-in-scheme/\
+    paperback/product-18693432.html
+
+(run* (q) (fresh (h t) 
+            (== q (list h t))
+            (appendo h t '(1 2 3))))
+  ==>  ((() (1 2 3)) ((1) (2 3)) ((1 2) (3)) ((1 2 3) ()))

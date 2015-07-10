@@ -1,0 +1,6 @@
+S9 LIB  (integer-sqrt integer)  ==>  integer
+
+Compute the largest integer value that is not greater than the
+square root of INTEGER.
+
+(integer-sqrt 10)  ==>  3

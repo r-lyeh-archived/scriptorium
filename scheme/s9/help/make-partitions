@@ -1,0 +1,7 @@
+S9 LIB  (make-partitions integer)  ==>  list
+
+Create all partitions of a positive integer. A (number-theoretical)
+partition of a positive integer N is a set of integers whose sum is
+equal to N. E.g., the partitions of 3 are 3, 2+1, and 1+1+1.
+
+(make-partitions 4)  ==>  ((4) (3 1) (2 2) (2 1 1) (1 1 1 1))

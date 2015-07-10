@@ -1,0 +1,11 @@
+S9 LIB  (display* object ...)              ==>  unspecific
+        (display* output-port object ...)  ==>  unspecific
+
+        (load-from-library "displaystar.scm")
+
+Display each OBJECT in the same way as DISPLAY. When the first
+argument of DISPLAY* is an output port, write all output to
+that port.
+
+(display* "foo" #\= 17 #\newline)  ==>  unspecific
+; output: foo = 17

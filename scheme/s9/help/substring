@@ -1,0 +1,9 @@
+R4RS 6.7  (substring string INTEGER-0 INTEGER-N)  ==>  string
+
+STRING must be a string, and INTEGER-0 and INTEGER-N must satisfy
+
+0 <= INTEGER-0 <= INTEGER-N <= (string-length string).
+
+SUBSTRING returns a newly allocated string formed from the characters
+of STRING beginning with index INTEGER-0 (inclusive) and ending with
+index INTEGER-N (exclusive).

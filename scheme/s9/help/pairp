@@ -1,0 +1,8 @@
+R4RS 6.3  (pair? object)  ==>  boolean
+
+PAIR? returns #T if OBJECT is a pair, and otherwise returns #F.
+
+(pair? '(a . b))  ==>  #t
+(pair? '(a b c))  ==>  #t
+(pair? '())       ==>  #f
+(pair? '#(a b))   ==>  #f

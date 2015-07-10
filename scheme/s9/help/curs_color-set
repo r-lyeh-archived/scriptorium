@@ -1,0 +1,18 @@
+S9 EXT  (curs:color-set integer_f integer_b)  ==>  unspecific
+        (curs:has-colors)                     ==>  boolean
+
+CURS:COLOR-SET sets the foreground color of the screen to
+INTEGER_F and the background color to INTEGER_B. The following
+constants can be used in the places of the integers:
+
+CURS:COLOR-BLACK   CURS:COLOR-CYAN     CURS:COLOR-YELLOW
+CURS:COLOR-BLUE    CURS:COLOR-RED      CURS:COLOR-GRAY
+CURS:COLOR-GREEN   CURS:COLOR-MAGENTA
+
+Note that the pair black/black may be reserved for the terminal's
+default colors.
+
+CURS:HAS-COLORS returns #T when color support is available and
+otherwise #F. Color support is only available, if it has been
+compiled into Scheme 9 and the connected terminal offers color
+support.

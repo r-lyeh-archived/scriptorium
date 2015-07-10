@@ -1,0 +1,18 @@
+GMQCC: An improved Quake C compiler
+
+For licensing:           see the LICENSE file.
+For installation notes:  see the INSTALL file.
+For a list of authors:   see the AUTHORS file.
+For a list of changes:   see the CHANGES file.
+
+For documentation:
+    See the manpages, or visit the documentation online at
+    http://graphitemaster.github.com/gmqcc/doc.html
+
+For syntax highlighting description files, or information
+regarding how to install them:
+    See the README in syntax directory
+
+For description on porting GMQCC to other platforms, or information
+on how to approach porting GMQCC to more 'exotic' platforms:
+    See the PORTING file.

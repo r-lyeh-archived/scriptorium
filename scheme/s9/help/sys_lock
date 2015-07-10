@@ -1,0 +1,11 @@
+S9 EXT  (sys:lock string)  ==>  boolean
+
+Create a lock file named (string-append STRING ".lock"). If
+the file already exists when the function is called, return
+#F, indicating that the requested resource is already locked.
+Otherwise return #T. SYS:LOCK uses mkdir() to create the
+lock file, which is atomic on virtually all systems.
+
+(sys:unlock "foo")
+(list (sys:lock "foo")
+      (sys:lock "foo"))  ==>  (#t #f)

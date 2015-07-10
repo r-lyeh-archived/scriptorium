@@ -1,0 +1,11 @@
+S9 LIB  (take list integer)  ==>  list
+
+Copy the first INTEGER conses of a proper list, creating a fresh
+that has the same elements as the original list in the first
+INTEGER positions.
+
+INTEGER may not be larger than the length of LIST.
+
+(take '(foo bar baz) 0)  ==>  ()
+(take '(foo bar baz) 1)  ==>  (foo)
+(take '(foo bar baz) 3)  ==>  (foo bar baz)

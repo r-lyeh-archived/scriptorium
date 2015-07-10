@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\ast.c" />
+    <ClCompile Include="..\..\code.c" />
+    <ClCompile Include="..\..\conout.c" />
+    <ClCompile Include="..\..\correct.c" />
+    <ClCompile Include="..\..\fold.c" />
+    <ClCompile Include="..\..\fs.c" />
+    <ClCompile Include="..\..\ftepp.c" />
+    <ClCompile Include="..\..\intrin.c" />
+    <ClCompile Include="..\..\ir.c" />
+    <ClCompile Include="..\..\lexer.c" />
+    <ClCompile Include="..\..\main.c" />
+    <ClCompile Include="..\..\opts.c" />
+    <ClCompile Include="..\..\parser.c" />
+    <ClCompile Include="..\..\stat.c" />
+    <ClCompile Include="..\..\utf8.c" />
+    <ClCompile Include="..\..\util.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ast.h" />
+    <ClInclude Include="..\..\gmqcc.h" />
+    <ClInclude Include="..\..\ir.h" />
+    <ClInclude Include="..\..\lexer.h" />
+    <ClInclude Include="..\..\parser.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\opts.def" />
+  </ItemGroup>
+</Project>

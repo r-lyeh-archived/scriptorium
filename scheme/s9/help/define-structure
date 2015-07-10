@@ -1,0 +1,54 @@
+S9 LIB  (define-structure <name> <slot> ...)  ==>  unspecific
+
+DEFINE-STRUCTURE creates a new type, which is a sub-type of the vector,
+and defines a set of procedures for creating objects of the new type,
+accessing its slots, and checking for its type.
+
+<Name> is the name of the new type. Each <slot> defines a slot of the
+new type. It must be have one of the following forms:
+
+      <slot-name>
+      (<slot-name>)
+      (<slot-name> <initial-value>)
+
+<Slot-name> must be a symbol and <initial-value> may be any value.
+When an <initial-value> is specified, the corresponding slot will
+be filled with that value whenever a new instance of the structure
+is created. When the value is omitted, it defaults to an unspecific
+value. <Slot-name> is equal to (<slot-name>).
+
+(define-structure <type> <slot-1> ... <slot-N>) will expand to
+definitions of the following procedures:
+
+(make-<type> object ...) creates a new object of the type <type> and
+initializes its slots with the values specified in DEFINE-STRUCTURE.
+When some OBJECTs are given, they will replace the default values of
+the first slots of the new <type> object. The number of OBJECTs
+passed to MAKE-<TYPE> must not be larger than the number of slots
+of <type>.
+
+(<type>? x) is a predicate checking whether X has the type <type>.
+
+(<type>-assert caller object) asserts that OBJECT is of the type
+<type>. When the assertion holds, it returns an unspecific value.
+Otherwise, it prints an error message. CALLER is a symbol that
+will be reported as the source of the error (typically the
+procedure calling <type>-assert).
+
+(<type>-copy object) creates an exact (shallow) copy an object of
+the given type and returns it.
+
+(<type>-<slot-1> x) evaluates to the value stored in slot <slot-1>
+of X. When X is not of the type <type>, an error will be signalled.
+(<type>-<slot-N> x) does the same, but accesses <slot-N>.
+
+(<type>-set-<slot-1>! x v) changes the value stored in slot <slot-1>
+of X to V. When X is not of the type <type>, an error will be signalled.
+(<type>-set-<slot-N>! x v) does the same, but changes <slot-N>.
+
+(begin
+  (define-structure point (x 0) (y 0) (color #f))
+  (let ((p (make-point)))
+    (point-set-color! p 'yellow)
+    (list (point? p)
+          (point-color p))))               ==>  (#t yellow)

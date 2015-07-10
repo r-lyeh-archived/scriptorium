@@ -1,0 +1,333 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+type void;
+type int;
+type int32;
+type float;
+type char;
+type string;
+type error;
+type 'a array;
+type 'a ref;
+type 'a format;
+type 'a stream;
+
+type 'a option {
+	None;
+	Some : 'a;
+}
+
+type neko_value;
+
+exception Neko_error : neko_value;
+exception Invalid_argument : string;
+exception Assert_failure : (string,int);
+exception Error : string;
+exception Stream_error;
+exception Not_found;
+exception Exit;
+
+/* -----
+
+theses are defined directly in the compiler
+because they need additional magic.
+
+type bool {
+	true;
+	false;
+}
+
+type 'a list {
+	[];
+	:: : ('a  , 'a list);
+}
+
+val neko : string -> 'a
+
+----- */
+
+neko("
+
+	@sprintf = $loader.loadprim('std@sprintf',2);
+
+	@string = function(x) {
+		// tuples
+		if( $typeof(x) == $tarray ) {
+			// constructor
+			var printer = x[1];
+			if( $typeof(printer) == $tfunction && $nargs(printer) == 1 )
+				return printer(x);
+			var s = '(';
+			var l = $asize(x);
+			var i = 0;
+			while i < l {
+				s = s + @string(x[i]);
+				i = i + 1;
+				if i < l
+					s = s + ', ';
+			}
+			s = s + ')';
+			return s;
+		}
+		// others
+		return $string(x);
+	}
+
+	$exports.@print_record = function() {
+		var o = $objfields(this);
+		var s = '{ ';
+		var i = 0;
+		var l = $asize(o) - 1;
+		while i < l {
+			var f = o[i];
+			var fname = $field(f);
+			if fname == '__string'
+				l = l + 1;
+			else
+				s = s + fname + ' = ' + @string($objget(this,f))+'; ';
+			i = i + 1;
+		}
+		s = s + '}';
+		s
+	}
+
+	$exports.@print_union = function(s,a) {
+		var l = $asize(a);
+		if l == 2
+			return s;
+		var i = 2;
+		s = s + '(';
+		while i < l {
+			s = s + @string(a[i]);
+			i = i + 1;
+			if i < l
+				s = s + ', ';
+		}
+		s = s + ')';
+		return s;
+	}
+
+	@compare = function(a,b,history) {
+		if( $pcompare(a,b) == 0 )
+			return 0;
+		if( $typeof(a) == $tarray ) {
+			var l1 = $asize(a);
+			var l2 = $asize(b);
+			if( l1 != l2 )
+				return $compare(l1,l2);
+			var h = history;
+			while h != null {
+				if( h[0] == a && h[1] == b )
+					return $pcompare(a,b);
+				h = h[2];
+			}
+			var i = 0;
+			while i < l1 {
+				var k = @compare(a[i],b[i],$array(a,b,history));
+				if( k != 0 )
+					return k;
+				i = i + 1;
+			}
+			return 0;
+		}
+		if( $typeof(a) == $tobject ) {
+			var h = history;
+			while h != null {
+				if( h[0] == a && h[1] == b )
+					return $pcompare(a,b);
+				h = h[2];
+			}
+			var o = $objfields(a);
+			var i = 0;
+			var l = $asize(o);
+			while i <  l {
+				var v = $objget(b,o[i]);
+				var k = @compare($objget(a,o[i]),v,$array(a,b,history));
+				if( k != 0 )
+					return k;
+				i = i + 1;
+			}
+			return 0;
+		}
+		return $compare(a,b);
+	}
+
+	$exports.@compare = function(a,b) { @compare(a,b,null) };
+
+	$exports.@aget = function(a,i) {
+		if( i < 0 || i >= a[2] )
+			$exports.invalid_arg('Array.get');
+		a[0][i]
+	}
+
+	$exports.@aset = function(a,i,v) {
+		if( i < 0 || i >= a[2] )
+			$exports.invalid_arg('Array.set');
+		a[0][i] = v;
+	}
+
+	@empty = $array(0,function(_){ '[]' });
+	@pcons = function(c) { @string(c[2]) + ' :: ' + @string(c[3]) };
+	@cons = function(x,l) {
+		$array(1,@pcons,x,l)
+	}
+	$exports.@pcons = @pcons;
+	$exports.@cons = @cons;
+	$exports.@empty = @empty;
+");
+
+function magic(x) {
+	neko("x");
+}
+
+function throw(x : error) : 'a {
+	neko("$throw(x)");
+}
+
+function assert(file,line) {
+	throw Assert_failure(file,line)
+}
+
+function invalid_arg(fun) : 'a {
+	throw Invalid_argument(fun);
+}
+
+function error(x : string) {
+	throw Error(x)
+}
+
+function ignore(x) {
+}
+
+function fst((a,_)) {
+	a
+}
+
+function snd((_,a)) {
+	a
+}
+
+function int(x:string) : int {
+	var i = neko("$int(x)");
+	if i == neko("null") then invalid_arg();
+	i
+}
+
+function float(x:string) : float {
+	var i = neko("$float(x)");
+	if i == neko("null") then invalid_arg();
+	i
+}
+
+function ord(x:char) : int {
+	neko("x");
+}
+
+function chr(x:int) : char {
+	if x < 0 || x > 255 then invalid_arg();
+	neko("x");
+}
+
+function string(x : 'a) : string {
+	neko("@string(x)");
+}
+
+function nstring(x : 'a) : string {
+	 neko("$string(x)");
+}
+
+function print(x) : void {
+	neko("$print(string(x))");
+}
+
+function nprint(x) : void {
+	neko("$print(x)");
+}
+
+function compare(x : 'a, y : 'a) : int {
+	neko("$exports.@compare(x,y)");
+}
+
+function min(x,y) {
+	if x < y then x else y
+}
+
+function max(x,y) {
+	if x < y then y else x
+}
+
+function sprintf(fmt : 'a format, p : 'a ) : string {
+	neko("@sprintf(fmt,p)")
+}
+
+function printf(fmt : 'a format, p : 'a ) : void {
+	print (sprintf fmt p)
+}
+
+function stream(f : void -> 'a ) : 'a stream {
+	neko("{
+		get => f,
+		pos => 0,
+		cache => $array()
+	}");
+}
+
+function stream_token( s : 'a stream, x : int ) : 'a {
+	if x < 0 then invalid_arg();
+	neko("
+		var tmp = s.cache[x];
+		if( tmp != null )
+			return tmp;
+		var n = $asize(s.cache);
+		var c = $amake(x + 1);
+		$ablit(c,0,s.cache,0,n);
+		while n <= x {
+			c[n] = s.get(null);
+			n = n + 1;
+		}
+		s.cache = c;
+		return c[x];
+	");
+}
+
+function stream_junk( s : 'a stream, x : int ) : void {
+	if x < 0 then invalid_arg();
+	neko("
+		var c = $asize(s.cache);
+		s.pos = s.pos + x;
+		if( c >= x )
+			s.cache = $asub(s.cache,x,c - x);
+		else {
+			s.cache = $array();
+			x = x - c;
+			while x > 0 {
+				s.get(null);
+				x = x - 1;
+			}
+		}
+	");
+}
+
+function stream_pos( s : 'a stream ) : int {
+	neko("s.pos");
+}

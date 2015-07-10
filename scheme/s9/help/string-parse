@@ -1,0 +1,8 @@
+S9 LIB  (string-parse string1 string2)  ==>  list
+
+Split a string into substrings. STRING1 is a set of separators.
+Return a list containing all coherent sequences of non-separating
+characters contained in the given string.
+
+(string-parse " ?" " to be  or  not to be? ")
+  ==>  ("to" "be" "or" "not" "to" "be")

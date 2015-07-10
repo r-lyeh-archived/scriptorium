@@ -1,0 +1,13 @@
+S9 LIB  (string-digest string)          ==>  integer
+        (string-digest string integer)  ==>  integer
+
+Create a digest of the given string and return it. If specified,
+INTEGER determines the maximum size of the digest (2^INTEGER).
+
+CAVEAT: This procedures uses a simple non-cryptographic BSD
+sum-style algorithm. It should be replaced with a function
+generating more unique digests.
+
+The maximum digest size defaults to 2^32.
+
+(string-digest "hello")  ==>  2107915172

@@ -1,0 +1,4 @@
+R4RS 6.10  (current-input-port)   ==>  input-port
+           (current-output-port)  ==>  output-port
+
+Returns the current default input or output port.

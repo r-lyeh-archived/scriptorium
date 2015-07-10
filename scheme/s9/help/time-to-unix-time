@@ -1,0 +1,7 @@
+S9 LIB  (time->unix-time time-list)  ==>  integer | #f
+
+TIME->UNIX-TIME converts TIME-LIST (see UNIX-TIME->TIME) to the
+number of seconds since the Unix epoch. It returns #F if TIME-LIST
+is not a proper time list.
+
+(time->unix-time '(6 2010 4 25 7 1 19))  ==>  1272178879

@@ -1,0 +1,6 @@
+S9 EXT  (sys:fileno port)  ==>  integer
+
+Return the Unix file descriptor associated with the given input
+or output port.
+
+(sys:fileno (current-input-port))  ==>  0

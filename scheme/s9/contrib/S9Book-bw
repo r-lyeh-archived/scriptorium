@@ -1,0 +1,560 @@
+@Database @FontDef { Fonts }
+
+langdef English { english : . ? ! .) ?) !) ".\"" "?\"" "!\"" }
+
+export	@Pa @Br @Sp
+	@B @I @BI @A @T @Em @White @H
+	@S_o @S_p @S_s @S_c @S_r @S_y @S_x @S_z
+	@C_co @C_cp @C_cs @C_cc @C_cr @C_cl @C_cx
+	@BQ
+	@Dash @MDash @Times @Neq @Arrow @INF @Power @Hyper
+	@Pre @Code
+	@Li @LLi @Empty
+	@Th @Tr @Td @Ts @Tdn @Tsn
+	@Sub @Sup
+	@Big @Small
+	@Type
+	@Quote
+	@BBox @Box @SolidBox
+	@Indent @EI
+	@Leaders @Dots @SoftBreak
+	@Chapter @Section @SubSection
+	@Header @HeaderText
+	@X
+	@Document
+	@Text
+	@FootNote
+	@NewPage
+	@PageOf @PageMark
+
+def @BookSetup
+	named @BaseColor	{ 0 0 0 setrgbcolor }
+	named @Spacing		{ 1.15fx }
+	named @BaseLanguage	{ English }
+	named @BaseFont		{ Helvetica Roman 10p }
+	named @HeadingFont	{ Helvetica Bold 20p }
+	named @SubHeadingFont	{ Helvetica Bold 14p }
+	named @DocumentWidth	{ 8i }
+	named @DocumentHeight	{ 11i }
+	named @InnerMargin	{ 1i }
+	named @OuterMargin	{ 1i }
+	named @TopMargin	{ 1i }
+	named @BottomMargin	{ 1i }
+	named @PageNoOffset	{ 0.2iu }
+	named @PageNoStyle	{ Alternating }
+#	named @PageNoStyle	{ Centered }
+	named @HideBBoxes	{ Yes }
+	named @TwoColumns	{ No }
+	named @ColumnWidth	{ 2.8i }
+	named @InitialPage	{ 1 }
+	named @InitialAlignment	{ odd }
+	named @SkipPageNos	{ 1 2 3 4 5 }
+@Begin
+macro @Pa { //1.5vx }
+
+macro @Br { //1vx }
+
+macro @Sp { //2vx }
+
+macro @SoftBreak { //11i @Null // }
+
+def @S_o right x { { 0.10 0.10 0.10 setrgbcolor } @SetColor {x}}
+def @S_p right x { { 0.10 0.10 0.10 setrgbcolor } @SetColor {x}}
+def @S_s right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @S_c right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @S_r right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @S_y right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @S_x right x { { 0.10 0.10 0.00 setrgbcolor } @SetColor {x}}
+def @S_z right x { { 0.10 0.10 0.00 setrgbcolor } @SetColor {x}}
+
+def @C_co right x { { 0.10 0.10 0.10 setrgbcolor } @SetColor {x}}
+def @C_cp right x { { 0.10 0.10 0.10 setrgbcolor } @SetColor {x}}
+def @C_cs right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @C_cc right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @C_cr right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @C_cl right x { { 0.00 0.00 0.00 setrgbcolor } @SetColor {x}}
+def @C_cx right x { { 0.10 0.10 0.10 setrgbcolor } @SetColor {x}}
+
+def @B right x { Bold @Font x }
+
+def @I right x { Italic @Font x }
+
+def @A right x { { AvantGarde Roman } @Font x }
+
+def @T right x { { Courier Roman 12p } @Font x }
+
+def @H right x { { 0.5 setgray } @SetColor x }
+
+def @BI right x { BoldItalic @Font x }
+
+macro @BQ {+0.6w @VShift { {Bold -6p} @Font {&0.5su "\\" &0.5su}}}
+
+def @Dash {- |0.2fo -} 
+
+macro @MDash {&0su {- |0.2fo - |0.2fo - |0.2fo -} &0su} 
+
+def @Times
+	left x
+	right y
+{
+	x |0.5s { +0.2w @VShift {-2p AvantGarde Roman} @Font "x" } |0.5s y
+}
+def @Neq {" /" |0fo "=" |0.2fo "="} 
+
+def @Arrow { @Dash |0.3fo > }
+
+def @INF { @Null | +0.3w @VShift { o |0.4fo o } }
+
+def @Power { "^" |0.14fo "|" }
+
+def @Hyper { @Power @Power }
+
+def @Em
+	right x
+{
+	@I x
+}
+
+def @Type
+	right	x
+{
+	{ Courier Roman 12p } @Font x
+}
+
+def @Quote
+	right	x
+{
+	{ lines } @Break x
+}
+
+def @Big
+	right	x
+{
+	{ +2p } @Font x
+}
+
+def @Small
+	right	x
+{
+	{ -2p } @Font x
+}
+
+def @White
+	right x
+{
+	{ 1.0 setgray } @SetColor x
+}
+
+def @Sub
+	left	x
+	right	y
+{
+	x | -0.6w @VShift { -2p @Font y }
+}
+
+def @Sup
+	left	x
+	right	y
+{
+	x | +0.6w @VShift { -2p @Font y }
+}
+
+def @Leaders {
+	". " @Leaders
+}
+
+def @Dots
+	left	width
+{
+	def @pdots { "." @pdots }
+	width @Wide @pdots
+}
+
+def @Code
+	right x
+{
+	@Null
+	//1.5vx
+	{
+		0 100 moveto
+		xsize 100 lineto
+		0 100 moveto
+		0 -100 rlineto
+		xsize 100 moveto
+		0 -100 rlineto
+		stroke
+	} @Graphic {}
+	//
+	{ Courier Roman 10p } @Font { lines 1.2fx } @Break x
+	//
+	{
+		0 -100 moveto
+		xsize -100 lineto
+		0 -100 moveto
+		0 100 rlineto
+		xsize -100 moveto
+		0 100 rlineto
+		stroke
+	} @Graphic {}
+}
+
+def @Pre
+	right x
+{
+	@Null
+	//1.5vx
+	{ Courier Roman } @Font { lines 1.2fx } @Break x
+}
+
+def @Td
+	right x
+{
+	x
+}
+
+def @Tdn
+	right x
+{
+	rragged @Break x
+}
+
+def @Th
+	right x
+{
+	@B x
+}
+
+def @Tr
+	right x
+{
+	x
+}
+
+def @Li
+	left x
+	right y
+{
+	{ x |0.2c adjust @Break y }
+}
+
+def @Empty
+	right x
+{
+	{ @White (0) } @Li x
+}
+
+def @LLi
+	left x
+	right y
+{
+	@Empty { x @Li y }
+}
+def @Chapter
+	right	x
+{
+	@Sp // @HeadingFont @Font x //
+}
+
+def @Section
+	right	x
+{
+	@Pa // @SubHeadingFont @Font x //
+}
+
+def @SubSection
+	right x
+{
+	@Section x
+}
+
+def @TextLocation { @Galley }
+
+def @EndIndentLocation { @Galley }
+
+def @EI force into { @EndIndentLocation&&preceding }
+{}
+
+def @Indent
+	named	offset	{ 0.4c }
+	right	text
+{
+	def @IndentLocation { @Galley }
+
+	def @LineList
+	{
+		offset @Wide {} | @PAdjust @IndentLocation
+		//1vx
+		@LineList
+	}
+
+	def @DoIndent force horizontally into { @IndentLocation&&preceding }
+		right x
+	{
+		x
+	}
+
+	offset @Wide {} | @PAdjust @IndentLocation
+	//
+	@DoIndent { text &1rt }
+	//1vx
+	@LineList
+	//
+	@EndIndentLocation
+}
+
+def @BBox
+	named	@color	{ 1.0 1.0 1.0 setrgbcolor }
+	right x
+{
+	@HideBBoxes @Case {
+		{ Yes } @Yield { x }
+		else @Yield { {
+				0 0 moveto
+				xsize 0 lineto
+				xsize ysize lineto
+				0 ysize lineto
+				0 0 lineto
+				closepath
+				@color
+				stroke
+			} @Graphic x }
+	}
+}
+
+def @Box
+	named	@color	{ 1.0 1.0 1.0 setrgbcolor }
+	named	@width { 1 setlinewidth }
+	right	x
+{
+	{
+		gsave
+		0 0 moveto
+		xsize 0 lineto
+		xsize ysize lineto
+		0 ysize lineto
+		0 0 lineto
+		closepath
+		@color
+		@width
+		stroke
+		grestore
+	} @Graphic x
+}
+
+def @SolidBox
+	named	@color	{ 1.0 1.0 1.0 setrgbcolor }
+	right	x
+{
+	{
+		0 0 moveto
+		xsize 0 lineto
+		xsize ysize lineto
+		0 ysize lineto
+		0 0 lineto
+		closepath
+		@color
+		fill
+	} @Graphic x
+}
+
+def @Ts
+	right x
+{
+	@SolidBox @color { 0.8 setgray } x
+}
+
+def @Tsn
+	right x
+{
+	rragged @Break @SolidBox @color { 0.8 setgray } x
+}
+
+def @Text force into { @TextLocation&&preceding }
+	right x
+{
+	x
+}
+
+def @FootNoteLocation { @Galley }
+
+def @FootNoteText into { @FootNoteLocation&&following }
+	left	id
+	right	x
+{
+	{ -2p @Font { @T{id} |0.2c { 1.2fx } @Break { x } } }
+}
+
+def @FootNote
+	left	id
+	right	x
+{
+	@Sup @T{id}
+	id @FootNoteText x
+}
+
+def @FootNoteList {
+	//0.1i
+	@FootNoteLocation
+	//
+	@FootNoteList
+}
+
+def @EndPageLocation { @Galley }
+
+def @BeginPage force into { @EndPageLocation&&following }
+{}
+
+macro @NewPage {
+	@VExpand @Null
+	//
+	@BeginPage
+	//
+}
+
+export @Tag
+def @PageMarker right @Tag { @Null }
+
+def @PageMark right x
+{
+	@PageMarker&&preceding @Tagged x
+}
+
+def @PageOf right x {
+	@PageMarker&&x @Open {@Tag}
+}
+
+def @OddPage
+	right text
+{
+	@DocumentWidth @Wide
+	@DocumentHeight @High
+	@BaseFont @Font 
+	@BaseColor @SetColor
+	@BaseLanguage @Language
+	{
+		@Spacing
+		adjust
+		hyphen
+	} @Break {
+		//@TopMargin
+		||@InnerMargin
+		@VExpand text
+		||@OuterMargin
+		//@BottomMargin
+	}
+}
+
+def @EvenPage
+	right text
+{
+	@DocumentWidth @Wide
+	@DocumentHeight @High
+	@BaseFont @Font 
+	@BaseColor @SetColor
+	@BaseLanguage @Language
+	{
+		@Spacing
+		adjust
+		hyphen
+	} @Break {
+		//@TopMargin
+		||@OuterMargin
+		@VExpand text
+		||@InnerMargin
+		//@BottomMargin
+	}
+}
+
+def @PageNoType
+	left	type
+	right 	pageno
+{
+	@PageNoStyle @Case {
+		Centered @Yield { //@PageNoOffset ||0.5rt pageno }
+		else @Yield {
+			type @Case {
+				{ odd }	@Yield	{ //@PageNoOffset ||1rt pageno }
+				{ even } @Yield	{ //@PageNoOffset pageno }
+			}
+		}
+	}
+}
+
+def @PageNo
+	left	type
+	right 	pageno
+{
+	pageno @Case {
+		@SkipPageNos @Yield @Null
+		else @Yield { type @PageNoType pageno }
+	}
+}
+
+def @PageList
+	left	type
+	right	pageno
+{
+	@PageMarker pageno
+	type @Case {
+		{ odd  } @Yield {
+			@OddPage {
+				@TextLocation
+				//0.2i
+				@FootNoteList
+				//1rt
+				@EndPageLocation
+				//0.95rt
+				type @PageNo pageno }
+		}
+		{ even } @Yield {
+			@EvenPage {
+				@TextLocation
+				//0.2i
+				@FootNoteList
+				//1rt
+				@EndPageLocation
+				//0.95rt
+				type @PageNo pageno }
+		}
+	}
+	@PageLabel pageno
+	//
+	type @Case {
+		{ even } @Yield { odd @PageList @Next pageno }
+		{ odd } @Yield	{ even @PageList @Next pageno }
+	}
+}
+
+def @X
+	right x
+{
+	@PageMark{x}
+	@PageMark{---x---{@PageOf{x}}---}
+}
+
+def @HeaderLocation { @Galley }
+
+def @HeaderText into { @HeaderLocation&&preceding }
+	right	x
+{
+	x
+}
+
+def @HeaderList {
+	@PageLabel Pre
+	@Null @OddPage @HeaderLocation
+	//1rt
+	@EndPageLocation
+	//
+	@HeaderList
+}
+
+def @Header {
+	@HeaderList
+}
+
+def @Document {
+	@InitialAlignment @PageList @InitialPage
+}
+
+@End @BookSetup

@@ -1,0 +1,9 @@
+R4RS 6.10.3  (write object)              ==>  unspecific
+             (write object output-port)  ==>  unspecific
+
+Writes a written representation of OBJECT to the given port. Strings
+that appear in the written representation are enclosed in double quotes,
+and within those strings backslash and double quote characters are
+escaped by backslashes. WRITE returns an unspecified value. The
+OUTPUT-PORT argument may be omitted, in which case it defaults to
+the value returned by CURRENT-OUTPUT-PORT.

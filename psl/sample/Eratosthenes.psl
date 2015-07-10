@@ -1,0 +1,14 @@
+local buf;
+for (i = 2; i < 100; i++)
+{
+	if (buf[i])
+		continue;
+	for (j = 2; j < 50; j++)
+	{
+		if (i * j > 100)
+			break;
+		buf[i*j] = 1;
+	}
+	print(i);
+	print("\n");
+}

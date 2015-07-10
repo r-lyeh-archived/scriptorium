@@ -1,0 +1,7 @@
+S9 LIB  (filter procecure^1 list)  ==>  list
+
+Extract elements from a list. PROCEDURE describes the property
+of the elements to be extracted. It must be a procedure of one
+argument.
+
+(filter number? '(a 1 b 2 c 3))  ==>  (1 2 3)

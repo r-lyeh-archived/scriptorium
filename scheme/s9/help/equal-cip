@@ -1,0 +1,7 @@
+S9 LIB  (equal-ci? object1 object2)  ==>  boolean
+
+EQUAL-CI? is like EQUAL?, but compares strings and characters
+using case-insensitive predicates whereas EQUAL? distinguishes
+case.
+
+(equal-ci? '(#\A ("b")) '(#\a ("B")))  ==>  #t

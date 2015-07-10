@@ -1,0 +1,9 @@
+R4RS 6.6  (char-upcase char)    ==>  char
+          (char-downcase char)  ==>  char
+
+These procedures return a character CHAR2 such that
+
+(char-ci=? char char2)  ==>  #t.
+
+In addition, if CHAR is alphabetic, then the result of CHAR-UPCASE
+is upper case and the result of CHAR-DOWNCASE is lower case.

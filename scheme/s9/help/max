@@ -1,0 +1,10 @@
+R4RS 6.5.5  (max number ...)  ==>  number
+            (min number ...)  ==>  number
+
+These procedures return the maximum or minimum of their arguments.
+
+(max 3 4)      ==>  4   ; exact
+(min 3 4.1)    ==>  3.0 ; inexact
+
+Note: If any argument is inexact, then the result will also be
+inexact.

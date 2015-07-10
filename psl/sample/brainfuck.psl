@@ -1,0 +1,69 @@
+file f.open(arg[1]);
+string str = f.read(1000);
+local buf;
+for (int i = 0; i < 100; i++)
+	buf[i] = 0;
+int ptr = 0;
+int sptr = 0;
+string s = str;
+while (s - sptr)
+{
+	c = s % sptr / 1;
+	if (c == ">")
+		ptr++;
+	else if (c == "<")
+		ptr--;
+	else if (c == "+")
+		buf[ptr]++;
+	else if (c == "-")
+		buf[ptr]--;
+	else if (c == ".")
+		print(strlib.char(buf[ptr]));
+	else if (c == ",")
+		buf[ptr] = strlib.ctoi(strlib.getchar());
+	else if (c == "[")
+	{
+		if (buf[ptr] == 0)
+		{
+			int count = 0;
+			while (s)
+			{
+				sptr++;
+				c = s % sptr / 1;
+				if (c == "[")
+					count++;
+				else if (c == "]")
+				{
+					if (count == 0)
+						break;
+					else
+						count--;
+				}
+			}
+			continue;
+		}
+	}
+	else if (c == "]")
+	{
+		if (buf[ptr] != 0)
+		{
+			int count = 0;
+			while (s)
+			{
+				sptr--;
+				c = s % sptr / 1;
+				if (c == "]")
+					count++;
+				else if (c == "[")
+				{
+					if (count == 0)
+						break;
+					else
+						count--;
+				}
+			}
+			continue;
+		}
+	}
+	sptr++;
+}

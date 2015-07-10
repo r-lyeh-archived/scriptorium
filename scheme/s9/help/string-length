@@ -1,0 +1,3 @@
+R4RS 6.7  (string-length string)  ==>  integer
+
+Returns the number of characters in the given string.

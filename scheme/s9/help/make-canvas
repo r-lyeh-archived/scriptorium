@@ -1,0 +1,45 @@
+S9 LIB  (canvas-draw canvas integer-X integer-Y char)       ==>  unspecific
+        (canvas-draw-string canvas int-X int-Y string)      ==>  unspecific
+        (canvas-dump canvas)                                ==>  vector
+        (canvas-plot canvas integer-X integer-Y char)       ==>  unspecific
+        (canvas-plot-line canvas X Y DX DY char)            ==>  unspecific
+        (make-canvas int-X int-Y int-W int-H)               ==>  canvas
+
+        (load-from-library "char-canvas.scm")
+
+This is a set of routines for drawing characters and lines on
+a scaled, character-based (a.k.a. "ASCII Art") canvas.
+
+MAKE-CANVAS creates a char canvas with a physical size of
+x=INT-X times y=INT-Y characters. The virtual size of the
+canvas is INT-W (width) times INT-H (height) "pixels". "Real
+coordinates" relate to the physical size of the canvas.
+"Virtual coordinates" are translated to real coordinates by
+scaling. Both types of coordinates are specified in X/Y
+notation. The origin 0/0 is at the lower left corner of the
+canvas. The new canvas will be filled with blanks initially.
+
+CANVAS-DRAW draws character CHAR at position INTEGER-X/INTEGER-Y.
+It uses real coordinates. CANVAS-DRAWSTRING draws a string
+instead of a single character. When the X or Y coordinate is
+outside of the canvas, C will not be drawn. When STRING extends
+beyond the limits of the canvas, it will be clipped.
+
+CANVAS-PLOT draws the character CHAR at the virtual position
+INTEGER-X/INTEGER-Y. CANVAS-PLOT-LINE draws a line from the
+virtual position X/Y to DX/DY using the character CHAR. All
+arguments must be integers. Lines originating or extending
+outside of the canvas will be clipped.
+
+CANVAS-DUMP returns a vector of strings that contain the
+characters written to the canvas. The vector indexes are the
+Y-coordinates, the string offsets the X-coordinates.
+
+(let ((c (make-canvas 10 5 10 10)))
+  (canvas-plot-line c 0 9 9 0 #\#)
+  (canvas-plot-line c 0 0 9 9 #\*)
+  (canvas-dump c))                   ==>  #("##      **"
+                                            "  ##  **  "
+                                            "    **    "
+                                            "  **  ##  "
+                                            "**      ##")

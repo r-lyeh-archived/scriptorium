@@ -1,0 +1,33 @@
+S9 LIB  (make-rbt procedure)                   ==>  rb-tree
+        (rbt-find rb-tree object)              ==>  object | #f
+        (rbt-insert rb-tree object1 object2)   ==>  rb-tree
+        (rbt-rebuild rb-tree object)           ==>  rb-tree
+        (rbt-remove rb-tree object)            ==>  rb-tree
+
+These procedures implement Red-Black Trees.
+
+MAKE-RBT returns an empty tree that uses PROCEDURE as an ordering
+predicate. If you plan, for instance, to use strings as keys, use
+STRING<? as a predicate.
+
+RBT-FIND locates the value associated with the key OBJECT in the
+given RB-TREE and returns it. When the key is not contain in the
+tree, it returns #F.
+
+RBT-INSERT returns a new rb-tree with OBJECT2 inserted into Rb-TREE
+under the key OBJECT1.
+
+RBT-REBUILD rebuilds the given tree and returns it. The original
+tree remains unchanged.
+
+RBT-REMOVE creates a new tree from RB-TREE with the key OBJECT
+removed. In fact, this procedure only marks the key as "inactive",
+i.e. it is left in the tree, but cannot be found any longer. To
+remove inactive nodes, use RBT-REBUILD.
+
+(let ((tree (fold-left
+              (lambda (t k)
+                 (rbt-insert t k (make-string k #\x)))
+              (make-rbt <)
+              '(1 2 3 4 5 6 7))))
+  (rbt-find tree 5))               ==>  "xxxxx"

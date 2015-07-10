@@ -1,0 +1,11 @@
+This version of GREP is GNU GREP version 2.0 with the following modifications:
+- it was ported to Win32 by Ahmad Abualsamid
+- a new option -S was added by Tim Charron
+
+The source code of this version can be downloaded from:
+    http://pages.interlog.com/~tcharron/grep.html
+
+The original page on grep is at:
+    http://www.gnu.org/software/grep/
+
+Use "grep -?" to display a synopsis of the GREP command.

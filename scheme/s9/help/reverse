@@ -1,0 +1,7 @@
+R4RS 6.3  (reverse list)  ==>  list
+
+Returns a newly allocated list consisting of the elements of LIST
+in reverse order.
+
+(reverse '(a b c))              ==>  (c b a)
+(reverse '(a (b c) d (e (f))))  ==>  ((e (f)) d (b c) a)

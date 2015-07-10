@@ -1,0 +1,9 @@
+S9 LIB  (loutify-char char)      ==>  string
+        (loutify-string string)  ==>  string
+
+LOUTIFY-CHAR converts a char to a string that is save for
+inclusion in an Lout document. LOUTIFY-STRING does the
+same for a string.
+
+(loutify-char #\")        ==>  "\"\\\"\""
+(loutify-string "\"x\"")  ==>  "\"\\\"x\\\"\""

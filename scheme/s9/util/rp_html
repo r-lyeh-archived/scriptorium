@@ -1,0 +1,13 @@
+#######################################
+#
+#	rpp profile for
+#
+#	HTML
+#
+init-string	
+boldface-on	<B>
+boldface-off	</B>
+underline-on	<U>
+underline-off	</U>
+italics-on	<I>
+italics-off	</I>

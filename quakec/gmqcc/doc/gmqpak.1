@@ -1,0 +1,39 @@
+.\" gmqpak mdoc manpage
+.Dd April 27, 2013
+.Dt GMQPAK 2 PRM
+.Os
+.Sh NAME
+.Nm gmqpak
+.Nd A standalone Quake PAK utility
+.Sh SYNOPSIS
+.Nm gmqpak
+.Op Cm options
+.Op Cm files
+.Sh DESCRIPTION
+.Nm gmqpak
+Is a standalone Quake PAK file utility supporting the extraction of files,
+directories, or whole PAKs, as well as the opposite (creation of PAK files).
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl -file Ar file
+Specify the PAK file to create or extract
+.It Fl -e
+Used to denote the extraction operation on a PAK file.
+.It Fl -c
+Used to denote the creation operation on a PAK file.
+.El
+.Sh EXAMPLES
+Here's some examples of how to use the utility to manipulate PAK files.
+.Bl -ohang
+.It Li gmqpak -file id1.pak -e
+.D1 extracts a PAK to ./
+.It Li gmqpak -file new.pak -c file1 dir/file2
+.D1 creates a PAK with the files specified
+.It Li gmqpak -file new1.pak -c directory.
+.D1 creates a PAK from files within the directory, including subdirectories and files.
+.El
+.Sh AUTHOR
+See <http://graphitemaster.github.com/gmqcc>.
+.Sh BUGS
+Please report bugs on <http://github.com/graphitemaster/gmqcc/issues>,
+or see <http://graphitemaster.github.com/gmqcc> on how to contact us.

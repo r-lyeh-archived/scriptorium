@@ -1,0 +1,15 @@
+S9 EXT  (sys:gettimeofday)  ==>  list
+        (sys:time)          ==>  integer
+
+SYS:GETTIMEOFDAY returns a list of the form
+
+        (seconds microseconds)
+
+where SECONDS is the number of seconds since the Unix Epoch
+(1970-01-01T00:00:00) and microseconds the number of
+microseconds since the beginning of the current second.
+
+SYS:TIME returns the car part of the above list.
+
+(sys:gettimeofday )  ==>  (1272263214 409904)
+(sys:time)           ==>  1272263214

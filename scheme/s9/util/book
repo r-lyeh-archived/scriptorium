@@ -1,0 +1,205 @@
+.ad b
+.ft H
+.nh
+.nr VV 1	\" verbose flag
+.nr CN 0 	\" chapter number
+.nr FN 0	\" figure number
+.pl 9i
+.ll 4.5i
+.po 0.75i
+.ps 11p
+.vs 14p
+.wh 0 BB
+.wh -0.75i EP
+.de X
+.tm R;.nr \\$1 \\n%
+..
+.de B
+\f[HB]\\$1\f[]\\$2
+..
+.de I
+\f[HI]\\$1\f[]\\$2
+..
+.de K
+\f[CB]\\$1\fP\\$2
+..
+.de AB
+.ce
+\s36\\$1\s0
+.sp
+.ce
+\s14\\$2\s0
+..
+.de LB		\" begin list
+.br
+.in +\w'\(bu  'u
+..
+.de LE		\" end list
+.br
+.in -\w'\(bu  'u
+..
+.de LI		\" list element
+.sp 0.4v
+.ti -\w'\(bu  'u
+\(bu\h'|0'\h'\w'\(bu  'u'\\$1
+..
+.de SG
+.sp 0.4v
+\s+1\f[I]\\$1\ \ \ \(->\ \ \ \\$2\f[]\s0
+..
+.de SB
+.sp 0.4v
+.ft I
+.ps +1
+..
+.de SE
+.ft
+.ps -1
+..
+.de CB
+.sp 0.4v
+.ft CB
+.ad b
+.nf
+..
+.de CE
+.ft
+.fi
+.ad b
+..
+.de CO
+.sp 0.4v
+\f[CB]\\$1\f[]
+..
+.de AR
+\ \ \(-> \ \ 
+..
+.de U
+\\$1\v'+0.25v'\s-3\\$2\s0\v'-0.25v'\\$3
+..
+.de UU
+\s+1\f[I]\\$1\v'+0.25v'\s-3\\$2\s0\v'-0.25v'\\$3\s-1\f[]
+..
+.de VA
+\f[I]\s+1\\$1\f[]\s0\\$2
+..
+.de VL
+\\$1\f[I]\s+1\\$2\f[]\s0\\$3
+..
+.de FO
+.sp 0.4v
+\s+1\f[I]\\$1\f[]\s0
+..
+.de EE
+.sp 0.4v
+\\$1
+..
+.de FB
+.sp 0.4v
+.ft I
+.ps +1
+.ad n
+..
+.de FE
+.ft P
+.ps -1
+.ad b
+..
+.de TL
+.ds PT "\\$1
+..
+.de S
+.sp 0.4v
+..
+.de BP		\" begin page
+.ev 1
+.ft H
+.sp 0.4i
+.lt 4.5i
+.if o .tl '\s-3\\*(PT\s0''\s12%'
+.if e .tl '\s12%''\s-3\\*(PT\s0'
+.sp 0.3i
+.ev
+..
+.de BB		\" begin blank page
+.ev 1
+.ft H
+.sp 0.4i
+.lt 4.5i
+.\" .if o .tl '''\s12%'
+.\" .if e .tl '\s12%'''
+.sp 0.4i
+.ev
+..
+.de EP		\" End of page
+'bp
+..
+.de PA		\" Begin Paragraph
+.sp 0.4v
+.if \\n(.t<2v .bp
+.ft H
+.di PX
+..
+.de PQ		\" End [tagged] paragraph
+.br
+.di
+.nr d1 \\n(dn/1v-1
+.nr d2 \\n(d1-1
+.nr t1 \\n(.t/1v
+.if \\n(d1>=\\n(t1 \{ \
+.if \\n(d2<=\\n(t1 .sp 0v \}
+.nf
+.PX
+.rr d1
+.rr d2
+.rr t1
+.fi
+..
+.de HD		\" Heading
+.ev 2
+.ft H
+.nr CN \\n(CN+1
+.wh 0
+.\" .if \\n%>1 \{
+.\" .bp
+.\" .sp 0.5i \}
+.TL "\\$1"
+.nf
+.vs 40
+.\" .if e .bp
+.if e \{\
+\s28\\$1\s0 \}
+.if o \{\
+\h'4.5i-\w'\s28\\$1\s0'u'\s28\\$1\s0 \}
+.fi
+.\" .sp 0.2v
+.nr SN 0
+.nr UN 0
+.wh 0 BP
+.if \\n(VV .tm C;\\n(CN.;\\$1;\\n%
+.ev
+..
+.de SH		\" Subheading
+.br
+.ev 2
+.ft H
+.TL "\\$1"
+.nr SN \\n(SN+1
+.nr UN 0
+.nf
+\s18\\$1\s0
+.\" .sp 0.2v
+.ev
+.if \\n(VV .tm C;\\n(CN.\\n(SN;\\$1;\\n%
+..
+.de SU		\" Sub-subheading
+.br
+.ev 2
+.ft H
+.TL "\\$1"
+.nr UN \\n(UN+1
+.nf
+\s14\\$1\s0
+.ev
+.if \\n(VV .tm C;\\n(CN.\\n(SN.\\n(UN;\\$1;\\n%
+..

@@ -1,0 +1,7 @@
+S9 LIB  (mode->string integer)  ==>  string
+
+Return a symbolic representation of the access mode specified in
+INTEGER. The resulting string is in the same format as used by
+the ls(1) Unix command.
+
+(mode->string #o5751)  ==>  "rwsr-x--t"

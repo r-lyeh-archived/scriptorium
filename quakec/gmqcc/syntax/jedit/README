@@ -1,0 +1,26 @@
+To use the jedit syntax highlighting install qc.xml to the syntax
+directory for jedit
+
+# For Windows Users that directory is
+C:\Users\username\.jedit\modes
+
+# For Linux users that directory is
+/home/username/.jedit/modes
+
+# For Mac users that directory is
+/Users/username/Library/jEdit/modes
+
+After the file is installed, a mode line needs to be added to
+a file caled catalog in that same directory.
+
+Add the following line:
+<MODE NAME="QuakeC Code" FILE="qc.xml" FILE_NAME_GLOB="*.qc" />
+
+inside the <MODES> block before the end tag </MODES>. If the file
+does not exist, you can simply make one and use the following:
+
+<?xml version="1.0"?>
+<!DOCTYPE MODES SYSTEM "catalog.dtd">
+<MODES>
+    <MODE NAME="QuakeC Code" FILE="qc.xml" FILE_NAME_GLOB="*.qc" />
+</MODES>

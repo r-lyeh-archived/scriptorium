@@ -1,0 +1,61 @@
+S9 LIB  (make-matcher symbol list ...)                  ==>  form
+        (define-matcher symbol <clause> ...)            ==>  unspecific
+        (let-matcher symbol (<clause> ...) <expr> ...)  ==>  object
+
+        (load-from-library "matcher.scm")
+
+These constructs allow to write programs using pattern matching
+style. The MAKE-MATCHER procedure creates a matcher from the
+given clauses which are represented by LISTs. Each <clause> must
+have the form:
+
+      (<pattern> ... => <expression> ...)
+
+where each <pattern> is a Scheme datum and <expression> is an
+arbitrary expression. MAKE-MATCHER returns a list resembling
+a procedure which matches its argument list against the list of
+<pattern>s and evaluates the expressions associated with the
+first match.
+
+Each pattern is matched against the corresponding argument as
+follows:
+
+- Atomic objects, except for symbols, match themselves;
+- The symbol NIL matches the empty argument list (so
+  (nil => foo) is equal to (=> foo);
+- The symbol @ binds the remaining arguments to the subsequent
+  symbol and ends the match successfully -- it is the matcher's
+  equivalent to Scheme's improper argument lists;
+- Symbols match any value and bind the symbol to that value;
+  the <expression>s will be evaluated with these bindings in
+  effect;
+- The symbol _ matches any value, but does not bind to it;
+- A quoted symbol matches the symbol being quoted;
+- A list is matched by matching its members recursively.
+
+The SYMBOL passed to MAKE-MATCHER is the name of the resulting
+matcher. It is merely used for error reporting. In order for
+a matcher to recurse, it must be bound using DEFINE-MATCHER
+or LET-MATCHER.
+
+The DEFINE-MATCHER syntax binds a matcher to a symbol at the
+top-level. LET-MATCHER binds a matcher locally. These constructs
+correspond to DEFINE and LETREC.
+
+(begin
+  (define-matcher len
+    (()      => 0)
+    ((_ . x) => (+ 1 (len x))))
+  (len '(a b c d e f)))                  ==>  6
+
+(let-matcher how-many
+  ((nil
+     => 0)
+   (_ @ more
+     => (+ 1 (apply how-many more))))
+  (how-many 1 2 3 4 5))                  ==> 5
+
+(let-matcher appnd
+  ((() x      => x)
+   ((h . t) x => (cons h (appnd t x))))
+  (appnd '(a b c) '(d e f)))             ==>  (a b c d e f)

@@ -1,0 +1,5 @@
+S9 LIB  (set-difference list ...)  ==>  list
+
+Compute the difference of a number of sets.
+
+(set-difference '(a b c d e f) '(b d) '(a f))  ==>  (c e)

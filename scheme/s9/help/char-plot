@@ -1,0 +1,27 @@
+S9 LIB  (char-plot list symbol integer1 integer2 boolean)  ==>  unspecific
+
+CHAR-PLOT creates a character canvas (see MAKE-CANVAS), marks the
+data points in LIST with #\X and draws a line through the points
+with #\-. SYMBOL will be used to label the X axis (on which the
+data points will be distributed).
+
+INTEGER1 (height) and INTEGER2 ; (width) specify the physical
+dimenions of the char canvas. Its virtual dimensions will be
+computed in such a way that all data points can be displayed.
+
+When the BOOLEAN (compression) argument is set to #T, then the
+X axis will start at the magnitude of the least data point
+instead of zero, so that the entire width of the canvas is
+available for distributing the supplied data points.
+
+
+(char-plot '(0 1 2 3 4 5 6 7 8 9) 'foo 7 35 #f)  ==>  unspecific
+; output: ----------- foo --> -----------------
+;         |                                 --|
+;         |                             --X-  |
+;         |                     --X---X-      |
+;         |                 --X-              |
+;         |         --X---X-                  |
+;         |     --X-                          |
+;         |X--X-                              |
+;         ----------- foo --> -----------------

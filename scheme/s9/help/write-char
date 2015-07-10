@@ -1,0 +1,7 @@
+R4RS 6.10.3  (write-char char)              ==>  unspecific
+             (write-char char output-port)  ==>  unspecific
+
+Writes the character CHAR (not an external representation of the
+character) to the given port and returns an unspecified value. The
+OUTPUT-PORT argument may be omitted, in which case it defaults to
+the value returned by CURRENT-OUTPUT-PORT.

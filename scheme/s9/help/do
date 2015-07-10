@@ -1,0 +1,49 @@
+R4RS 4.2.4  (do <vars> <test> <body>)  ==>  object
+
+More specifically, the DO syntax is:
+
+(do ((<variable> <init> <step>)
+     ...)
+    (<test> <expression> ...)
+  <command> ...)
+
+DO is an iteration construct. It specifies a set of variables to
+be bound, how they are to be initialized at the start, and how they
+are to be updated on each iteration. When a termination condition
+is met, the loop exits with a specified result value.
+
+DO expressions are evaluated as follows: The <init> expressions are
+evaluated (in some unspecified order), the <variable>s are bound
+to fresh locations, the results of the <init> expressions are stored
+in the bindings of the <variable>s, and then the iteration phase
+begins.
+
+Each iteration begins by evaluating <test>; if the result is false
+(see section see section 6.1 Booleans), then the <command> expressions
+are evaluated in order for effect, the <step> expressions are
+evaluated in some unspecified order, the <variable>s are bound to
+fresh locations, the results of the <step>s are stored in the
+bindings of the <variable>s, and the next iteration begins.
+
+If <test> evaluates to a true value, then the <expression>s are
+evaluated from left to right and the value of the last <expression>
+is returned as the value of the DO expression. If no <expression>s
+are present, then the value of the DO expression is unspecified.
+
+The region of the binding of a <variable> consists of the entire
+DO expression except for the <init>s. It is an error for a <variable>
+to appear more than once in the list of DO variables.
+
+A <step> may be omitted, in which case the effect is the same as
+if `(<variable> <init> <variable>)' had been written instead of
+`(<variable> <init>)'.
+
+(do ((vec (make-vector 5))
+     (i 0 (+ i 1)))
+    ((= i 5) vec)
+  (vector-set! vec i i))         ==>  #(0 1 2 3 4)
+
+(let ((x '(1 3 5 7 9)))
+  (do ((x x (cdr x))
+       (sum 0 (+ sum (car x))))
+      ((null? x) sum)))          ==>  25

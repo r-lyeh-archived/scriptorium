@@ -1,0 +1,9 @@
+attr bob::z
+def bob::bob() { this.z = 10 }
+
+attr bob2::z
+def bob2::bob2() { this.z = 12 }
+
+auto b = bob();
+auto b2 = bob2();
+

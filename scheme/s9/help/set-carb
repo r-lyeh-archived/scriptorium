@@ -1,0 +1,10 @@
+R4RS 6.3  (set-car! pair object)  ==>  unspecific
+
+Stores OBJECT in the car field of PAIR. The value returned by
+SET-CAR! is unspecified.
+
+(define (f) (list 'not-a-constant-list))
+(define (g) '(constant-list))
+
+(set-car! (f) 3)  ==>  unspecified
+(set-car! (g) 3)  ==>  error

@@ -1,0 +1,11 @@
+R4RS 6.7  (string-set! string integer char)  ==>  unspecific
+
+INTEGER must be a valid index of STRING. STRING-SET! stores CHAR
+in the element at the INTEGER'th position of STRING and returns an
+unspecified value.
+
+(define (f) (make-string 3 #\*))
+(define (g) "***")
+(string-set! (f) 0 #\?)                          ==>  unspecified
+(string-set! (g) 0 #\?)                          ==>  error
+(string-set! (symbol->string 'immutable) 0 #\?)  ==>  error

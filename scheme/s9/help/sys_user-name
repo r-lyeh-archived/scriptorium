@@ -1,0 +1,20 @@
+S9 EXT  (sys:user-name integer|string)   ==>  string
+        (sys:user-uid integer|string)    ==>  integer
+        (sys:user-gid integer|string)    ==>  integer
+        (sys:user-gecos integer|string)  ==>  string
+        (sys:user-home integer|string)   ==>  string
+        (sys:user-shell integer|string)  ==>  string
+
+Return a specific member of the user database entry for the
+given user. A user may be indicated by its user name (STRING)
+or UID (INTEGER). See SYS:GETPWNAM for details. Basically
+(sys:user-MEMBER user) is short for:
+
+        (let ((u (if (string? user)
+                     (sys:getpwnam user)
+                     (sys:getpwuid user))))
+          (if u
+              (cdr (assq 'MEMBER u))
+              (error "no such name or UID")))
+
+(sys:user-gecos "man")  ==>  "Mr. Man Pages"

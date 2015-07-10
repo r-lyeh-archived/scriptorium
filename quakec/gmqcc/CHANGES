@@ -1,0 +1,195 @@
+Release 0.3.5:
+    * Preprocessor:
+        - Added warning for when preprocessor directives are used in
+          a macro.
+    * Language:
+        - Added vector bit operations.
+        - Added vector cross product operator `><` for -std=gmqcc.
+        - Added `[[eraseable]]` and `[[accumulation]]` attributes.
+        - Removed &~= operator for -std=gmqcc.
+        - #pragmas which are ignored are actually ignored to EOL.
+    * Compilation:
+        - Fixed constant folding.
+        - Fixed column printing in diagnostics.
+        - Added support for columns in LNOF.
+        - Shadowed locals fix.
+        - Improved warning diagnostics for precedence usage and other
+          various diagnostics.
+        - Added constant folding logic for builtin functions.
+        - Prevent divide by zero in constant folding.
+        - Added unary elision optimization, cases where a unary expression
+          cancels itself out, e.g `-(-a)` now simplifies to `a`.
+        - Added strength reduce optimization, for divisions e.g `(A / 10)`
+          now strength reduces to `(A * (1 / 10)` where `(1 / 10)` is
+          evaluated at compile time.
+        - Added superfluous expression elision optimization, e.g `(A + 0),
+          (A - 0), (A * 1), (A / 1)` can be simplified to just `A`.
+        - Quake world now compiles with -std=qcc
+        - Constant folding for `if than` now works for ternary expressions
+          too.
+        - Fixed `[[alias]]` attribute type checking, now you can't alias
+          invalid types.
+    * QCVM:
+        - Properly exits on error now.
+    * Lexer:
+        - Now prints the character the lexer fails on instead of the
+          token value.
+    * Testsuite:
+        - Important fixes to the testsuite (removal of false positives
+          and false negitives).
+        - Added a new utility `check-proj.sh` which downloads various Quake
+          mods and attempts to compile them.
+    * Commandline:
+        - Made -fshort-logic, -funtyped-nil and -fvariadic-args default
+          for -std=gmqcc.
+    * Build:
+        - Generate PDFs of man documents for Windows releases.
+        - Archlinux/Archbsd package now generates MTREE.
+    * Documentation:
+        - Fixed mdoc(s).
+    * Misc:
+        - Added some export scripts for xonotic and nexuiz which generate
+          specially crafted packages that are used by the check-proj script.
+
+2013-08-20 v0.3.0
+    * Language:
+        - Return assignments, the ability to assign to the return keyword
+          as if it were a local variable.
+        - Added bitwise XOR operator (^)
+        - Array initializers: e.g float a[] = {1, 2, 3};
+        - Fix bug that dissalowed language operators to be used in strings.
+    * Compilation:
+        - Optimized memory usage (now uses on average %3 less memory for
+          compilation).
+        - Fixed dotranslate (translatable strings)
+        - Rewrote constant folding optimization pass for the parser.
+        - New additional dead-code-elimination-consatant-fold pass for
+          if statements whos expression can be evaluated at compile-time
+          (allowing the if/else branch to be entierly elided at compile-time).
+        - Added support for columns in error diagnostics.
+        - Limit corrector to <= 16 byte strings.
+        - Improved hash function for hashtable (old hash function had 15% error,
+          this speeds up compilation)
+        - Improved performance of in-house allocator with branch-hinting, speeds
+          up compilation of Xonotic by 3 seconds!
+    * QCVM:
+        - Escape strings for -printdefs
+    * Commandline:
+        - Added statistic dumps, gives information about the number of used
+          hashtables, vectors, and number of unique sizes of vectors and
+          hashtables. The amount of memory used for vectors. As well as the
+          number of strdups used in total for compilation.
+        - Added compile statistic dumps, gives information about the compiled
+          binary, and LNO, such as the size, CRC, the number of times a
+          specific optimization was applied, etc.
+        - Make -std=qcc default.
+    * Testsuite:
+        - Fixed a floating point exception rasied by modulo operation in
+          -memchk.
+        - Added support for the test-suite to source tests and task-template
+          files from subdirectories in the test/ directory.
+        - Now prints the number of failed tests (if any) after all tests
+          are attempted.
+        - Fixed some bugs with error handling resulting in false-positives.
+    * Build:
+        - Can now be compiled with TCC (Tiny C compiler) and function as
+          intended (previously couldn't due to bug in TCC codegen).
+        - Added Gentoo ebuilds.
+        - Added Win32 Makefile for building Win32 packages.
+        - Added Slackware pkg build files.
+        - Added Fedora spec files.
+        - Added Makefile for the BSD make variant.
+    * Misc:
+        - Added valgrind memcheck hook to in-house allocator to help aid
+          in finding invalid reads/writes, and more accurate leaks.
+
+2012-04-27 v0.2.9
+    * Preprocessor:
+        - __VA_ARGS__ support
+        _ __VA_ARGS__ indexing
+        - Predefined macros like __DATE__, __TIME__, ...
+          (check the manpage for a full list).
+        - Signed numbers as single token in the.
+        - Fixes some issues with #if operations on macros.
+        - Speed improvements.
+    * Language:
+        - Untyped `nil` keyword.
+        - Removed the `noreturn` keyword.
+        - Added generic attribute syntax and reintroduced `noreturn`
+          as [[noreturn]].
+        - Added [[deprecated]] and [[deprecated("message")]].
+        - Support for `static` variables in functions.
+        - Support for labeled loops.
+        - UTF-8 Support.
+        - enum support: without enum-types
+          (ie no `typedef enum { } foo;`).
+        - Accessing vector components via the dot operator on all
+          expressions. Eg: `(3 * v).y`.
+        - Type restricted variadict parameters:
+          ie: `void print(string...);`.
+        - Accessing varargs from QC via: `...(index, type)`
+        - New operators: ** (exponentiation), % (modulo), etc.
+        - Enumeration attributes: `flag`, `reverse`.
+    * Compilation:
+        - Various optimizations and progs-size reductions.
+        - A new spell-checking algorithm tries to hint you at existing
+          variables on error.
+        - Some problems with VM related vector-instructions issues
+          have been solved in both DP and our own executor. A new
+          compatbility option (enabled by default) has been added for
+          now: -flegacy-vector-maths.
+        - Compiler intrinsics: __builtin_floor, __builtin_mod,
+          __builtin_exp, __builtin_isnan.
+        - Improved memory tracing.
+        - Speed improvements.
+    * QCVM:
+        - Improved commandline argument handling.
+        - More builtins: sqrt(), normalize(), floor().
+    * Commandline:
+        - Nicer memory dumps.
+        - Support for making individual warnings an error
+        - via -Werror-<warning>.
+        - added --add-info.
+    * Testsuite:
+        - Support for QCFLAGS to run tests with several additional
+          flags.
+        - Added support for preprocessor tests.
+        - Added preprocessor tests.
+        - Added defs.qh (auto included) for qcvm definitions.
+    * Syntax Highlighting:
+        - Added various syntax highlighting description files for
+          various text editors / integrated development envirorments,
+          including support for: geany, kate, kwrite, kdevelop, QtCreator,
+          gtksourceview, gedit, sany, nano, jedit.
+    * Build:
+        - Build scripts for building debian, archlinux and archbsd
+          packages for x86, and x86_64.
+        - Makefile targets for gource visualization, and render of
+          gource visualization.
+
+
+2012-12-27 Hotfix v0.2.2
+    * Liferanges
+    * Crashes
+
+2012-12-23 Hotfix v0.2.1
+    * General bugfixes
+
+2012-12-23 Release 0.2
+    * Preprocessor:
+        - Added xonotic compatible preprocessor.
+    * Language
+        - Basic xonotic compatibility.
+        - Array support.
+        - Added fteqcc's string escape sequences.
+        - Support for `noref`.
+        - Support for `goto` with labels like in fteqcc.
+        - `break` and `continue`.
+        - Short circuit logic.
+        - Support for translatable strings via _("str") like in
+          fteqcc.
+    * Compilation
+        - Warnings about uninitialized values.
+
+2012-11-17 Release 0.1
+    * Compiles id1 code.

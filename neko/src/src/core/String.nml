@@ -1,0 +1,212 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+neko("
+	 @string_split = $loader.loadprim('std@string_split',2);
+");
+
+function make(size : int, c : char) : string {
+	neko("
+		var s = $smake(size);
+		var i = 0;
+		while( i < size ) {
+			$sset(s,i,c);
+			i = i + 1;
+		}
+		s
+	");
+}
+
+var create : int -> string = neko("$smake");
+var length : string -> int = neko("$ssize");
+
+function get(s : string,n : int) : char {
+	var c = neko("$sget(s,n)");
+	if c == neko("null") then invalid_arg();
+	c
+}
+
+function set(s : string, n : int, c : char) : void {
+	if neko("$sset(s,n,c) == null") then invalid_arg();
+}
+
+function blit(dst : string, p : int, src : string, p2 : int, l : int ) : void {
+	if neko("try { $sblit(dst,p,src,p2,l); false; } catch e true") then invalid_arg();
+}
+
+function sub(s : string, p : int, l : int ) : string {
+	var s = neko("$ssub(s,p,l)");
+	if s == neko("null") then invalid_arg();
+	s
+}
+
+function find( s : string, p : int, pat : string ) : int {
+	var pos = neko "$sfind(s,p,pat)";
+	if pos == neko "null" then throw Not_found;
+	pos
+}
+
+var list_depency = List.iter
+
+function split( s : string, sub : string ) : string list {
+	neko("
+		var l = @string_split(s,sub);
+		return @List.@make(l);
+	");
+}
+
+function concat( sep : string, s : string list ) : string {
+	var b = Buffer.create();
+	function rec loop(l) {
+		match l {
+		| [] -> ()
+		| [x] -> Buffer.add b x
+		| x :: l ->
+			Buffer.add b x;
+			Buffer.add b sep;
+			loop l
+		}
+	};
+	loop(s);
+	Buffer.string b
+}
+
+function is_printable(c) {
+	c >= '\032' && c <= '\126'
+}
+
+function escape_char(c) {
+	match c {
+	| '\n' -> "\\n"
+	| '\t' -> "\\t"
+	| '\r' -> "\\r"
+	| '\\' -> "\\\\"
+	| '"' -> "\\\""
+	| c when !is_printable c -> sprintf "\\%.3d" (ord c)
+	| c -> String.make 1 c
+	}
+}
+
+function escape(s) {
+	var b = Buffer.create();
+	function rec loop(i) {
+		if i == String.length s then
+			Buffer.string b
+		else {
+			match String.get s i {
+			| '\n' -> Buffer.add b "\\n"
+			| '\t' -> Buffer.add b "\\t"
+			| '\r' -> Buffer.add b "\\r"
+			| '\\' -> Buffer.add b "\\\\"
+			| '"' -> Buffer.add b "\\\""
+			| c when !is_printable c -> Buffer.add b (sprintf "\\%.3d" (ord c))
+			| c -> Buffer.add_char b c
+			};
+			loop (i+1)
+		}
+	};
+	loop(0);
+}
+
+function unescape(s) {
+	var l = length s;
+	var s2 = create l;
+	var i = &0;
+	var p = &0;
+	while *i < l {
+		match neko("$sget")(s,*i) {
+		| '\\' ->
+			i := *i + 1;
+			if *i == l then invalid_arg();
+			var c = neko("$sget")(s,*i);
+			match c {
+			| 'n' ->
+				neko("$sset")(s2,*p,'\n');
+			| 't' ->
+				neko("$sset")(s2,*p,'\t');
+			| 'r' ->
+				neko("$sset")(s2,*p,'\r');
+			| '"' ->
+				neko("$sset")(s2,*p,'"');
+			| '\\' ->
+				neko("$sset")(s2,*p,'\\');
+			| '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' ->
+				if *i + 2 >= l then invalid_arg();
+				var c2 = neko("$sget")(s,*i + 1);
+				var c3 = neko("$sget")(s,*i + 2);
+				i := *i + 2;
+				if c2 < '0' || c2 > '9' || c3 < '0' || c3 > '9' then invalid_arg();
+				var o0 = ord '0';
+				var n = (ord c - o0) * 100 + (ord c2 - o0) * 10 + (ord c3 - o0);
+				if n > 255 then invalid_arg();
+				neko("$sset")(s2,*p,chr n);
+			| _ ->
+				invalid_arg()
+			}
+		| c ->
+			neko("$sset")(s2,*p,c);
+		}
+		p := *p + 1;
+		i := *i + 1;
+	}
+	sub s2 0 (*p)
+}
+
+
+function lowercase(s) {
+	var l = length s;
+	var s2 = sub s 0 l;
+	var i = &0;
+	var delta = ord 'a' - ord 'A';
+	while *i < l {
+		var c = neko("$sget")(s,*i);
+		if c >= 'A' && c <= 'Z' then neko("$sset")(s2,*i,chr(ord c + delta));
+		i := *i + 1;
+	}
+	s2
+}
+
+function uppercase(s) {
+	var l = length s;
+	var s2 = sub s 0 l;
+	var i = &0;
+	var delta = ord 'A' - ord 'a';
+	while *i < l {
+		var c = neko("$sget")(s,*i);
+		if c >= 'a' && c <= 'z' then neko("$sset")(s2,*i,chr(ord c + delta));
+		i := *i + 1;
+	}
+	s2
+}
+
+neko("
+	@serialize = $loader.loadprim('std@serialize',1);
+	@unserialize = $loader.loadprim('std@unserialize',2);
+");
+
+function serialize( x : 'a ) : string {
+	neko "@serialize(x)";
+}
+
+function unserialize( x : string ) : 'a {
+	neko "@unserialize(x,$loader)";
+}

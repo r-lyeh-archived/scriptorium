@@ -1,0 +1,6 @@
+S9 LIB  (leap-year? integer)  ==>  boolean
+
+Return #T if INTEGER represents a leap year and otherwise return #F.
+
+(leap-year? 2000)  ==>  #t
+(leap-year? 2003)  ==>  #f

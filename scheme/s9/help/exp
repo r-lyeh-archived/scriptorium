@@ -1,0 +1,13 @@
+R4RS 6.5.5  (exp number)  ==>  number
+            (log number)  ==>  number
+            (sin number)  ==>  number
+            (cos number)  ==>  number
+            (tan number)  ==>  number
+            (asin number)  ==>  number
+            (acos number)  ==>  number
+            (atan number)  ==>  number
+
+These procedures compute the usual transcendental functions.
+LOG computes the natural logarithm of NUMBER (not the base ten
+logarithm). ASIN, ACOS, and ATAN compute arcsine (sin^-1),
+arccosine (cos^-1), and arctangent (tan^-1), respectively.

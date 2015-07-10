@@ -1,0 +1,20 @@
+R4RS 6.10.2  (char-ready? input-port)  ==>  boolean
+             (char-ready?)             ==>  boolean
+
+Returns #T if a character is ready on the INPUT-PORT and returns
+#F otherwise. If CHAR-READY? returns #T then the next READ-CHAR
+operation on the given port is guaranteed not to hang. If the
+port is at end of file then CHAR-READY? returns #T. INPUT-PORT may
+be omitted, in which case it defaults to the value returned by
+CURRENT-INPUT-PORT.
+
+Rationale: CHAR-READY? exists to make it possible for a program to
+accept characters from interactive ports without getting stuck
+waiting for input. Any input editors associated with such ports
+must ensure that characters whose existence has been asserted by
+CHAR-READY? cannot be rubbed out. If CHAR-READY? were to return #F
+at end of file, a port at end of file would be indistinguishable
+from an interactive port that has no ready characters.
+
+NOTE: In S9fES this procedure is part of the SYS-UNIX extension
+and not in the core system.

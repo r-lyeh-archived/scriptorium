@@ -1,0 +1,9 @@
+S9 LIB  (string-prefix=? string1 string2)     ==>  boolean
+        (string-prefix-ci=? string1 string2)  ==>  boolean
+
+Return #T when STRING2 has a prefix of STRING1 and otherwise
+return #F. STRING-PREFIX-CI=? performs the same operation, but
+ignores the case of the strings.
+
+(string-prefix=? "foo" "foobar")  ==>  #t
+(string-prefix=? "foo" "fubar")   ==>  #f

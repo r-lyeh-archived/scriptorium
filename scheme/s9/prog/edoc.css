@@ -1,0 +1,42 @@
+BODY { color: #000000;
+       line-height: 150%;
+       background: #e8e0c0; }
+
+CODE { font-family: courier;
+       font-weight: bold;
+       color: #6000c0;
+       }
+
+A { background: #ffffe0; }
+
+A:link { text-decoration: none;
+         border: 1px dotted #0000ff; }
+
+A:visited { text-decoration: none;
+            border: 1px dotted #0000ff; }
+
+VAR { color: #000080;
+      font-style: italic; }
+
+EM { font-style: italic; }
+
+BLOCKQUOTE { border-style: none;
+             border-left-style: solid;
+	     border-width: 0;
+	     border-left-width: 0.5em;
+	     border-color: #808080;
+	     padding-left: 0.5em;
+	     margin-right: 1.5em;
+	     margin-left: 1.5em; }
+
+PRE { background: #e8f4f8;
+      border: 1px solid #808080;
+      padding: 0.5em; }
+
+IMG { border-color: #808080;
+      border-width: 1px;
+      border-style: solid;
+      padding: 0;
+      margin: 0;
+      margin-top: 0.5em; }
+      margin-bottom: 0.5em; }

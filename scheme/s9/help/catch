@@ -1,0 +1,22 @@
+S9 LIB  (catch <tag> <statement> ...)  ==>  object
+        (throw <tag> <expression>)     ==>  undefined
+
+        (load-from-library "catch.scm")
+
+Implement Common LISP-style CATCH and THROW. <Tag> must evaluate to
+an object that can be checked for identity using EQ? (typically a
+symbol). CATCH establishes a catch named <tag> and then evaluates
+the given <statement>s in an implicit BEGIN. Unless one of the
+statements executes THROW, the value of the last <statement> will
+be returned. When a <statement> executes THROW, control will be
+passed to the innermost catch with the same <tag> as the throw.
+In this case the catch will exit immediately, returning the value
+of <expression> as its result.
+
+(let ((v #f))
+  (let ((r (catch 'foo
+             (set! v 0)
+             (throw 'foo 1)
+             (set! v 2)
+             3)))
+    (list v r)))             ==>  (0 1)

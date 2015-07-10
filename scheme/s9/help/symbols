@@ -1,0 +1,3 @@
+S9fES  (symbols)  ==>  list
+
+Return a list of all symbols known to the system.

@@ -1,0 +1,30 @@
+S9 LIB  (letrec* ((<variable> <expression>) ...) <body> ...)  ==>  object
+
+        (load-from-library "letrecstar.scm")
+
+LETREC* is like LETREC, but <expression>s can apply procedures
+bound to <variable> defined earlier in the same LETREC*. LETREC
+does not allow procedures to be defined in terms of each other,
+e.g.:
+
+           (letrec ((a (lambda () (lambda () 1)))
+                    (b (a)))
+             (b))                                  ==>  undefined
+
+LETREC* expands as follows:
+
+(letrec* ((<var1> <expr1>)    --->  (let ((<var1> <undefined>)
+          ...                             ...
+          (<varN> <exprN>))               (<varN> <undefined>))
+  <body>)                             (set! <var1> <expr1>)
+                                      ...
+                                      (set! <varN> <exprN>)
+                                      (let ()
+                                        <body>))
+
+LETREC* may be used in the place of R4RS LETREC. The opposite,
+though, does not generally work (see negative example above).
+
+(letrec* ((a (lambda () (lambda () 1)))
+          (b (a)))
+  (b))                                  ==>  1

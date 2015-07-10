@@ -1,0 +1,11 @@
+S9 LIB  (cond-expand (symbol expression ...))  ==>  object
+
+This is a subset of SRFI-0 COND-EXPAND. Each argument of COND-EXPAND
+is a clause consisting of a leading "feature ID" (a symbol) and any
+number of trailing expressions (a body). It evaluates to the body of
+the first clause having a feature ID of SCHEME-9-FROM-EMPTY-SPACE,
+S9FES, or ELSE. The body is then evaluated by S9fES. When none
+of the above feature IDs is found, an error is reported.
+
+(cond-expand (s9fes (cons 1 2)))               ==>  (1 . 2)
+(cond-expand (foo (cons 1 2)) (else (+ 1 2)))  ==>  3

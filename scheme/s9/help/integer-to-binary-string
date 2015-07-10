@@ -1,0 +1,22 @@
+S9 LIB  (binary-string->integer string)             ==>  integer
+        (integer->binary-string integer1 integer2)  ==>  string
+        (number-of-bits integer)                    ==>  integer
+
+INTEGER->BINARY-STRING writes a binary notation of INTEGER
+to a fresh string and returns it. The resulting string will
+be INTEGER2 characters wide and will consist of zeros and
+ones exclusively. INTEGER2 must be large enough to hold the
+desired binary representation. NUMBER-OF-BITS may be used
+to find this value.
+
+BINARY-STRING->INTEGER converts the binary representation of
+an integer contained in STRING to an integer. It basically
+does the same as STRING->NUMBER with a radix of 2, but is
+hopefully more efficient.
+
+NUMBER-OF-BITS returns the least number of bits that is
+needed to store the given integer in binary format.
+
+(integer->binary-string 123 8)       ==>  "01111011"
+(binary-string->integer "01111011")  ==>  123
+(number-of-bits 127)                 ==>  7

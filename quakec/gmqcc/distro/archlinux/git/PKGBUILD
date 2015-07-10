@@ -1,0 +1,60 @@
+# Contributor: matthiaskrgr <matthiaskrgr _strange_curverd_character_ freedroid D0T org>
+
+pkgname=gmqcc-git
+pkgver=0.3.5
+pkgver(){
+    cd gmqcc
+    git describe --tags | sed -e 's/^gmqcc\-//' -e 's/-/./g'
+}
+pkgrel=1
+pkgdesc="An Improved Quake C Compiler"
+arch=('i686' 'x86_64')
+depends=('glibc')
+conflicts=('gmqcc')
+provides=('gmqcc=0.3.5')
+makedepends=('git')
+url="https://github.com/graphitemaster/gmqcc.git"
+license=('MIT')
+source=('gmqcc::git://github.com/graphitemaster/gmqcc.git')
+sha1sums=('SKIP')
+
+
+build() {
+	msg "Starting compilation..."
+	cd "$srcdir"/"gmqcc"
+
+	msg "Compiling..."
+	make
+}
+
+check() {
+	cd "$srcdir"/"gmqcc"
+	make check
+}
+
+package() {
+	cd "$srcdir"/"gmqcc"
+	msg "Compiling and installing to pkgdir this time..."
+	make install DESTDIR=$pkgdir PREFIX=/usr
+	msg "Compiling done."
+
+	install -dm755 ${pkgdir}/usr/share/geany
+	install -m644 syntax/geany/filetypes.qc \
+	               ${pkgdir}/usr/share/geany/filetypes.qc
+
+	install -dm755 ${pkgdir}/usr/share/gtksourceview-3.0/language-specs
+	install -m644 syntax/gtksourceview/qc.lang \
+	               ${pkgdir}/usr/share/gtksourceview-3.0/language-specs/qc.lang
+
+	install -dm755 ${pkgdir}/usr/share/apps/katepart/syntax
+	install -m644 syntax/kate/qc.xml \
+	               ${pkgdir}/usr/share/apps/katepart/syntax/qc.xml
+
+	install -dm755 ${pkgdir}/usr/share/nano
+	install -m644 syntax/nano/qc.nanorc \
+	               ${pkgdir}/usr/share/nano/qc.nanorc
+
+	install -dm755 ${pkgdir}/usr/share/licenses/gmqcc
+	install -m644 LICENSE \
+	               ${pkgdir}/usr/share/licenses/gmqcc/LICENSE
+}

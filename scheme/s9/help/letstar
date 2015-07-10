@@ -1,0 +1,18 @@
+R4RS 4.2.2  (let* <bindings> <body>)  ==>  object
+
+Syntax: <Bindings> should have the form
+
+((<variable> <init>) ...),
+
+and <body> should be a sequence of one or more expressions.
+
+Semantics: LET* is similar to LET, but the bindings are performed
+sequentially from left to right, and the region of a binding indicated
+by `(<variable> <init>)' is that part of the LET* expression to the
+right of the binding. Thus the second binding is done in an environment
+in which the first binding is visible, and so on.
+
+(let ((x 2) (y 3))
+  (let* ((x 7)
+         (z (+ x y)))
+    (* z x)))          ==>  70

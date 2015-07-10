@@ -1,0 +1,4 @@
+auto x=.5
+assert_equal(.5, x)
+auto y=-.5
+assert_equal(-.5, y)

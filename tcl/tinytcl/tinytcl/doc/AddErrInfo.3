@@ -1,0 +1,136 @@
+'\"
+'\" Copyright 1989 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: AddErrInfo.3,v 1.1.1.1 2001/04/29 20:35:51 karll Exp $
+'\" 
+.so man.macros
+.HS Tcl_AddErrorInfo tcl
+.BS
+.SH NAME
+Tcl_AddErrorInfo, Tcl_SetErrorCode, Tcl_UnixError, Tcl_CheckStatus \- record information about errors
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+char *
+\fBTcl_AddErrorInfo\fR(\fIinterp, message\fR)
+.sp
+.VS
+void
+\fBTcl_SetErrorCode\fR(\fIinterp, element, element, ...\fR)
+.sp
+char *
+\fBTcl_UnixError\fR(\fIinterp\fR)
+.VE
+.SH ARGUMENTS
+.AS Tcl_Interp *message
+.AP Tcl_Interp *interp in
+Interpreter in which to record information.
+.AP char *message in
+Identifying string to record in \fBerrorInfo\fR variable.
+.AP char *element in
+.VS
+String to record as one element of \fBerrorCode\fR variable.
+Last \fIelement\fR argument must be NULL.
+.VE
+.BE
+
+.SH DESCRIPTION
+.PP
+.VS
+These procedures are used to manipulate two global variables
+that hold information about errors.
+The variable \fBerrorInfo\fR holds a stack trace of the
+operations that were in progress when an error occurred, and
+is intended to be human-readable.
+The variable \fBerrorCode\fR holds a list of items that
+are intended to be machine-readable.
+The first item in \fBerrorCode\fR identifies the class of
+error that occurred (e.g. UNIX means an error occurred in
+a Unix system call) and additional elements in \fBerrorCode\fR
+hold additional pieces of information that depend on the class.
+See the Tcl overview manual entry for details on the various
+formats for \fBerrorCode\fR.
+.PP
+The \fBerrorInfo\fR variable is gradually built up as an
+error unwinds through the nested operations.
+Each time an error code is returned to \fBTcl_Eval\fR
+it calls the procedure \fBTcl_AddErrorInfo\fR to add
+additional text to \fBerrorInfo\fR describing the
+command that was being executed when the error occurred.
+By the time the error has been passed all the way back
+to the application, it will contain a complete trace
+of the activity in progress when the error occurred.
+.PP
+It is sometimes useful to add additional information to
+\fBerrorInfo\fR beyond what can be supplied automatically
+by \fBTcl_Eval\fR.
+\fBTcl_AddErrorInfo\fR may be used for this purpose:
+its \fImessage\fR argument contains an additional
+string to be appended to \fBerrorInfo\fR.
+For example, the \fBsource\fR command calls \fBTcl_AddErrorInfo\fR
+to record the name of the file being processed and the
+line number on which the error occurred;  for Tcl procedures, the
+procedure name and line number within the procedure are recorded,
+and so on.
+The best time to call \fBTcl_AddErrorInfo\fR is just after
+\fBTcl_Eval\fR has returned \fBTCL_ERROR\fR.
+In calling \fBTcl_AddErrorInfo\fR, you may find it useful to
+use the \fBerrorLine\fR field of the interpreter (see the
+\fBTcl_Interp\fR manual entry for details).
+.PP
+The procedure \fBTcl_SetErrorCode\fR is used to set the
+\fBerrorCode\fR variable.
+Its \fIelement\fR arguments give one or more strings to record
+in \fBerrorCode\fR:  each \fIelement\fR will become one item
+of a properly-formed Tcl list stored in \fBerrorCode\fR.
+\fBTcl_SetErrorCode\fR is typically invoked just before returning
+an error.
+If an error is returned without calling \fBTcl_SetErrorCode\fR
+then the Tcl interpreter automatically sets \fBerrorCode\fR
+to \fBNONE\fR.
+.PP
+\fBTcl_UnixError\fR sets the \fBerrorCode\fR variable after an error
+in a UNIX kernel call.
+It reads the value of the \fBerrno\fR C variable and calls
+\fBTcl_SetErrorCode\fR to set \fBerrorCode\fR in the
+\fBUNIX\fR format.
+In addition, \fBTcl_UnixError\fR returns a human-readable
+diagnostic message for the error (this is the same value that
+will appear as the third element in \fBerrorCode\fR).
+It may be convenient to include this string as part of the
+error message returned to the application in \fIinterp->result\fR.
+.PP
+It is important to call the procedures described here rather than
+setting \fBerrorInfo\fR or \fBerrorCode\fR directly with
+\fBTcl_SetVar\fR.
+The reason for this is that the Tcl interpreter keeps information
+about whether these procedures have been called.
+For example, the first time \fBTcl_AppendResult\fR is called
+for an error, it clears the existing value of \fBerrorInfo\fR
+and adds the error message in \fIinterp->result\fR to the variable
+before appending \fImessage\fR;  in subsequent calls, it just
+appends the new \fImessage\fR.
+When \fBTcl_SetErrorCode\fR is called, it sets a flag indicating
+that \fBerrorCode\fR has been set;  this allows the Tcl interpreter
+to set \fBerrorCode\fR to \fBNONE\fB if it receives an error return
+when \fBTcl_SetErrorCode\fR hasn't been called.
+.PP
+If the procedure \fBTcl_ResetResult\fR is called, it clears all
+of the state associated with \fBerrorInfo\fR and \fBerrorCode\fR
+(but it doesn't actually modify the variables).
+If an error had occurred, this will clear the error state to
+make it appear as if no error had occurred after all.
+.VE
+
+.SH "SEE ALSO"
+Tcl_ResetResult, Tcl_Interp
+
+.SH KEYWORDS
+error, stack, trace, variable

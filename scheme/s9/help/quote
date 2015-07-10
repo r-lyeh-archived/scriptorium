@@ -1,0 +1,37 @@
+R4RS 4.1.2  (quote <datum>)  ==>  object
+
+(quote <datum>)  ==>  <datum>
+'<datum>         ==>  <datum>
+<constant>       ==>  <constant>
+
+`(quote <datum>)' evaluates to <datum>. <Datum> may be any external
+representation of a Scheme object (see section see section 3.3
+External representations). This notation is used to include literal
+constants in Scheme code.
+
+(quote a)         ==>  a
+(quote #(a b c))  ==>  #(a b c)
+(quote (+ 1 2))   ==>  (+ 1 2)
+
+`(quote <datum>)' may be abbreviated as '<datum>. The two notations
+are equivalent in all respects.
+
+'a          ==>  a
+'#(a b c)   ==>  #(a b c)
+'()         ==>  ()
+'(+ 1 2)    ==>  (+ 1 2)
+'(quote a)  ==>  (quote a)
+''a         ==>  (quote a)
+
+Numerical constants, string constants, character constants, and
+boolean constants evaluate "to themselves"; they need not be quoted.
+
+'"abc"    ==>  "abc"
+"abc"     ==>  "abc"
+'145932   ==>  145932
+145932    ==>  145932
+'#t       ==>  #t
+#t        ==>  #t
+
+It is an error to alter a constant (i.e. the value of a literal
+expression) using a mutation procedure like SET-CAR! or STRING-SET!.

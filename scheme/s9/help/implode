@@ -1,0 +1,5 @@
+S9 LIB  (implode list)  ==>  symbol
+
+Implode a list of single-character symbols into a symbol.
+
+(implode '(b l a c k h o l e))  ==>  blackhole

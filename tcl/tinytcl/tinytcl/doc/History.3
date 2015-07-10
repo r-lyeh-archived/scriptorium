@@ -1,0 +1,72 @@
+'\"
+'\" Copyright 1989 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: History.3,v 1.1.1.1 2001/04/29 20:35:58 karll Exp $
+'\" 
+.so man.macros
+.HS Tcl_InitHistory tcl
+.BS
+.SH NAME
+Tcl_InitHistory, Tcl_RecordAndEval \- procedures for managing history list
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+.VS
+\fBTcl_InitHistory\fR(\fIinterp\fR)
+.VE
+.sp
+int
+\fBTcl_RecordAndEval\fR(\fIinterp, cmd, flags\fR)
+.SH ARGUMENTS
+.AS Tcl_Interp *interp;
+.AP Tcl_Interp *interp in
+Tcl interpreter in which history facilities are being used.
+.AP char *cmd in
+Command (or sequence of commands) to execute.
+.AP char flags in
+Flags to pass to \fBTcl_Eval\fR (normally 0).  If -1, then the
+command is not executed;  it's just recorded.
+.BE
+
+.SH DESCRIPTION
+.PP
+The procedure \fBTcl_InitHistory\fR is invoked to enable the
+.VS
+history facilities in an interpreter (by default there is no
+\fBhistory\fR command in an interpreter).
+After this command has been executed the \fBhistory\fR
+command will be available in \fIinterp\fR and the history facilities
+will be initialized.
+\fBTcl_InitHistory\fR is invoked automatically by
+\fBTcl_RecordAndEval\fR, so it need not be invoked explicitly
+unless the \fBhistory\fR command is to
+be used before \fBTcl_RecordAndEval\fR has been called.
+.VE
+.PP
+\fBTcl_RecordAndEval\fR is invoked to record a command on the history
+list and then execute it.  Programs that do not wish to use the history
+mechanism should not call \fBTcl_RecordAndEval\fR;  they should call
+\fBTcl_Eval\fR instead.  Furthermore, \fBTcl_RecordAndEval\fR should
+only be called with top-level commands typed by the user, since the
+purpose of history is to allow the user to re-issue recently-invoked
+commands.
+.PP
+\fBTcl_RecordAndEval\fR does three things.
+First, it calls \fBTcl_InitHistory\fR to initialize history for the
+interpreter \fIinterp\fR, if this hasn't already been done.
+Second, \fBTcl_RecordAndEval\fR saves \fIcommand\fR in
+the history list for \fIinterp\fR, making a new event to hold the
+command.
+Third, \fBTcl_RecordAndEval\fR executes the command by passing it
+and \fIflags\fR to \fBTcl_Eval\fR.  If \fIflags\fR is -1 then only
+the first two steps are taken;  the command will not be executed.
+
+.SH KEYWORDS
+command, event, execute, history, interpreter, record

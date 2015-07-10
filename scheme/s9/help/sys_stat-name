@@ -1,0 +1,36 @@
+S9 EXT  (sys:lstat-name string)   ==>  string
+        (sys:lstat-size string)   ==>  integer
+        (sys:lstat-uid string)    ==>  integer
+        (sys:lstat-gid string)    ==>  integer
+        (sys:lstat-mode string)   ==>  integer
+        (sys:lstat-atime string)  ==>  integer
+        (sys:lstat-ctime string)  ==>  integer
+        (sys:lstat-mtime string)  ==>  integer
+        (sys:lstat-dev string)    ==>  integer
+        (sys:lstat-ino string)    ==>  integer
+        (sys:lstat-nlink string)  ==>  integer
+        (sys:stat-name string)    ==>  string
+        (sys:stat-size string)    ==>  integer
+        (sys:stat-uid string)     ==>  integer
+        (sys:stat-gid string)     ==>  integer
+        (sys:stat-mode string)    ==>  integer
+        (sys:stat-atime string)   ==>  integer
+        (sys:stat-ctime string)   ==>  integer
+        (sys:stat-mtime string)   ==>  integer
+        (sys:stat-dev string)     ==>  integer
+        (sys:stat-ino string)     ==>  integer
+        (sys:stat-nlink string)   ==>  integer
+
+Return a specific member of the stat structure of the file
+specified in STRING. See SYS:STAT for details. Return #F
+is the file cannot be accessed. Basically (sys:stat-MEMBER file)
+is short for:
+
+        (let ((s (sys:stat file)))
+          (and s (cdr (assq 'MEMBER s))))
+
+The SYS:STAT... procedures dereference symlinks while the
+SYS:LSTAT... procedures extract information about the symlinks
+themselves.
+
+(sys:stat-name "file")  ==>  "file"

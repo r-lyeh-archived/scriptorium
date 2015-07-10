@@ -1,0 +1,9 @@
+S9 LIB  (string-scan char string)     ==>  integer | #f
+        (string-ci-scan char string)  ==>  integer | #f
+
+        (load-from-library "string-scan.scm")
+
+Scan STRING for CHAR. When STRING contains CHAR, return its position,
+otherwise return #F. STRING-CI-SCAN does the same but ignores case.
+
+(string-scan #\y "xyz")  ==>  1

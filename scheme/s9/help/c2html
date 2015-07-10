@@ -1,0 +1,55 @@
+S9 LIB  (c2html <option> ...)  ==>  string | unspecific
+
+Render C code in HTML with syntax highlighting. Input is read from
+(current-input-stream) and output is written to (current-output-stream)
+unless the 'INPUT-STRING: option is specified (see below).
+
+The rendition of the C code will be placed in a PRE container of
+the class "ccode" (<PRE class=ccode>). The following container
+classes are used to specify the colors and other styles of the
+individual elements:
+
+      co  comment
+      cp  punctuation
+      cs  symbol
+      cc  constant
+      cr  reserved word/operator
+      cl  standard library symbol
+      cx  extension
+
+See the "ccode.css" style sheet for examples.
+
+The following <option>s exist;
+
+'FULL-HTML: boolean
+      When set to #T, C2HTML will output a full HTML document
+      and not just a PRE container. Will not work in string mode.
+
+'LOUT-MODE: boolean
+      Generate Lout output rather than HTML output.
+
+'INPUT-STRING: string
+      Input is read from a string and output is written to a string.
+      In string mode, the 'FULL-HTML: option does not work. When this
+      option is set, the result of the procedure will be of the form:
+
+              (attributes string)
+
+      where STRING is the output of the rendering process. See the
+      description of 'INITIAL-STYLE: for more information on the
+      ATTRIBUTES part. The output string of SCM2HTML is always
+      lacking a trailing </SPAN> element.
+
+'INITIAL-STYLE: list
+      Initialize the color class and boldface flag with the values taken
+      from LIST. LIST should be the car part of an object returned by
+      C2HTML previously. It allows to render multiple lines that are
+      logically connected by preserving the style across line boundaries.
+
+'TERMINATE: list
+      Return termination tags for the color and boldface settings
+      specified in LIST (see INPUT-STRING:).
+
+  (c2html 'input-string: "x++")
+    ==>  (("cr" #f)
+          "</SPAN><SPAN class=cs>x</SPAN><SPAN class=cr>++")

@@ -1,0 +1,19 @@
+R4RS 6.5.5  (= number1 number2 ...)   ==>  boolean
+            (< number1 number2 ...)   ==>  boolean
+            (> number1 number2 ...)   ==>  boolean
+            (<= number1 number2 ...)  ==>  boolean
+            (>= number1 number2 ...)  ==>  boolean
+
+These procedures return #T if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing, monotonically
+nondecreasing, or monotonically non-increasing.
+
+These predicates are required to be transitive.
+
+Note: The traditional implementations of these predicates in Lisp-like
+languages are not transitive. 
+
+Note: While it is not an error to compare inexact numbers using
+these predicates, the results may be unreliable because a small
+inaccuracy may affect the result; this is especially true of = and
+ZERO?. When in doubt, consult a numerical analyst.

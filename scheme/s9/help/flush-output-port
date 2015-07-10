@@ -1,0 +1,8 @@
+S9 LIB  (flush-output-port output-port)  ==>  unspecific
+        (flush-output-port)              ==>  unspecific
+
+Flush the given output port by writing all pending output to
+the associated file descriptor. When no port is specified,
+flush (current-output-port).
+
+(flush-output-port)  ==>  unspecific

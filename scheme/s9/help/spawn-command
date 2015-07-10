@@ -1,0 +1,24 @@
+S9 LIB  (spawn-command string list)     ==>  list
+        (spawn-command/fd string list)  ==>  list
+
+        (load-from-library "spawn-command.scm")
+
+Spawn a child process running the command STRING with the arguments
+listed in LIST. Return a list of two I/O-ports and the PID of the
+child process:
+
+        (input-port output-port integer)
+
+Note that the full path of the command must be spcified and no
+shell operators like <, >, &, etc may be used. When PATH search
+or shell operators are needed, use SPAWN-SHELL-COMMAND instead.
+
+The input-port can be used to read the output of the command and
+the output-port to send input to the command. Error output of the
+child will be redirected to its standard output.
+
+SPAWN-COMMAND/FD is like SPAWN-COMMAND, but delivers raw Unix file
+descriptors instead of input/output ports.
+
+(spawn-command "/bin/ls" '(" -l" "/bin"))
+  ==>  (#<input-port> #<output-port> 707)

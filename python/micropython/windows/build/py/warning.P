@@ -1,0 +1,56 @@
+build/py/warning.o: ../py/warning.c \
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stdarg.h /usr/include/stdio.h \
+ /usr/include/_ansi.h /usr/include/newlib.h /usr/include/sys/config.h \
+ /usr/include/machine/ieeefp.h /usr/include/sys/features.h \
+ /usr/include/cygwin/config.h /usr/include/sys/cdefs.h \
+ /usr/include/machine/_default_types.h \
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stddef.h \
+ /usr/include/sys/reent.h /usr/include/_ansi.h /usr/include/sys/_types.h \
+ /usr/include/machine/_types.h /usr/include/sys/lock.h \
+ /usr/include/sys/types.h /usr/include/sys/_stdint.h \
+ /usr/include/machine/types.h /usr/include/cygwin/types.h \
+ /usr/include/endian.h /usr/include/bits/endian.h /usr/include/byteswap.h \
+ /usr/include/bits/wordsize.h /usr/include/sys/_timespec.h \
+ /usr/include/sys/sysmacros.h /usr/include/sys/stdio.h ../py/emit.h \
+ ../py/lexer.h /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stdint.h \
+ /usr/include/stdint.h /usr/include/sys/_intsup.h ../py/mpconfig.h \
+ mpconfigport.h /usr/include/malloc.h /usr/include/machine/malloc.h \
+ realpath.h init.h ../py/qstr.h ../py/misc.h \
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stdbool.h \
+ build/genhdr/qstrdefs.generated.h ../py/scope.h ../py/parse.h \
+ ../py/emitglue.h ../py/obj.h ../py/mpprint.h ../py/runtime0.h \
+ ../py/runtime.h ../py/mpstate.h ../py/nlr.h \
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include-fixed/limits.h \
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include-fixed/syslimits.h \
+ /usr/include/limits.h /usr/include/features.h /usr/include/setjmp.h \
+ /usr/include/machine/setjmp.h /usr/include/signal.h \
+ /usr/include/sys/signal.h /usr/include/cygwin/signal.h \
+ /usr/include/assert.h ../py/objlist.h ../py/objexcept.h ../py/objtuple.h
+../py/warning.c :
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stdarg.h /usr/include/stdio.h :
+ /usr/include/_ansi.h /usr/include/newlib.h /usr/include/sys/config.h :
+ /usr/include/machine/ieeefp.h /usr/include/sys/features.h :
+ /usr/include/cygwin/config.h /usr/include/sys/cdefs.h :
+ /usr/include/machine/_default_types.h :
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stddef.h :
+ /usr/include/sys/reent.h /usr/include/_ansi.h /usr/include/sys/_types.h :
+ /usr/include/machine/_types.h /usr/include/sys/lock.h :
+ /usr/include/sys/types.h /usr/include/sys/_stdint.h :
+ /usr/include/machine/types.h /usr/include/cygwin/types.h :
+ /usr/include/endian.h /usr/include/bits/endian.h /usr/include/byteswap.h :
+ /usr/include/bits/wordsize.h /usr/include/sys/_timespec.h :
+ /usr/include/sys/sysmacros.h /usr/include/sys/stdio.h ../py/emit.h :
+ ../py/lexer.h /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stdint.h :
+ /usr/include/stdint.h /usr/include/sys/_intsup.h ../py/mpconfig.h :
+ mpconfigport.h /usr/include/malloc.h /usr/include/machine/malloc.h :
+ realpath.h init.h ../py/qstr.h ../py/misc.h :
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include/stdbool.h :
+ build/genhdr/qstrdefs.generated.h ../py/scope.h ../py/parse.h :
+ ../py/emitglue.h ../py/obj.h ../py/mpprint.h ../py/runtime0.h :
+ ../py/runtime.h ../py/mpstate.h ../py/nlr.h :
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include-fixed/limits.h :
+ /usr/lib/gcc/x86_64-pc-msys/4.9.2/include-fixed/syslimits.h :
+ /usr/include/limits.h /usr/include/features.h /usr/include/setjmp.h :
+ /usr/include/machine/setjmp.h /usr/include/signal.h :
+ /usr/include/sys/signal.h /usr/include/cygwin/signal.h :
+ /usr/include/assert.h ../py/objlist.h ../py/objexcept.h ../py/objtuple.h :

@@ -1,0 +1,32 @@
+S9 EXT  (curs:attroff integer)  ==>  unspecific
+        (curs:attron integer)  ==>  unspecific
+        (curs:attrset integer)  ==>  unspecific
+        (curs:standend)  ==>  unspecific
+        (curs:standout)  ==>  unspecific
+
+Curses routines for changing screen attributes. This is only a rough
+summary. See the curses(3) manual page or a curses tutorial of your
+choice for further information.
+
+CURS:ATTROFF removes the specified attribute (INTEGER) from the
+set of attributes currently in effect.
+
+CURS:ATTRON adds the specified attribute (INTEGER) to the set of
+attributes currently in effect.
+
+CURS:ATTRSET replaces the current attribute set by the one specified
+in its argument. The following attributes may be combined with a
+BITWISE-OR (q.v.) operation or by calling CURS:ATTRON multiple times:
+
+        CURS:ATTR-NORMAL
+        CURS:ATTR-STANDOUT
+        CURS:ATTR-UNDERLINE
+        CURS:ATTR-BOLD
+
+CURS:STANDOUT is shorthand for (curs:attrset curs:attr-standout).
+CURS:STANDEND is shorthand for (curs:attrset curs:attr-normal).
+
+The attribute operation affect all subsequent screen output operations.
+
+Not all (hardware) terminals support combinations of attributes.
+Most emulators do.

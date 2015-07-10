@@ -1,0 +1,11 @@
+auto caught = false
+
+try {
+  throw(runtime_error("error"))
+}
+catch(e) {
+  caught = true
+  assert_equal("error", e.what())
+}
+
+assert_equal(true, caught)

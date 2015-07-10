@@ -1,0 +1,8 @@
+S9 LIB  (read-line)             ==>  string
+        (read-line input-port)  ==>  string
+
+Read a line from an input port. When no INPUT-PORT is specified,
+read the current input port.
+
+(with-input-from-file "lib/read-line.scm" read-line)
+  ==>  "; Scheme 9 from Empty Space, Function Library"

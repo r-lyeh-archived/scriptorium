@@ -1,0 +1,9 @@
+S9 LIB  (quartile list)  ==>  list
+
+        (load-from-library "quartile.scm")
+
+Return a list (L M H), where L is the value that is greater than or
+equal to 25% of the values in LIST, M is >= 50% of the list, and H is
+>= 75% of the list.
+
+(quartile '(1 2 3 4 5 6 7 ))  ==>  (2 4 6)

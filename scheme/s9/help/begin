@@ -1,0 +1,17 @@
+R4RS 4.2.3  (begin <expression1> <expression2> ...)  ==>  object
+
+The <expression>s are evaluated sequentially from left to right,
+and the value of the last expression is returned. This expression
+type is used to sequence side effects such as input and output.
+
+(define x 0)
+
+(begin (set! x 5)
+       (+ x 1))                      ==>  6
+
+(begin (display "4 plus 1 equals ")
+       (display (+ 4 1)))            ==>  unspecific
+       ; side effect: print 4 plus 1 equals 5
+
+S9fES allows BEGIN to take zero arguments, returning an unspecific
+value.

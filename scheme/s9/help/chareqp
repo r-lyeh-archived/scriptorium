@@ -1,0 +1,25 @@
+R4RS 6.6  (char=? char1 char2)   ==>  boolean
+          (char<? char1 char2)   ==>  boolean
+          (char>? char1 char2)   ==>  boolean
+          (char<=? char1 char2)  ==>  boolean
+          (char>=? char1 char2)  ==>  boolean
+
+These procedures impose a total ordering on the set of characters.
+It is guaranteed that under this ordering:
+
+- The upper case characters are in order.
+  For example, (char<?  #\A #\B) ==> #t.
+- The lower case characters are in order.
+  For example, (char<?  #\a #\b) ==> #t.
+- The digits are in order.
+  For example, (char<? #\0 #\9) ==> #t.
+- Either all the digits precede all the
+  upper case letters, or vice versa.
+- Either all the digits precede all the
+  lower case letters, or vice versa.
+
+Some implementations may generalize these procedures to take more
+than two arguments, as with the corresponding numerical predicates.
+
+The S9fES versions of these procedures do accept more than two
+arguments.

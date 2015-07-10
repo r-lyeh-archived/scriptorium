@@ -1,0 +1,9 @@
+R4RS 6.3  (car pair)  ==>  object
+
+Returns the contents of the car field of PAIR. Note that it is an
+error to take the car of the empty list.
+
+(car '(a b c))      ==>  a
+(car '((a) b c d))  ==>  (a)
+(car '(1 . 2))      ==>  1
+(car '())           ==>  error

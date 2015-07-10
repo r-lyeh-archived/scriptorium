@@ -1,0 +1,50 @@
+S9 LIB  (pretty-print object <option> ...)  ==>  unspecific
+        (pp object <option> ...)            ==>  unspecific
+        (pp-file string <option> ...)       ==>  unspecific
+        (pp-loop <option> ...)              ==>  unspecific
+        (pp-string string <option> ...)     ==>  list
+        (pp-string list <option> ...)       ==>  list
+
+        (load-from-library "pretty-print.scm")
+
+Pretty-print Scheme objects, programs, or files. PRETTY-PRINT attempts
+to figure out whether OBJECT is a valid Scheme program. If so, it prints
+it as code and otherwise it prints it as data. The automatic detection
+can be disabled by passing an option to these procedures (see below).
+
+PP is just a less verbose name for PRETTY-PRINT.
+
+PP-FILE pretty-prints all objects in the file STRING.
+
+PP-LOOP pretty-prints all objects read from (current-input-stream).
+
+PP-STRING pretty-prints the form in STRING and returns a list
+containing one pretty-printed line per member (as strings).
+When a LIST is passed to PP-STRING instead of a STRING, it
+will assume it is a list of separate lines and append them with
+#\NEWLINEs in between.
+
+Any of these procedures accept the following <option>s that may be
+passed to it after the object to print:
+
+'CODE       Print OBJECT as if it was a Scheme program.
+'DATA       Print OBJECT as if it was a Scheme object.
+'SIMPLE     Attempt to keep some special forms in a single line,
+            if they fit in one (IF, AND, OR, BEGIN, LAMBDA).
+'MARGIN: n  Set the right margin to N. The printer will attempt
+            not to write any output beyond that margin. The default
+            margin is at column 72.
+'INDENT: n  Indent all lines except for the first one by the given
+            number of blanks (for embedding in editors).
+'OUTPUT-PORT: p
+            Send all output to the specified output port instead
+            of (current-output-port).
+
+NOTE: This program handles only a subset of R4RS Scheme correctly
+and removes all comments from its input program. Caveat utilitor.
+
+(pp-string '("(let ((a 1) (b 2))"
+             "(cons a b))"))
+                                 ==> ("(let ((a 1)"
+                                      "      (b 2))"
+                                      "  (cons a b))")

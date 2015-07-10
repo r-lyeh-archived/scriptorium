@@ -1,0 +1,7 @@
+R4RS 6.10.3  (newline)              ==>  unspecific
+             (newline output-port)  ==>  unspecific
+
+Writes an end of line to OUTPUT-PORT. Exactly how this is done
+differs from one operating system to another. Returns an unspecified
+value. The OUTPUT-PORT argument may be omitted, in which case it
+defaults to the value returned by CURRENT-OUTPUT-PORT.

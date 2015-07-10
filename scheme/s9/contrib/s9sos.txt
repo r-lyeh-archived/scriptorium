@@ -1,0 +1,714 @@
+
+
+        S9SOS - Scheme 9 Simple Object System
+        -------------------------------------
+              By Nils M Holm, 2010,2012
+
+        S9SOS is an extension for object oriented programming in Scheme.
+        It was inspired by CLOS, the Common Lisp Object System, but it
+        is much simpler. However, it still provides:
+
+        - multiple inheritance
+        - multi-method dispatch
+        - generic procedures
+        - a meta-object protocol
+
+
+        Defining Classes
+        ----------------
+
+        A "class" is a description of the internal structure of new
+        data objects called the "instances" of that class. It may be
+        thought of as a template for creating data objects sharing
+        the same structure. An instance is sometimes also called an
+        "object", but this name is avoided here, because generic
+        Scheme data objects are also referred to as "objects."
+
+        An instance is basically a vector whose elements are named. A
+        named element is called a "slot". Programs can retrieve values
+        stored in slots and replace the objects stored in them. See the
+        section on "instances" for details.
+
+        Slots are either defined in a DEFINE-CLASS form or "inherited"
+        from a superclass. See below for details.
+
+        (DEFINE-CLASS <NAME> (<CLASS> ...) <SLOT> ...)          [SYNTAX]
+          ==>  UNSPECIFIC
+
+        DEFINE-CLASS creates a new class with the given <name> and the
+        given <slot>s. After evaluating DEFINE-CLASS, the new class can
+        be referred to by using <name>.
+
+        A <slot> may have three different forms:
+
+                symbol
+                (symbol)
+                (symbol <expression>)
+
+        In either of the three cases the symbol names the slot. When an
+        <expression> is also given, it will be evaluated by DEFINE-CLASS
+        and stored as a default value for that slot. When no default
+        value is present, () will be used.
+
+        The new class will be a "subclass" of each <class> listed in the
+        second argument and hence each of those classes will become a
+        "superclass" of the new class.
+
+        A class is called s subclass of another class, if it inherits
+        any slots or methods (q.v.) from that class. For example:
+
+                (define-class point () x y)
+                (define-class color () red green blue)
+                (define-class colored-point (point color))
+
+        Here the classes POINT and COLOR are "base classes" with no
+        superclasses. POINT defines the instance variables X and Y, and
+        COLOR defines the instance variables RED, GREEN, and BLUE. The
+        COLORED-POINT class is derived from both POINT and COLOR. It
+        does not define any "own" slots ("direct slots"). However, since
+        it is a subclass of both POINT and COLOR, it "inherits" all of
+        their variables, so an instance of COLORED-POINT would have
+        slots named X, Y, RED, GREEN, and BLUE.
+
+        Methods are inherited in the same way:
+
+                (define-generic move)
+                (define-method (move (p point) x y)
+                  (slot-set! p 'x x)
+                  (slot-set! p 'y y))
+                (move (make-instance colored-point) 17 25)
+
+        Although the MOVE method is specialized in the POINT class, it
+        also works for the COLORED-POINT class, because COLORED-POINT
+        is derived from POINT.
+
+        Systems that allow a class to be derived from multiple
+        superclasses is said to support "multiple inheritance."
+
+        S9SOS support multiple inheritance to some degree. When a naming
+        conflict occurs because multiple superclasses of a given class
+        define slots of the same name, S9SOS will signal an error.
+
+        (CLASS? OBJECT)  ==>  BOOLEAN                        [PROCEDURE]
+
+        The CLASS? predicate returns truth if the given OBJECT is a
+        class.
+
+
+        Meta Object Protocol
+        --------------------
+
+        A Meta Object Protocol (MOP) simply exposes the fact that a
+        class is an instance (of the class "class"). Of course, this
+        simple realization has some implications. When you can store
+        values in slots of a class, you can change the way in which
+        the entire object system works.
+
+        The purpose of a MOP is far beyond the scope of this document.
+        The following procedures are part of the S9SOS MOP.
+
+        (CLASS-CPL CLASS)  ==>  LIST                     [MOP PROCEDURE]
+
+        Return the Class Precedence List (CPL) of the given class. The
+        CPL of a class specifies the types of generic procedures (q.v.)
+        by which an instance of the given class wants to be handled.
+        However, it does not just name one type, but a list of types
+        in order of descending precedence. When no method specializing
+        in the first (most preferred) type in the list can be found,
+        the second one will be tried, and so on. Given the above
+        definitions of the POINT and COLORED-POINT classes:
+
+                (map class-name (class-cpl colored-point))
+                  ==>  (colored-point point color)
+
+        The CPL is generated by the COMPUTE-CLASS-CPL procedure. (Q.v.)
+
+        (CLASS-DIRECT-SLOTS CLASS)  ==>  LIST            [MOP PROCEDURE]
+
+        Return the "direct slots" of the given class. A direct slot is a
+        slot that has been created when defining the class, i.e. a slot
+        that has *not* been inherited by a superclass:
+
+                (class-direct-slots point)  ==>  ((x ()) (y ()))
+                (class-direct-slots colored-point)  ==>  ()
+
+        (CLASS-DIRECT-SUPERS CLASS)  ==>  LIST           [MOP PROCEDURE]
+
+        Return the "direct superclasses" of the given class. A direct
+        superclass is a superclass from which the given class was
+        *directly* derived, i.e. the superclass was listed in the
+        definition and not inherited from a direct superclass. In the
+        following example, the class FOO is indirectly inherited by
+        class BAZ, but FOO is not a direct superclass of BAZ:
+
+                (define-class foo ())
+                (define-class bar (foo))
+                (define-class baz (bar))
+
+        Hence:
+
+                (map class-name (class-cpl baz))  ==>  (baz bar foo)
+                (map class-name (class-direct-supers baz))  ==>  (bar)
+
+        (CLASS-NAME CLASS)  ==>  SYMBOL                  [MOP PROCEDURE]
+
+        Return the name of the given class. A class itself is an
+        abstract entity that is typically bound to a name. The
+        DEFINE-CLASS form does both of this: create a class of the
+        given name and bind it to the same name:
+
+                (define-class foo ())
+
+        After evaluating the DEFINE-CLASS form, the symbol FOO is bound
+        to a class:
+
+                foo  ==>  #<procedure>
+
+        (The class is encapsulated in a procedure to keep its cyclic
+         structure hidden from the Scheme printer.)
+
+        Of course, S9SOS classes are first-class objects, so they can be
+        bound to different symbols:
+
+                (define bar foo)
+                bar  ==>  #<procedure>
+
+        The CLASS-NAME procedure always returns the name of the class
+        itself, though (i.e. the name given to it when it was created):
+
+                (class-name bar)  ==>  foo
+
+        (COMPUTE-CLASS-CPL LIST)  ==>  LIST              [MOP PROCEDURE]
+
+        Given a list of classes, compute the CPL (see CLASS-CPL) of the
+        class listed first in LIST. LIST contains the class whose CPL is
+        to be computed as well as the direct superclasses of that class:
+
+                (list <root-class> <superclass> ...)
+
+        COMPUTE-CLASS-CPL returns a new list containing the CPL of
+        <root-class>. The CPL contains all superclasses of the given
+        class as well as the superclasses of the superclasses, and so
+        on. What is particularly important is the order of the CPL,
+        because more specific classes must always precede less specific
+        classes in the list (so that generic procedures (q.v.) will
+        apply the most specific method to each set of arguments.)
+
+        The CPL is generated by sorting the list of (direct or indirect)
+        subclasses topologically in such a way that classes that are
+        closer to the <root-class> will come first in the resulting
+        list. Given the following class hierarchy
+
+                (define-class pixel () x y)
+                (define-class voxel (pixel) z)
+                (define-class color () r g b)
+                (define-class c-voxel (voxel color))
+
+        the CPL of the C-VOXEL class would look like this:
+
+                (map class-name
+                     (compute-class-cpl (list c-voxel voxel color)))
+                  ==>  (c-voxel voxel color pixel)
+
+        When a class inherits from multiple superclasses (like C-VOXEL
+        above), the order of precedence of superclasses at the same
+        "level" of the class hierarchy is determined by the order in
+        which the superclasses were specified when defining the derived
+        class. In the following example, the order of COLOR and VOXEL is
+        reversed:
+
+                (map class-name
+                     (compute-class-cpl (list c-voxel color voxel)))
+                  ==>  (c-voxel color voxel pixel)
+
+        (COMPUTE-CLASS-SLOTS LIST)  ==>  LIST            [MOP PROCEDURE]
+
+        Return the slots of all classes listed in LIST, including the
+        slots inherited by those classes. This procedure is used to
+        generate the slots of a new class. Given the definition of the
+        C-VOXEL class in the previous entry,
+
+                (compute-class-slots (list voxel color))
+                  ==>  ((z ()) (r ()) (g ()) (b ()) (x ()) (y ()))
+
+        Note that the order of slots does not matter, because slots are
+        (even internally!) referred to by their names.
+
+
+        Instances
+        ---------
+
+        A class is merely a "template" that can be used to generate any
+        number of "instances". An instance of a class is sometimes also
+        called an "object" (although not in this document).
+
+        (MAKE-INSTANCE CLASS <INIT-ARG> ...)  ==>  INSTANCE  [PROCEDURE]
+
+        Create a fresh instance of the given class and return it. Each
+        slot of the instance will be initialized with the default value
+        that was assigned to the slot when the class was defined:
+
+                (define-class point () (x 1) (y 2))
+                (let ((p (make-instance point)))
+                  (list (slot-ref p 'x)
+                        (slot-ref p 'y)))  ==>  (1 2)
+
+        Slot values can be assigned dynamically when an instance is
+        created by passing some <INIT-ARG>s to the procedure. Each
+        <INIT-ARG> consists of a slot name and a value to be stored in
+        that slot:
+
+                (let ((p (make-instance point 'x 17 'y 25)))
+                  (list (slot-ref p 'x)
+                        (slot-ref p 'y)))  ==>  (17 25)
+
+        Additional initialization can be performed by a method of the
+        generic procedure INITIALIZE (q.v.) which is applied to the
+        instance after evaluating the <INIT-ARG>s:
+
+                (define-class s-point () (x 1) (y 2) (scale 100))
+
+                (define-method (initialize (p s-point))
+                  (slot-set! p 'x (* (slot-ref p 'scale)
+                                     (slot-ref p 'x)))
+                  (slot-set! p 'y (* (slot-ref p 'scale)
+                                     (slot-ref p 'y))))
+
+                (let ((p (make-instance s-point 'x 17 'y 25)))
+                  (list (slot-ref p 'x)
+                        (slot-ref p 'y)))  ==>  (1700 2500)
+
+        (CLASS-OF OBJECT)  ==>  CLASS                        [PROCEDURE]
+        (INSTANCE-CLASS INSTANCE)  ==>  CLASS                [PROCEDURE]
+
+        Return the class of the given instance:
+
+                (class-name (class-of (make-instance point)))
+                  ==>  point
+
+        The difference between CLASS-OF and INSTANCE-CLASS is that
+        CLASS-OF is more general and will return "built-in" classes
+        (q.v.) for primitive Scheme objects, while INSTANCE-CLASS can
+        only be applied to S9SOS instances.
+
+        (INITIALIZE INSTANCE)  ==>  OBJECT                     [GENERIC]
+
+        INITIALIZE is a generic procedure providing a method for every
+        class that has been defined using DEFINE-CLASS. Whenever a new
+        instance is created by MAKE-INSTANCE, INITIALIZE is automatically
+        applied to that instance. The methods of INITIALIZE are intended
+        for more elaborate instance initialization. This is done by
+        redefining a method of INITIALIZE. Consider the following
+        example:
+
+                (define-class timestamp () (time (sys:time)))
+
+        In this example, the TIME slot would always be initialized with
+        the value that SYS:TIME delivered when the TIMESTAMP *class* was
+        created. To initialize the TIME slot with the current time when
+        an instance of TIMESTAMP is created, a method specializing in
+        the TIMESTAMP class would be added to INITIALIZE:
+
+                (define-method (initialize (t timestamp))
+                  (slot-set! t 'time (sys:time)))
+
+        (INSTANCE? OBJECT)  ==>  BOOLEAN                     [PROCEDURE]
+
+        The INSTANCE? predicate returns truth if the given OBJECT is an
+        instance of any class. Note that primitive Scheme objects are
+        *not* instances of built-in classes, so (instance? "xyz"), for
+        example, will deliver #F.
+
+        (SLOT-REF INSTANCE SYMBOL)  ==>  OBJECT              [PROCEDURE]
+
+        Return the value stored in the slot named SYMBOL of the given
+        INSTANCE.
+
+        (SLOT-SET! INSTANCE SYMBOL OBJECT)  ==>  UNSPECIFIC  [PROCEDURE]
+
+        Replace the value stored in the slot named SYMBOL of the given
+        INSTANCE with the given OBJECT.
+
+
+        Generic Procedures
+        ------------------
+
+        A "generic procedure" is a set of procedures that specialize in
+        handling different data types. A procedure that is contained in
+        a generic procedure is also called a "method".
+
+        Generic procedures select methods by "multi-method dispatch".
+        This means that *all* arguments of a generic procedure are taken
+        into consideration when looking for the most specific methods
+        for handling a given application.
+
+        Generic procedures are a rather heavy-weight tool. Using it for
+        trivial tasks is highly inefficient.
+
+        (DEFINE-GENERIC <NAME>)  ==>  UNSPECIFIC                [SYNTAX]
+
+        Define a new generic procedure and bind it to the given <name>.
+        When a generic procedure with the given name already exists, all
+        methods of that generic will be removed!
+
+        (DEFINE-METHOD (<NAME> <ARGUMENT> ...) <BODY>)          [SYNTAX]
+          ==>  UNSPECIFIC
+        (DEFINE-METHOD (<NAME> <ARGUMENT> ... . SYMBOL) <BODY>)
+          ==>  UNSPECIFIC
+
+        Add a method to the generic procedure that is bound to <name>.
+        A method is like an ordinary procedure, but it is never applied
+        directly but always dispatched by the corresponding generic
+        procedure. (See APPLY-GENERIC for details on generic procedure
+        application).
+
+        Typically the arguments of a generic procedure are of the form
+
+                (symbol class)
+
+        where the symbol names the argument and the class is used to
+        specialize the method. When only a symbol is given, the class
+        defaults to <TYPE>, which matches any type (i.e. the method
+        does not specialize at all). A built-in class may be specified
+        to specialize a method in a native Scheme data type:
+
+                (define-generic conc)
+
+                (define-method (conc (a <pair>) b)
+                  (append a b))
+
+                (define-method (conc (a <string>) (b <string>))
+                  (string-append a b))
+
+                (define-method (conc (a <char>) (b <string>))
+                  (string-append (string a) b))
+
+                (conc '(1 2 3) 4)   ==>  (1 2 3 . 4)
+                (conc "abc" "def")  ==>  "abcdef"
+                (conc #\h "ello")   ==>  "hello"
+
+        Like a procedure a method may have a "rest" argument that is
+        placed after the dot of an improper argument list. This argument
+        binds to a list of remaining arguments after binding the fixed
+        variables of the method. The rest argument does not play any
+        role when dispatching a method.
+
+        (APPLY-GENERIC GENERIC LIST)  ==>  OBJECT            [PROCEDURE]
+
+        Apply a generic procedure to a list of arguments. The length of
+        LIST much match the number of arguments of GENERIC.
+
+        A generic procedure is applied to its arguments by first
+        selecting all methods that are "applicable" to the given
+        arguments. This is done by the COMPUTE-APPLICABLE-METHODS
+        procedure (q.v.).
+
+        Once the set of applicable methods has been obtained, the
+        most specific one of the methods that still matches the given
+        arguments will be select. This method is called the "effective
+        method". It is computed by the COMPUTE-EFFECTIVE-METHOD (q.v.)
+        procedure.
+
+        Finally the effective method is applied to the given arguments
+        and the result is returned. This final step is the same as in
+        the APPLY procedure of Scheme.
+
+        In case the set of applicable methods is empty, APPLY-GENERIC
+        calls the NO-APPLICABLE-METHOD procedure.
+
+        (CALL-NEXT-METHOD)  ==>  OBJECT                      [PROCEDURE]
+
+        The CALL-NEXT-METHOD procedure is bound internally in every
+        method. It pass the arguments received by that message on to
+        the next-unspecific method. See COMPUTE-EFFECTIVE-METHOD for
+        details. Here is an example:
+
+                (define-class foo ())
+                (define-class bar (foo))
+
+                (define-generic frob)
+                (define-method (frob (x foo))
+                  '(foo))
+                (define-method (frob (x bar))
+                  (cons 'bar (call-next-method)))
+
+                (frob (make-instance foo))  ==>  (foo)
+                (frob (make-instance bar))  ==>  (bar foo)
+
+        When CALL-NEXT-METHOD is called and there is no less specific
+        method, NO-NEXT-METHOD (q.v.) is called instead.
+
+        (COMPUTE-APPLICABLE-METHODS LIST1 LIST2)         [MOP PROCEDURE]
+          ==>  LIST
+
+        LIST1 is a list of methods and LIST2 is an (already evaluated)
+        argument list to be passed to one (or multiple) of of these
+        methods.
+
+        A method is "applicable" to a set of arguments, if the class
+        of each member of its "specializer" matches the class of the
+        corresponding argument. 
+
+        A specializer is the signature of a method. It is a list of
+        classes that was specified (express or implied) in the
+        DEFINE-METHOD form that defined the method. For example, the
+        specializer of the method
+
+                (define-method (foo (a <bar>) (b <baz>)) (frob a b))
+
+        would be (<bar> <baz>).
+
+        An argument matches a class <bar>, if it is of the same class
+        or of a more specific class than <bar>. A class <x> is more
+        specific than a class <y>, if <x> was derived (directly or
+        indirectly) from <x>. For example:
+
+                (define-class point () x y)
+                (define-class c-point (point) color)
+
+                (define-generic move)
+                (define-method (move (p point) (x <number>) (y <number>))
+                  (slot-set! p 'x x)
+                  (slot-set! p 'y y))
+
+                (define-generic set-color)
+                (define-method (set-color (cp c-point) color)
+                  (slot-set! p 'color color))
+
+        In this case, the class C-POINT is more specific than POINT (a
+        C-POINT is a POINT with a color), so the method specializing in
+        POINT can also be used to move a C-POINT. The SET-COLOR method,
+        however, specializes in C-POINT and POINT is *less* specific
+        than C-POINT, so SET-COLOR cannot be used to change the color of
+        a POINT. Hence:
+
+                (compute-applicable-methods 
+                  (generic-methods move)
+                  (list (make-instance c-point) 1 2))  ==>  (#<method>)
+
+        But:
+
+                (compute-applicable-methods 
+                  (generic-methods set-color)
+                  (list (make-instance point) 'yellow))  ==>  ()
+
+        Sometimes multiple methods of the same generic procedure may
+        be applicable to a given set of arguments. In this case, the
+        COMPUTE-APPLICABLE-METHODS procedure returns all applicable
+        methods in no specific order.
+
+        (COMPUTE-EFFECTIVE-METHOD LIST1 LIST2)           [MOP PROCEDURE]
+          ==>  PROCEDURE
+
+        LIST1 is a set of applicable methods (see COMPUTE-APPLICABLE-
+        METHODS) and LIST2 is an (already evaluated) list of arguments
+        to be passed to one of those methods.
+
+        The "effective method" of a set of methods that the most
+        specific method (the one with the most specific classes in its
+        specializer) that still matches the classes of the arguments
+        in LIST2. Consider the following generic:
+
+                (define-class foo ())
+                (define-class bar (foo))
+
+                (define-generic frob)
+                (define-method (frob (x <type>) 0)
+                (define-method (frob (x bar))   1)
+
+        BAR is more specific than FOO, so the FROB method specializing
+        in BAR will be selected when LIST2 consists of an instance of
+        the class BAR. However BAR is too specific to handle instances
+        of the class FOO, so the method specializing in <TYPE> will be
+        selected when LIST2 consists of an instance of FOO.
+
+        COMPUTE-EFFECTIVE-METHOD finally creates a procedure that
+        applies arguments of the given types to the selected method.
+        The resulting procedure binds the symbol CALL-NEXT-METHOD
+        internally to a procedure that passes the received arguments
+        to the next-unspecific method. See CALL-NEXT-METHOD for details.
+
+        COMPUTE-EFFECTIVE-METHOD returns the procedure described above.
+
+        (GENERIC-METHODS GENERIC)  ==>  LIST             [MOP PROCEDURE]
+
+        Return the list of methods of the given generic procedure. Note
+        that methods are not ordinary procedures. In S9SOS, they are
+        represented by lists of the form
+
+                (specializer procedure)
+
+        where SPECIALIZER is the signature of the method and PROCEDURE
+        an ordinary procedure handling arguments matching the signature.
+        So to find out what kind of arguments a generic procedure can
+        handle, you may apply the following procedure to it:
+
+                (define (signatures generic)
+                  (map (lambda (sig)
+                         (map class-name sig))
+                       (map car (generic-methods generic))))
+
+        (NO-APPLICABLE-METHOD)  ==>  UNDEFINED           [MOP PROCEDURE]
+
+        When a generic procedure is applied to a type for which it does
+        not have a specialized method, NO-APPLICABLE-METHOD is called.
+        By default this procedure signals an error, but it can be
+        redefined to handle the "no applicable method" condition
+        differently:
+
+                (define-generic frob)
+                (frob 17)  ==>  error ; no applicable method
+
+                (define (no-applicable-method)
+                  'default-value)
+
+                (frob 17)  ==>  default-value
+
+        Note, though, that redefining NO-APPLICABLE-METHOD will affect
+        *all* generic procedures, so this should be planned carefully.
+
+        (NO-NEXT-METHOD)  ==>  UNDEFINED                 [MOP PROCEDURE]
+
+        When a method call CALL-NEXT-METHOD and there is no less
+        specific method (see COMPUTE-EFFECTIVE-METHOD), then the
+        NO-NEXT-METHOD procedure is invoked. By default it will signal
+        an error:
+
+                (define-class foo (<type>))
+
+                (define-generic frob)
+                (define-method (frob x)
+                  (cons '<type> (call-next-method)))
+                (define-method (frob (x foo))
+                  (cons 'foo (call-next-method)))
+
+                (frob (make-instance foo))  ==>  error ; no next method
+
+        However, NO-NEXT-METHOD can be redefined to handle the "no next
+        method" condition differently:
+
+                (define (no-next-method)
+                  '(top-of-hierarchy))
+
+                (frob (make-instance foo))
+                  ==>  (foo <type> top-of-hierarchy)
+
+        Note, though, that redefining NO-NEXT-METHOD will affect *all*
+        generic procedures, so this should be planned carefully.
+
+
+        Dynamic MOP Procedures
+        ----------------------
+
+        (ADD-METHOD GENERIC LIST PROCEDURE)              [MOP PROCEDURE]
+          ==>  UNSPECIFIC
+
+        ADD-METHOD is a low-level interface for adding a new method to a
+        generic procedure. GENERIC is the generic procedure to which the
+        method will be added, LIST is a specializer (see COMPUTE-
+        APPLICABLE-METHODS), and PROCEDURE is a procedure handling the
+        types in the specializer.
+
+        The first argument of PROCEDURE must be named CALL-NEXT-METHOD,
+        because it will be used to bind the next-unspecific method of
+        the generic (see COMPUTE-EFFECTIVE-METHOD). The remaining
+        arguments must match the specializer.
+
+        ADD-METHOD performs little or no sanity checking.
+        Caveat utilitor!
+
+        (MAKE-CLASS SYMBOL LIST <SLOT> ...)  ==>  CLASS  [MOP PROCEDURE]
+
+        MAKE-CLASS is a low-level interface for creating a new class.
+        SYMBOL will name the new class, LIST is a list of superclasses,
+        and each slot defines a slot name and its default value. See
+        DEFINE-CLASS for details.
+
+        MAKE-CLASS does *not* add a method to INITIALIZE, so the
+        following example will result in (NO-APPLICABLE-METHOD):
+
+                (make-instance (make-class 'foo '()))
+
+        To create a class dynamically, use
+
+                (let ((foo (make-class 'foo '())))
+                  (add-method initialize
+                              (list foo)
+                              (lambda args #t))
+                  (make-instance foo))
+
+        (MAKE-GENERIC)  ==>  GENERIC                     [MOP PROCEDURE]
+
+        MAKE-GENERIC is a low-level interface for creating a new generic
+        procedure with no methods.
+
+
+        Class Hierarchy
+        ---------------
+
+        The basic S9SOS class hierarchy consists of the following
+        classes:
+
+        <TYPE>
+          <INSTANCE>
+            <CLASS>
+            <GENERIC>
+          <BUILT-IN>
+
+        <TYPE> is the top of the entire class hierarchy, hence a method
+        specializing in <TYPE> will match any kind of argument.
+
+        <INSTANCE> and <BUILT-IN> are the bases of two disjoint sets of
+        types, where <INSTANCE> forms the base of the "OOP part" of
+        S9SOS and <BUILT-IN> the base of the native Scheme type
+        hierarchy. Note in particular that this means that a <BUILT-IN>
+        is *not an <INSTANCE>, so
+
+                (make-instance <integer>)
+
+        will *not* create an instance of <INTEGER>.
+
+        <CLASS> and <GENERIC> are the only instance classes that are
+        necessary to make S9SOS work. This small hierarchy reflects
+        nicely that both classes and generics are in fact ordinary
+        instances. Just try
+
+                (class-name (class-of <class>))
+        or      (slot-ref initialize 'methods)
+
+        The sub-hierarchy of <BUILT-IN> lists the native Scheme data
+        types. As noted above, these class are abstract and cannot be
+        used to form valid instances. Their only purpose is to allow
+        method to specialize in Scheme data types. <BUILT-IN>, the top
+        of the hierarchy matches any Scheme type.
+
+          <BUILT-IN>
+            <BOOLEAN>
+            <CHAR>
+            <EOF-OBJECT>
+            <NULL>
+            <NUMBER>
+              <INTEGER>
+            <PAIR>
+            <PORT>
+              <INPUT-PORT>
+              <OUTPUT-PORT>
+            <PROCEDURE>
+            <ARRAY>
+              <STRING>
+              <VECTOR>
+            <SYMBOL>
+
+        The <BUILT-IN> tree contains some subclasses that do not have
+        direct counterparts in the set of Scheme types, like <NUMBER> or
+        <ARRAY>. Built-in types are hard-wired into the CLASS-OF
+        procedure:
+
+                (class-of '(a b c))   ==>  <pair>
+                (class-of '#(1 2 3))  ==>  <vector>
+                (class-of '())        ==>  <null>
+
+        So these types can be used for specializing methods, but no new
+        subclasses of <BUILT-IN> can be defined at user-level, because
+        they would not be covered by CLASS-OF.
+

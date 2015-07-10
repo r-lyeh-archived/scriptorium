@@ -1,0 +1,39 @@
+S9 LIB  (get-line integer1 integer2 string1 string2)     ==>  string | #f
+        (get-line integer1 integer2 string1 string2 #t)  ==>  string | #f
+
+GET-LINE edits a single line of text interactively.
+
+INTEGER1 (y) and INTEGER2 (x) specify the coordinates of the
+visual editing buffer on the screen. STRING1 is the initial
+content of the buffer, and STRING2 is a prompt that will be
+displayed in front of the buffer. The length of the buffer
+is unlimited; its visual representation extends to the end
+of the row on the screen. GET-LINE returns a new string with
+the edited content or #F when editing is aborted.
+
+When an additional argument of #T is passed to GET-LINE, it
+will implement a "smart default". I.e., when the first key
+pressed under the control of GET-LINE is not a motion command,
+then the text in the line buffer will be deleted and replaced
+with the character corresponding to that key.
+
+GET-LINE renders the initial content and places the cursor
+at the end of the buffer. Characters typed will be inserted
+into the buffer at cursor position. In addition, GET-LINE
+accepts the following editing commands ([^A] = [control]+[A]):
+
+      [^A]        go to beginning of buffer.       (also [Home])
+      [^E]        go to end of buffer.             (also [End])
+      [^B]        move back one character.         (also [Left])
+      [^D]        delete character under cursor.   (also [Del])
+      [^F]        move forward one character.      (also [Right])
+      [ESC]       end editing, return string.      (also [Enter])
+      [Backspace] delete character to the left.    (also [^H])
+      [^U]        delete all characters in buffer. (also [^K])
+      [^C]        Abort editing, return #F.        (also [^G])
+
+(begin (curs:initscr)
+       (curs:raw)
+       (curs:noecho)
+       (curs:nonl)
+       (get-line 0 0 "" "Enter text here: "))

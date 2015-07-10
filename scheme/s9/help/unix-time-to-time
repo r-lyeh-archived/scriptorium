@@ -1,0 +1,15 @@
+S9 LIB  (unix-time->time integer)  ==>  time-list
+
+UNIX-TIME->TIME converts the number of seconds since the Unix
+epoch specified in INTEGER to a time list, which has the following
+members:
+
+        (weekday    ; 0..6, where 0 = Monday
+         year       ; 1970..2038
+         month      ; 1..12
+         day        ; 1..31, depends on month
+         hour       ; 0..23
+         minute     ; 0..59
+         second)    ; 0..59
+
+(unix-time->time 1272178879)  ==>  (6 2010 4 25 7 1 19)

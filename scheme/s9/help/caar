@@ -1,0 +1,13 @@
+R4RS 6.3  (caar pair)    ==>  object
+          (cadr pair)    ==>  object
+          ...
+          (cdddar pair)  ==>  object
+          (cddddr pair)  ==>  object
+
+These procedures are compositions of car and cdr, where for example
+caddr could be defined by
+
+(define (caddr x) (car (cdr (cdr x)))).
+
+Arbitrary compositions, up to four deep, are provided. There are
+twenty-eight of these procedures in all.

@@ -1,0 +1,9 @@
+S9 LIB  (collect procedure list)  ==>  list
+
+Collect elements from LIST as long as two subsequent elements
+E1 and E2 satisfy the predicate (PROCEDURE E1 E2). When two
+subsequent elements do not satisfy the predicate, start a new
+output list. Concatenate all output lists in the result.
+
+(collect eq? '(a a a b c c))  ==>  ((a a a) (b) (c c))
+(collect < '(1 2 3 3 4 5 4))  ==>  ((1 2 3) (3 4 5) (4))

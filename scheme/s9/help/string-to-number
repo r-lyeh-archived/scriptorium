@@ -1,0 +1,20 @@
+R4RS 6.5.6  (string->number string)          ==>  integer
+            (string->number string integer)  ==>  integer
+
+Returns a number of the maximally precise representation expressed
+by the given STRING. INTEGER must be an exact integer, either 2, 8,
+10, or 16. If supplied, INTEGER is a default radix that may be
+overridden by an explicit radix prefix in string (e.g. "#o177").
+If INTEGER is not supplied, then the default radix is 10. If STRING
+is not a syntactically valid notation for a number, then STRING->NUMBER
+returns #F.
+
+(string->number "100")     ==>  100
+(string->number "100" 16)  ==>  256
+(string->number "1e2")     ==>  100.0
+(string->number "1.23")    ==>  1.23
+(string->number "#i10")    ==>  10.0
+
+The S9fES implementation supports base prefixes. It also supports
+decimal points, exponent markers, unspecific digits (#), and
+exact/inexact prefixes, if real number support is compiled in.

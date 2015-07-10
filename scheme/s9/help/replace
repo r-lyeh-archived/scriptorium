@@ -1,0 +1,6 @@
+S9 LIB  (replace object-old object-new pair)  ==>  pair
+
+Replace elements of a pair. OBJECT-OLD is the object to be
+replaced and OBJECT-NEW is the new object.
+
+(replace '(x) '(y) '(lambda (x) y))  ==>  (lambda (y) y)

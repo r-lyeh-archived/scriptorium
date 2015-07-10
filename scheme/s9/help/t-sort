@@ -1,0 +1,84 @@
+S9 LIB  (t-sort procedure1 object procedure2 <option> ...)  ==>  list
+        (t-sort-net procedure^2 list <option> ...)          ==>  list
+
+Sort the directed acyclic graph (DAG) LIST topologically in
+such a way that all dependencies of the first node in the DAG
+(called the "goal") are resolved. PROCEDURE^2 is used to identify
+nodes in the DAG.
+
+A DAG is represented by a list of lists of the form
+
+      ((<name-1> <ref> ...)
+       ...
+       (<name-N> <ref> ...))
+
+where each <name-I> names a node of the DAG and each <ref>
+names a child of the node. Node <name-I> is said to depend on
+each <ref> in the same sublist. A node with zero <ref>s is a
+leaf node.
+
+When the 'STRICT keyword with a #T value is passed as an option
+argument to T-SORT-NET, it will operate in "strict mode" where each
+<ref> in the DAG must have a corresponding node. In non-strict
+operation undefined <ref>s are assumed to be leaves.
+
+T-SORT-NET returns #F when it cannot sort a given DAG, either because
+it contains undefined <refs> in strict mode or because it cycles (and
+hence is not a DAG at all).
+
+When 'CHECK #T is passed as an option to T-SORT-NET, it will return
+more useful information in case of an error, namely
+
+      (cyclic . name)     when the graph cycles through NAME
+      (undefined . name)  when node NAME is undefined.
+
+The result can be distinguished from success by the fact that
+the cdr of a negative result is not a pair.
+
+When the 'REVERSE #T option is passed to T-SORT-NET, it will list
+each dependent object before its dependencies.
+
+When the 'TOP-DOWN #T option is passed to T-SORT-NET, it will
+preserve the order of dependencies and the hierarchy of the
+net to sort, i.e. objects closer to the goal will appear last
+in the resulting list (or first, if 'REVERSE #T is also given).
+
+T-SORT is a more general version of T-SORT-NET that allows to sort
+structures without knowing their exact internal representation.
+PROCEDURE1 is the predicate used to compare objects, like in
+T-SORT-NET. OBJECT is the goal. PROCEDURE2 is a procedure that maps
+objects to dependencies their associated dependencies. The procedure
+should return #F when a dependency cannot be resolved. In case of
+success, it delivers a list of the form
+
+      (goal object ...)
+
+GOAL is the goal that has been looked up and each OBJECT is an
+object on which the goal depends.
+
+(t-sort-net eq?
+            '((dressed shoes hat)
+              (shoes socks pants)
+              (pants underpants)
+              (hat pullover)
+              (pullover shirt undershirt)
+              (shirt undershirt)
+              (underpants)))      ==>  (socks underpants pants
+                                        shoes undershirt shirt
+                                        pullover hat dressed)
+
+(let ((db '((a b c)
+            (b u)
+            (c v)
+            (u x)
+            (v y)
+            (w z))))
+  (t-sort eq? 'a (lambda (x)
+                   (assq x db))
+                 'top-down #t
+                 'reverse #t))      ==>  (a b c u v x y)
+
+(t-sort-net eq? '((a b c d)))             ==>  (b c d a)
+(t-sort-net eq? '((a b c d)) 'strict #t)  ==>  #f
+(t-sort-net eq? '((a b) (b a)))           ==>  #f
+(t-sort-net eq? '((foo foo)) 'check #t)   ==>  (cyclic . foo)

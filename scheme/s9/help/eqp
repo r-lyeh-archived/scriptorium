@@ -1,0 +1,38 @@
+R4RS 6.2  (eq? object1 object2)  ==>  boolean
+
+EQ? is similar to EQV? except that in some cases it is capable of
+discerning distinctions finer than those detectable by EQV?.
+
+EQ? and EQV? are guaranteed to have the same behavior on symbols,
+booleans, the empty list, pairs, and non-empty strings and vectors.
+EQ?'s behavior on numbers and characters is implementation-dependent,
+but it will always return either true or false, and will return
+true only when EQV? would also return true. EQ? may also behave
+differently from EQV? on empty vectors and empty strings.
+
+(eq? 'a 'a)                ==>  #t
+(eq? '(a) '(a))            ==>  unspecified
+(eq? (list 'a) (list 'a))  ==>  #f
+(eq? "a" "a")              ==>  unspecified
+(eq? "" "")                ==>  unspecified
+(eq? '() '())              ==>  #t
+(eq? 2 2)                  ==>  unspecified
+(eq? #\A #\A)              ==>  unspecified
+(eq? car car)              ==>  #t
+(let ((n (+ 2 3)))
+  (eq? n n))               ==>  unspecified
+(let ((x '(a)))
+  (eq? x x))               ==>  #t
+(let ((x '#()))
+  (eq? x x))               ==>  #t
+(let ((p (lambda (x) x)))
+  (eq? p p))               ==>  #t
+
+Rationale: It will usually be possible to implement EQ? much more
+efficiently than EQV?, for example, as a simple pointer comparison
+instead of as some more complicated operation. One reason is that it
+may not be possible to compute EQV? of two numbers in constant time,
+whereas EQ? implemented as pointer comparison will always finish in
+constant time. EQ? may be used like EQV? in applications using
+procedures to implement objects with state since it obeys the same
+constraints as EQV?.

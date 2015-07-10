@@ -1,0 +1,3 @@
+R4RS 6.8  (vector? object)  ==>  boolean
+
+Returns #T if OBJECT is a vector, otherwise returns #F.

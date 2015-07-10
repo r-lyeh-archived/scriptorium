@@ -1,0 +1,33 @@
+R4RS 6.5.5  (quotient integer1 integer2)   ==>  integer
+            (remainder integer1 integer2)  ==>  integer
+            (modulo integer1 integer2)     ==>  integer
+
+These procedures implement number-theoretic (integer) division: For
+positive integers n1 and n2, if n3 and n4 are integers such that
+n1=n2*n3+n4 and 0<=n4<n2, then
+
+(quotient n1 n2)   ==>  n3
+(remainder n1 n2)  ==>  n4
+(modulo n1 n2)     ==>  n4
+
+For integers n1 and n2 with n2 not equal to 0,
+
+(= n1 (+ (* n2 (quotient n1 n2))
+         (remainder n1 n2)))      ==>  #t.
+
+The value returned by QUOTIENT always has the sign of the product
+of its arguments. REMAINDER and MODULO differ on negative arguments--the
+remainder is either zero or has the sign of the dividend, while the
+modulo always has the sign of the divisor:
+
+(modulo 13 4)       ==>  1
+(remainder 13 4)    ==>  1
+
+(modulo -13 4)      ==>  3
+(remainder -13 4)   ==>  -1
+
+(modulo 13 -4)      ==>  -3
+(remainder 13 -4)   ==>  1
+
+(modulo -13 -4)     ==>  -1
+(remainder -13 -4)  ==>  -1

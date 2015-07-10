@@ -1,0 +1,6 @@
+S9 EXT  (sys:symlink string1 string2)  ==>  unspecific
+
+Create a symbolic link STRING2 that points to the path of
+STRING1.
+
+(sys:symlink "foo" "bar")  ==>  unspecific

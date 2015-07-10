@@ -1,0 +1,355 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+type file
+
+type input {
+	mutable in_read : void -> char;
+	mutable in_input : string -> int -> int -> int;
+	mutable in_close : void -> void;
+}
+
+type output {
+	mutable out_write : char -> void;
+	mutable out_output : string -> int -> int -> int;
+	mutable out_close : void -> void;
+	mutable out_flush : void -> void;
+}
+
+exception Overflow : string;
+exception Eof;
+exception Closed;
+exception Blocked;
+
+/* ----------------------------
+	RAW FILE API
+------------------------------- */
+
+neko("
+	 @load = function(name,nargs) {
+		 return $loader.loadprim('std@'+name,nargs);
+	 }
+");
+
+var file_open : string -> string -> file = neko("@load('file_open',2)");
+var file_contents : string -> string = neko("@load('file_contents',1)");
+var file_close : file -> void = neko("@load('file_close',1)");
+var file_read : file -> string -> int -> int -> int = neko("@load('file_read',4)");
+var file_read_char : file -> char = neko("@load('file_read_char',1)");
+var file_write : file -> string -> int -> int -> int = neko("@load('file_write',4)");
+var file_write_char : file -> char -> void = neko("@load('file_write_char',2)");
+var file_flush : file -> void = neko("@load('file_flush',1)");
+
+function file_input(f) {
+	{
+		in_read = function() { try file_read_char(f) catch { _ -> throw Eof } };
+		in_input = function(s,p,l) { try file_read f s p l catch { _ -> throw Eof } };
+		in_close = function() { file_close(f) };
+	}
+}
+
+function read_file(path,bin) {
+	var f = file_open(path,if bin then "rb" else "r");
+	file_input f
+}
+
+function read_string(str) {
+	var p = &0;
+	var len = String.length str;
+	{
+		in_read = function() {
+			if *p == len then throw Eof;
+			var c = String.get str (*p);
+			p := *p + 1;
+			c
+		};
+		in_input = function(s,pp,l) {
+			if *p == len then throw Eof;
+			var l = min l (len - *p);
+			String.blit s pp str (*p) l;
+			p := *p + l;
+			l
+		};
+		in_close = function() {
+		}
+	}
+}
+
+function file_output(f) {
+	{
+		out_write = file_write_char f;
+		out_output = file_write f;
+		out_close  = function() { file_close(f) };
+		out_flush = function() { file_flush(f) };
+	}
+}
+
+function write_file(path,bin) {
+	var f = file_open(path,if bin then "wb" else "w");
+	file_output f
+}
+
+function write_string() {
+	var b = Buffer.create();
+	var o = {
+		out_write = Buffer.add_char b;
+		out_output = function(s,pp,l) {
+			Buffer.add_sub b s pp l;
+			l
+		};
+		out_close = function() {
+		};
+		out_flush = function() {
+		};
+	};
+	(o , function() { Buffer.string b })
+}
+
+var file_stdin : file = neko("@load('file_stdin',0)()");
+var file_stdout : file = neko("@load('file_stdout',0)()");
+var file_stderr : file = neko("@load('file_stderr',0)()");
+
+var stdin : input = file_input file_stdin;
+var stdout : output = file_output file_stdout;
+var stderr : output = file_output file_stderr;
+
+
+/* ----------------------------
+	INPUT API
+------------------------------- */
+
+function create_in(read,input,close) {
+	{
+		in_read = read;
+		in_input = input;
+		in_close = close;
+	}
+}
+
+function read_char(i) {
+	i.in_read()
+}
+
+function read_byte(i) {
+	ord i.in_read()
+}
+
+function input(i,s,p,n) {
+	var len = String.length s;
+	if p < 0 || n < 0 || p > len || p + n > len then invalid_arg();
+	i.in_input s p n
+}
+
+function read(i,n) {
+	if n < 0 then invalid_arg();
+	if n == 0 then
+		""
+	else {
+		var s = String.create n;
+		var p = &0;
+		var len = &n;
+		while *len > 0 {
+			var n = i.in_input s (*p) (*len);
+			if n == 0 then throw Blocked;
+			p := *p + n;
+			len := *len - n;
+		};
+		s
+	}
+}
+
+function read_buf(i,n) {
+	if n < 0 then invalid_arg();
+	if n == 0 then
+		""
+	else {
+		var s = String.create n;
+		var p = &0;
+		var len = &n;
+		try {
+			while *len > 0 {
+				var n = i.in_input s (*p) (*len);
+				if n == 0 then throw (if *p == 0 then Blocked else Eof);
+				p := *p + n;
+				len := *len - n;
+			};
+			s
+		} catch {
+			Eof ->
+				if *p == 0 then throw Eof;
+				String.sub s 0 (*p)
+		}
+	}
+}
+
+function read_all(i : input) : string {
+	var b = Buffer.create();
+	var maxlen = 4096;
+	try {
+		while true {
+			Buffer.add b (read_buf i maxlen);
+		}
+		magic();
+	} catch {
+		Eof -> Buffer.string b
+	}
+}
+
+function read_line(i : input) : string {
+	var buf = Buffer.create();
+	try {
+		while true {
+			var ch = i.in_read();
+			if ch == '\n' then throw Exit;
+			Buffer.add_char buf ch;
+		}
+		assert()
+	} catch {
+		Exit -> Buffer.string buf
+	}
+}
+
+function read_i32(i) : int {
+	var ch1 = read_byte i;
+	var ch2 = read_byte i;
+	var ch3 = read_byte i;
+	var ch4 = read_byte i;
+	ch1 or (ch2 << 8) or (ch3 << 16) or (ch4 << 24)
+}
+
+function read_ui16(i) {
+	var ch1 = read_byte i;
+	var ch2 = read_byte i;
+	ch1 or (ch2 << 8)
+}
+
+function read_ui24(i) {
+	var ch1 = read_byte i;
+	var ch2 = read_byte i;
+	var ch3 = read_byte i;
+	ch1 or (ch2 << 8) or (ch3 << 16)
+}
+
+function read_i16(i) {
+	var ch1 = read_byte i;
+	var ch2 = read_byte i;
+	var n = ch1 or (ch2 << 8);
+	if ch2 and 128 != 0 then
+		n - 65536
+	else
+		n
+}
+
+function close_in(i) {
+	i.in_close();
+	i.in_read := function() { throw Closed };
+	i.in_input := function(s,p,l) { throw Closed };
+	i.in_close := function() { throw Closed };
+}
+
+/* ----------------------------
+	OUTPUT API
+------------------------------- */
+
+function create_out(write,output,flush,close) {
+	{
+		out_write = write;
+		out_output = output;
+		out_flush = flush;
+		out_close = close;
+	}
+}
+
+function write_char(o : output, x : char) : void {
+	o.out_write x
+}
+
+function write_byte(o : output, x : int) : void {
+	o.out_write (chr (x and 255))
+}
+
+function write_i8(o : output, x : int) : void {
+	if x < 127 || x > 128 then invalid_arg();
+	write_byte o (x and 0xFF)
+}
+
+function output(o,s,p,n) {
+	var len = String.length s;
+	if p < 0 || n < 0 || p > len || p + n > len then invalid_arg();
+	o.out_output s p n
+}
+
+function write(o : output,x : string) : void {
+	var p = &0;
+	var len = &(String.length x);
+	while *len > 0 {
+		var n = o.out_output x (*p) (*len);
+		if n == 0 then throw Blocked;
+		p := *p + n;
+		len := *len - n;
+	}
+}
+
+function write_i32(o : output, x : int) : void {
+	write_byte o x;
+	write_byte o (x >> 8);
+	write_byte o (x >> 16);
+	write_byte o (x >>> 24)
+}
+
+function write_ui16(o : output, x : int) : void {
+	if x < 0 || x > 0xFFFF then invalid_arg();
+	write_byte o x;
+	write_byte o (x >> 8)
+}
+
+function write_i16(o : output, x : int) : void {
+	if x < -0x7FFF || x > 0x7FFF then invalid_arg();
+	if x < 0 then
+		write_ui16 o (65536 + x)
+	else
+		write_ui16 o x
+}
+
+function write_ui24(o : output, x : int) : void {
+	if x < 0 || x > 0xFFFFFF then invalid_arg();
+	write_byte o x;
+	write_byte o (x >> 8);
+	write_byte o (x >> 16);
+}
+
+function flush(o) {
+	o.out_flush();
+}
+
+function close_out(o) {
+	o.out_close();
+	o.out_flush := function() { throw Closed };
+	o.out_write := function(_) { throw Closed };
+	o.out_output := function(_,_,_) { throw Closed };
+	o.out_close := function() { throw Closed };
+}
+
+function printf(o : output, fmt : 'a format, p : 'a ) : void {
+	write o (sprintf fmt p)
+}
+

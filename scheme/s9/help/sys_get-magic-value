@@ -1,0 +1,8 @@
+S9 EXT  (sys:get-magic-value string)  ==>  integer
+
+Retrieve a magic constant from the system. When the requested
+constant could not be delivered, signal an error and terminate
+the calling program.
+
+(sys:get-magic-value "O_RDONLY")  ==>  0
+(sys:get-magic-value "SIGTERM")   ==>  15

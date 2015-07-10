@@ -1,0 +1,1235 @@
+; ADVGEN sample adventure
+; By Nils M Holm, 2010,2012
+; Placed in the Public Domain
+
+(street
+ ("You are standing in front of a building in an anonymous city. There is"
+  "a busy street nearby.")
+ (((not closed))
+  ()
+  "Cross street"
+  (add closed "There does not seem to be anything of interest there."))
+ ((closed)
+  ()
+  "Cross street"
+  (nop "There still does not seem to be anything of interest there."))
+ (((not closed))
+  ()
+  "Enter building"
+  (go hall))
+ ((closed)
+  ()
+  "Enter building"
+  (go building:closed)))
+
+(building:closed
+ ("You are standing in front of a building. The door of the building seems"
+  "to be locked.")
+ (()
+  ("A look at the opening times reveals that they have closed"
+   "just a few seconds earlier.")
+  ""
+  (nop)))
+ 
+(building:closed:2
+  (copy-from building:closed)
+  (()
+   ("A look at the opening times reveals that they are closed.")
+   ""
+   (nop)))
+ 
+(hall
+ ("You are in a hall. Corridors extend to the east and the west."
+  "There is an elevator to the north.")
+ (()
+  ("On the wall next to the elevator there is a sign reading:</P>"
+   "<CENTER><PRE>"
+   "+-------------------+"
+   "| 5. Administration |"
+   "| 4. Data Center    |"
+   "| 3. Research       |"
+   "| 2. Service        |"
+   "| 1. Lecture Rooms  |"
+   "+-------------------+"
+   "</PRE></CENTER>"
+   "<P>")
+   ""
+   (nop))
+ (()
+  ()
+  "E"
+  (go floor-1:5))
+ (()
+  ()
+  "W"
+  (go floor-1:1))
+ (()
+  ()
+  "Take elevator"
+  (go elevator)))
+
+(elevator
+ ("You are in an elevator car.")
+ (()
+  ()
+  "<TT>[5]</TT>"
+  (go 5th-floor))
+ (()
+  ()
+  "<TT>[4]</TT>"
+  (go 4th-floor))
+ (()
+  ()
+  "<TT>[3]</TT>"
+  (go 3rd-floor))
+ (()
+  ()
+  "<TT>[2]</TT>"
+  (go 2nd-floor))
+ (()
+  ()
+  "<TT>[1]</TT>"
+  (go hall)))
+
+(floor-1:1
+ ("You are in a corridor. There are lots of doors, but they do not"
+  "look inviting. There is another corridor to the north/west. There is"
+  "a hall to the east.")
+ (()
+  ("There is a public restroom here.")
+  ""
+  (nop))
+ (()
+  ()
+  "Enter restroom"
+  (go restroom))
+ (()
+  ()
+  "NW"
+  (go floor-1:2))
+ (()
+  ()
+  "E"
+  (go hall)))
+
+(restroom
+ ("You are in a public restroom sporting the charm of a public restroom."
+  "There are various writings on the door and the walls.")
+ (((not peed))
+  ()
+  "Have a pee"
+  (add peed "Much better!"))
+ (()
+  ()
+  "Study writings"
+  (go restroom:2))
+ (()
+  ()
+  "Leave the restroom"
+  (go/cut floor-1:1 peed)))
+
+(restroom:2
+ ("Excluding the usual obscenities:</P>"
+  "<P>\"You are not your stuff\"</P>"
+  "<P>\"Mass of earth: 5.98e+24kg\"</P>"
+  "<P>\"Quidquid latine dictum sit, altum viditur\"</P>"
+  "<P>\"Beware of the Turing tar pit\"</P>"
+  "<P>\"Preemptive War: Committing Suicide Out Of Fear Of Death\"</P>"
+  "<P>\"RIP Scheme 2007\"</P>"
+  "<P>\"Believe absurdities, commit atrocities\"</P>"
+  "<P>\"Once persons were property, now property is a person\"")
+ ((peed)
+  ("</P><P>There also seems to be a map here.")
+  "Look at the map"
+  (go restroom:map))
+ (()
+  ()
+  "Enough!"
+  (go restroom)))
+
+(restroom:map
+ ("<CENTER><PRE>"
+  "+----------------------------------------------+"
+  "|                                              |"
+  "|                                              |"
+  "|     +----------------------------------+     |"
+  "|     |                     |43x3        |     |"
+  "|     |                     |            |     |"
+  "|     |   You are here!     |             |    |"
+  "|     |         |           |            |     |"
+  "|     |         |           +------------|     |"
+  "|     |    +----V+                       |     |"
+  "|     |    |    o|                       |     |"
+  "|     |    |  +--+    +--+               |     |"
+  "|     |    |  |       |  |               |     |"
+  "|     +-----__--------____---------------+     |"
+  "|                                              |"
+  "|                                              |"
+  "+---------------------____---------------------+"
+  "</PRE></CENTER>")
+ (()
+  ()
+  "Aha"
+  (go restroom)))
+
+(floor-1:2
+ ("You are in a corridor. There are lots of doors, but they do not"
+  "look inviting. There are other corridors to the north/east and to the"
+  "south/east.")
+ (()
+  ()
+  "NE"
+  (go floor-1:3))
+ (()
+  ()
+  "SE"
+  (go floor-1:1)))
+
+(floor-1:3
+ ("You are in a corridor. There are lots of doors, but they do not"
+  "look inviting. There are other corridors to the south/east and to the"
+  "south/west.")
+ (()
+  ()
+  "SE"
+  (go floor-1:4))
+ (()
+  ()
+  "SW"
+  (go floor-1:2)))
+
+(floor-1:4
+ ("You are in a corridor. There are lots of doors, but they do not"
+  "look inviting. There are other corridors to the north/west and to the"
+  "south/west.")
+ (()
+  ("One of the lecture rooms here is open.")
+  "Enter lecture room"
+  (go lecture-room))
+ (()
+  ()
+  "NW"
+  (go floor-1:3))
+ (()
+  ()
+  "SW"
+  (go floor-1:5)))
+
+(floor-1:5
+ ("You are in a corridor. There are lots of doors, but they do not"
+  "look inviting. There is another corridor to the north/east. There is"
+  "a hall to the west.")
+ (()
+  ()
+  "NE"
+  (go floor-1:4))
+ (()
+  ()
+  "W"
+  (go hall)))
+
+(lecture-room
+ ("You are in a lecture room. There are some people sitting in front of"
+  "computer terminals. Some of them are taking an online quiz.")
+ (()
+  ()
+  "Also take the quiz"
+  (go/sel quiz))
+ (()
+  ()
+  "Leave lecture room"
+  (go floor-1:4)))
+
+(quiz
+ ("Question 1/3: what does the following expression evaluate to"
+  "(according to R<SUP>4</SUP>RS)?</P>"
+  "<CENTER><PRE>(string-&gt;number \"#o777\" 10)</PRE></CENTER><P>")
+ (()
+  ()
+  ("a: " "<TT>511</TT>" "")
+  (add/go foo1.1 quiz:2))
+ (()
+  ()
+  ("b: " "<TT>777</TT>" "")
+  (add/go foo1.2 quiz:2))
+ (()
+  ()
+  ("c: " "<TT>#f</TT>" "")
+  (add/go foo1.3 quiz:2))
+ (()
+  ()
+  ("d: " "<TT>511</TT> or <TT>#f</TT>" "")
+  (add/go one quiz:2)))
+
+(quiz:2
+ ("Question 2/3: what does the following program return?</P>"
+  "<CENTER><PRE>"
+  "(map (let ((c 1))          "
+  "       (lambda (x)         "
+  "         (let ((n c))      "
+  "           (set! c (+ 1 c))"
+  "           (cons x n))))   "
+  "     '(a b c))             "
+  "</PRE></CENTER><P>")
+ (()
+  ()
+  ("a: " "<TT>((a . 1) (b . 2) (c . 3))</TT>" "")
+  (add/go foo2.1 quiz:3))
+ (()
+  ()
+  ("b: " "<TT>((a . 3) (b . 2) (c . 1))</TT>" "")
+  (add/go foo2.2 quiz:3))
+ (()
+  ()
+  ("c: " "any combination of <TT>'(a b c)</TT> and <TT>'(1 2 3)</TT>" "")
+  (add/go two quiz:3))
+ (()
+  ()
+  ("d: " "none of the above" "")
+  (go quiz:3)))
+
+(quiz:3
+ ("Question 3/3: What do you need to evaluate the following expression?"
+  "<CENTER><PRE>"
+  "(((lambda (r)                                          "
+  "   ((lambda (f) (f f))                                 "
+  "    (lambda (f) (r (lambda x (apply (f f) x))))))      "
+  "  (lambda (e)                                          "
+  "    (lambda (v i l)                                    "
+  "      (cond ((= v 0) (+ 1 l))                          "
+  "            ((= v 1) (+ i l))                          "
+  "            ((= l 1) i)                                "
+  "            ((= v 2) (* i l))                          "
+  "            ((= v 3) (expt i l))                       "
+  "            (else    (e (- v 1) i (e v i (- l 1))))))))"
+  " 4 4 4)                                                "
+  "</PRE></CENTER>")
+  (()
+   ()
+   ("a: " "nothing; that expression does not have a value" "")
+   (add/go foo3.1 quiz:4))
+  (()
+   ()
+   ("b: " "an ideal machine (with practically infinite memory)" "")
+   (add/go three quiz:4))
+  (()
+   ()
+   ("c: " "<EM>real</EM> number-crunching equipment (a supercomputer)" "")
+   (add/go foo3.2 quiz:4))
+  (()
+   ()
+   ("d: " "a faster PC and a few gigabytes of RAM" "")
+   (go quiz:4)))
+
+(quiz:4
+ ("Question 4/3: As of 2008, which one was the last useful Scheme report?")
+  (()
+   ()
+   ("a: " "R<SUP>3</SUP>RS" "")
+   (go quiz:end))
+  (()
+   ()
+   ("b: " "R<SUP>4</SUP>RS" " (arguably)")
+   (add/go foo4.1 quiz:end))
+  (((not one) (not two) (not three))
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:end))
+  ((one (not two) (not three))
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:end))
+  (((not one) two (not three))
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:end))
+  ((one two (not three))
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:end))
+  (((not one) (not two) three)
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:end))
+  ((one (not two) three)
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:end))
+  (((not one) two (not three))
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:end))
+  ((one two three)
+   ()
+   ("c: " "R<SUP>5</SUP>RS" " (arguably)")
+   (go quiz:yay!))
+  (()
+   ()
+   ("d: " "R<SUP>6</SUP>RS" "")
+   (add/go foo4.2 quiz:end)))
+
+(quiz:end
+ ("Naah, your score was not <EM>that</EM> brilliant. And while sitting"
+  "there and causing yourself a headache, campus security arrived and"
+  "found out that you are using LAB equipment without permission! You"
+  "are being kicked out of the building.")
+ (()
+  ()
+  "More"
+  (go building:closed:2)))
+
+(quiz:yay!
+ ("While attempting to calculate your score, the program crashes."
+  "Because you have shell access now, everybody thinks you are"
+  "a student.")
+ (()
+  ()
+  "Cool!"
+  (go terminal:session)))
+
+(2nd-floor
+ (copy-from hall)
+ (()
+  ()
+  "E"
+  (go floor-2:5))
+ (()
+  ()
+  "W"
+  (go floor-2:1))
+ (()
+  ()
+  "Take elevator"
+  (go elevator)))
+
+(floor-2:1
+ (copy-from floor-1:1)
+ (()
+  ()
+  "NW"
+  (go floor-2:2))
+ (()
+  ()
+  "E"
+  (go 2nd-floor)))
+
+(floor-2:2
+ (copy-from floor-1:2)
+ (()
+  ()
+  "NE"
+  (go floor-2:3))
+ (()
+  ()
+  "SE"
+  (go floor-2:1)))
+
+(floor-2:3
+ (copy-from floor-1:3)
+ (((not hint))
+  ("One of the doors here looks somehow important.")
+  ""
+  (nop))
+ ((hint)
+  ("There is the door of the college office here.")
+  "Enter college office"
+  (go college-office))
+ (()
+  ()
+  "SE"
+  (go floor-2:4))
+ (()
+  ()
+  "SW"
+  (go floor-2:2)))
+
+(college-office
+ ("\"What do you want?\" asks an absent-minded woman.")
+ ((need-degree)
+  ()
+  "Enroll"
+  (go college-office:degree:2))
+ (((not id) (not need-degree))
+  ()
+  "Enroll"
+  (go college-office:enroll))
+ ((id (not need-degree))
+  ()
+  "Enroll"
+  (go floor-2:3 "\"You already did!\""))
+ (()
+  ()
+  "Leave the office"
+  (go floor-2:3)))
+
+(college-office:enroll
+ ("\"Which curriculum?\"")
+ (()
+  ()
+  "IT Fashion Design (a.k.a. \"Computer Science\")"
+  (go college-office:degree))
+ (()
+  ()
+  "Pharma Industry Sponsoring (a.k.a. \"Medicine\")"
+  (go college-office:degree))
+ (()
+  ()
+  "Naive Idealism (a.k.a. \"Social Studies\")"
+  (go college-office:sure?))
+ (()
+  ()
+  "Privateering (a.k.a. \"Business Arts\")"
+  (go college-office:degree))
+ (()
+  ()
+  "Leave the office"
+  (go floor-2:3)))
+
+(college-office:degree
+ ("\"I need to see your high-school degree!\"")
+ (((not need-degree))
+  ()
+  "Leave the office"
+  (add/go need-degree floor-2:3)))
+
+(college-office:degree:2
+ ("\"I already told you I need to see your high-school degree!\"")
+ (()
+  ()
+  "Leave the office"
+  (go floor-2:3)))
+
+(college-office:sure?
+ ("\"Are you sure?\"")
+ (()
+  ()
+  "Yes"
+  (go college-office:ok))
+ (()
+  ()
+  "No"
+  (go college-office:enroll)))
+
+(college-office:ok
+ ("\"But nobody wants to study that stuff these days! Well, it's"
+  "your funeral. Here is your student's ID.\"")
+ (((not id))
+  ()
+  "Take ID"
+  (add/go id floor-2:3 "You take the ID and leave the college office."))
+ (()
+  ()
+  "Leave the office"
+  (go floor-2:3)))
+
+(floor-2:4
+ (copy-from floor-1:4)
+ (()
+  ()
+  "NW"
+  (go floor-2:3))
+ (()
+  ()
+  "SW"
+  (go floor-2:5)))
+
+(floor-2:5
+ (copy-from floor-1:5)
+ (()
+  ()
+  "NE"
+  (go floor-2:4))
+ (()
+  ()
+  "W"
+  (go 2nd-floor)))
+
+(3rd-floor
+ (copy-from hall)
+ (()
+  ()
+  "E"
+  (go floor-3:5))
+ (()
+  ()
+  "W"
+  (go floor-3:1))
+ (()
+  ()
+  "Take elevator"
+  (go elevator)))
+
+(floor-3:1
+ (copy-from floor-1:1)
+ (()
+  ()
+  "NW"
+  (go floor-3:2))
+ (()
+  ()
+  "E"
+  (go 3rd-floor)))
+
+(floor-3:2
+ (copy-from floor-1:2)
+ (()
+  ()
+  "NE"
+  (go floor-3:3))
+ (()
+  ()
+  "SE"
+  (go floor-3:1)))
+
+(floor-3:3
+ (copy-from floor-1:3)
+ (()
+  ()
+  "SE"
+  (go floor-3:4))
+ (()
+  ()
+  "SW"
+  (go floor-3:2)))
+
+(floor-3:4
+ (copy-from floor-1:4)
+ (()
+  ()
+  "NW"
+  (go floor-3:3))
+ (()
+  ()
+  "SW"
+  (go floor-3:5)))
+
+(floor-3:5
+ (copy-from floor-1:5)
+ ((refered-to-postdoc (not hint))
+  ("The professor's post-doc's office is to the north.")
+  "Knock on the door"
+  (go postdocs-office "He calls you in immediately."))
+ ((refered-to-postdoc hint)
+  ("The professor's post-doc's office is to the north.")
+  "Knock on the door"
+  (go postdocs-office:again "He calls you in immediately."))
+ (()
+  ()
+  "NE"
+  (go floor-3:4))
+ (()
+  ()
+  "W"
+  (go 3rd-floor)))
+
+(postdocs-office
+ ("You are in the post-doc's office. It looks like a mess. There is"
+  "a stack of pizza boxes on the desk and empty diet coke cans cover"
+  "the floor. The guy himself looks like the archetypal hacker."
+  "He does not seem to be interested in grants or, for that matter,"
+  "in anything but hacking. After a quick glance, he inquires: \"So"
+  "you want access to the terminal room. Are you a student?\"")
+ (()
+  ()
+  "Yes"
+  (go floor-3:5 "\"You need to go to the dispatch! Goodbye!\""))
+ (()
+  ()
+  "No"
+  (go postdocs-office:2)))
+
+(postdocs-office:2
+ ("\"This is interesting,\" the hacker says, \"you will need to go"
+  "to the college office and enroll. Best pick a curriculum that is"
+  "of no big interest these days. Good luck!\"")
+ ((hint)
+  ()
+  "Leave the office"
+  (go floor-3:5))
+ (((not hint))
+  ()
+  "Leave the office"
+  (add/go hint floor-3:5)))
+
+(postdocs-office:again
+ ("You are in the post-doc's office. Again. It still looks like a mess."
+  "The guy still looks like a hacker, only more annoyed."
+  "\"I already told you how to do it! What do you want <EM>me</EM> to"
+  "do? Hold your hand?\" With these words he points you to the door.")
+ (()
+  ()
+  "Leave"
+  (go floor-3:5)))
+
+(4th-floor
+ (copy-from hall)
+ (()
+  ()
+  "E"
+  (go floor-4:5))
+ (()
+  ()
+  "W"
+  (go floor-4:1))
+ (()
+  ()
+  "Take elevator"
+  (go elevator)))
+
+(floor-4:1
+ (copy-from floor-1:1)
+ (()
+  ()
+  "NW"
+  (go floor-4:2))
+ (()
+  ()
+  "E"
+  (go 4th-floor)))
+
+(floor-4:2
+ (copy-from floor-1:2)
+ (()
+  ("There is a glass door to the east. Behind the door you see"
+   "people working on computer terminals.")
+  ""
+  (nop))
+ (((not card))
+  ()
+  "Enter terminal room"
+  (nop "You need a magnetic card to enter the room."))
+ ((card)
+  ()
+  "Enter terminal room"
+  (go terminal-room))
+ (()
+  ()
+  "NE"
+  (go floor-4:3))
+ (()
+  ()
+  "SE"
+  (go floor-4:1)))
+
+(floor-4:3
+ (copy-from floor-1:3)
+ (()
+  ()
+  "SE"
+  (go floor-4:4))
+ (()
+  ()
+  "SW"
+  (go floor-4:2)))
+
+(floor-4:4
+ (copy-from floor-1:4)
+ (()
+  ("There is a door labeled \"DISPATCH\" here.")
+  ""
+  (nop))
+ ((id)
+  ()
+  "Enter DISPATCH"
+  (go dispatch))
+ (((not id))
+  ()
+  "Enter DISPATCH"
+  (go dispatch:no-student))
+ (()
+  ()
+  "NW"
+  (go floor-4:3))
+ (()
+  ()
+  "SW"
+  (go floor-4:5)))
+
+(dispatch:no-student
+ ("There is an elderly woman sitting at a computer terminal behind"
+  "an old wooden desk. She looks up as you enter. \"Sorry, you do not"
+  "appear to be a student. I am afraid I cannot help you.\"")
+ (()
+  ()
+  "Leave the DISPATCH"
+  (go floor-4:4)))
+
+(dispatch
+ ("There is an elderly woman sitting at a computer terminal behind"
+  "an old wooden desk. She looks up as you enter. \"What can I do for"
+  "you?\"")
+ (((not card))
+  ()
+  "Sign up for access to the terminal room"
+  (go dispatch:signup))
+ ((card)
+  ()
+  "Sign up for access to the terminal room"
+  (nop "\"You already have access to the terminal room!\""))
+ (((not card))
+  ()
+  "Forgot my password"
+  (nop "\"You do not even have an account. How can you have a password?\""))
+ ((card (not passwd))
+  ()
+  "Forgot my password"
+  (add/go passwd dispatch:passwd))
+ ((passwd)
+  ()
+  "Forgot my password"
+  (go dispatch:passwd-again))
+ (()
+  ()
+  "Leave the DISPATCH"
+  (go floor-4:4)))
+
+(dispatch:signup
+ ("\"You will need a magnetic card to get access to that room.\""
+  "The woman extends a hand holding a card.")
+ (((not card))
+  ()
+  "Take card and leave"
+  (add/go card floor-4:4)))
+
+(dispatch:passwd
+ ("\"You do not yet <EM>have</EM> a password. I was just about to"
+  "send it out in the mail.\""
+  "She then tells you your password.")
+ (()
+  ()
+  "Thanks!"
+  (go floor-4:4)))
+
+(dispatch:passwd-again
+ ("\"But I just gave it to you. <STRONG>*Sigh*</STRONG>. Here is a"
+  "fresh one. Memorize it well, but <EM>do not write it down!</EM>")
+ (()
+  ()
+  "Umm, thanks!"
+  (go floor-4:4)))
+
+(floor-4:5
+ (copy-from floor-1:5)
+ (()
+  ()
+  "NE"
+  (go floor-4:4))
+ (()
+  ()
+  "W"
+  (go 4th-floor)))
+
+(5th-floor
+ (copy-from hall)
+ (()
+  ()
+  "E"
+  (go floor-5:5))
+ (()
+  ()
+  "W"
+  (go floor-5:1))
+ (()
+  ()
+  "Take elevator"
+  (go elevator)))
+
+(floor-5:1
+ (copy-from floor-1:1)
+ (()
+  ()
+  "NW"
+  (go floor-5:2))
+ (()
+  ()
+  "E"
+  (go 5th-floor)))
+
+(floor-5:2
+ (copy-from floor-1:2)
+ (()
+  ()
+  "NE"
+  (go floor-5:3))
+ (()
+  ()
+  "SE"
+  (go floor-5:1)))
+
+(floor-5:3
+ (copy-from floor-1:3)
+ (()
+  ("One door sign catches your eye. This is the office of a"
+   "professor whom you know vaguely.")
+  ""
+  (nop))
+ (()
+  ()
+  "Knock on his door"
+  (go floor-5:3:knocked))
+ (()
+  ()
+  "SE"
+  (go floor-5:4))
+ (()
+  ()
+  "SW"
+  (go floor-5:2)))
+
+(floor-5:3:knocked
+ ("You knock on the professor's door. There is no response.")
+ (()
+  ()
+  "Knock again"
+  (go floor-5:3:knocked-again))
+ (()
+  ()
+  "Give up"
+  (go floor-5:3))
+ (()
+  ()
+  "SE"
+  (go floor-5:4))
+ (()
+  ()
+  "SW"
+  (go floor-5:2)))
+
+(floor-5:3:knocked-again
+ ("You knock harder on the professor's door. There is still no response."
+  "However you can hear someone shuffling inside.")
+ (()
+  ()
+  "Enter anyways"
+  (go professors-office))
+ (()
+  ()
+  "Give up"
+  (go floor-5:3))
+ (()
+  ()
+  "SE"
+  (go floor-5:4))
+ (()
+  ()
+  "SW"
+  (go floor-5:2)))
+
+(professors-office
+ ("You are in the professor's office. He is sitting in front of a"
+  "computer terminal, frantically clicking on the cells of a spread"
+  "sheet, muttering something about grants.")
+ (()
+  ()
+  "Say \"hello\""
+  (go professors-office:2))
+ (()
+  ()
+  "Cough"
+  (go professors-office:2))
+ (()
+  ()
+  "Touch his shoulder"
+  (go security))
+ (()
+  ()
+  "Give up"
+  (go floor-5:3)))
+
+(professors-office:2
+ (copy-from professors-office)
+ (()
+  ()
+  "Say \"hello\""
+  (go professors-office:3))
+ (()
+  ()
+  "Cough"
+  (go professors-office:3))
+ (()
+  ()
+  "Touch his shoulder"
+  (go security))
+ (()
+  ()
+  "Give up"
+  (go floor-5:3)))
+
+(professors-office:3
+ (copy-from professors-office)
+ (()
+  ()
+  "Say \"hello\""
+  (go professors-office:4))
+ (()
+  ()
+  "Cough"
+  (go professors-office:4))
+ (()
+  ()
+  "Touch his shoulder"
+  (go security))
+ (()
+  ()
+  "Give up"
+  (go floor-5:3)))
+
+(professors-office:4
+ ("You are in the professor's office. He is still sitting in front of"
+  "his computer terminal, clicking and muttering. Without really noticing"
+  "you, he refers you to his post-doc's office.")
+ (()
+  ()
+  "Thank him"
+  (go professors-office:5))
+ ((refered-to-postdoc)
+  ()
+  "Leave the office"
+  (go floor-5:3))
+ (((not refered-to-postdoc))
+  ()
+  "Leave the office"
+  (add/go refered-to-postdoc floor-5:3)))
+
+(professors-office:5
+ ("You are in the professor's office. He is still sitting in front of"
+  "his computer terminal, obsessed about his spread sheet. Maybe it"
+  "is time to leave him alone.")
+ ((refered-to-postdoc)
+  ()
+  "Leave the office"
+  (go floor-5:3))
+ (((not refered-to-postdoc))
+  ()
+  "Leave the office"
+  (add/go refered-to-postdoc floor-5:3
+          "\"Floor three,\" he mumbles as you close the door.")))
+
+(security
+ ("The professor is shocked by the sudden return to reality. He starts"
+  "to scream. A few seconds later campus security arrives and kicks you"
+  "out of the building")
+ (()
+  ()
+  "More"
+  (go building:closed:2)))
+
+(floor-5:4
+ (copy-from floor-1:4)
+ (()
+  ()
+  "NW"
+  (go floor-5:3))
+ (()
+  ()
+  "SW"
+  (go floor-5:5)))
+
+(floor-5:5
+ (copy-from floor-1:5)
+ (()
+  ()
+  "NE"
+  (go floor-5:4))
+ (()
+  ()
+  "W"
+  (go 5th-floor)))
+
+(terminal-room
+ ("You are in a room full of computer terminals. A hacker's paradise!")
+ (((not passwd))
+  ()
+  "Sit down at a terminal and log in"
+  (go terminal:no-passwd))
+ ((passwd)
+  ()
+  "Sit down at a terminal and log in"
+  (go/sel terminal))
+ (()
+  ()
+  "Leave the terminal room"
+  (go floor-4:2)))
+
+(terminal:no-passwd
+  ("You sit in front of a terminal and look at the</P>"
+   "<PRE>login: _</PRE>"
+   "<P>prompt. You are a bit clueless. Did the lady in the DISPATCH"
+   "give you a password?")
+  (()
+   ()
+   "Get up"
+   (go terminal-room)))
+
+(terminal
+ ("You are sitting in front of a terminal. You are logged-in. What do"
+  "you want to do?")
+ (()
+  ()
+  "Configure the shiny GUI"
+  (go terminal:window-shopping))
+ (()
+  ()
+  "Visit some social news site"
+  (go terminal:procrastinating))
+ (()
+  ()
+  "Open an X-terminal and start exploring"
+  (go terminal:explore)))
+
+(terminal:window-shopping
+ ("Configuring the GUI is a total fun! Look at all those flashy icons!")
+ (()
+  ()
+  "Keep tweaking"
+  (go terminal:window-shopping:2))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:window-shopping:2
+ ("Now it looks nice! Let's just choose a cooler font and make the"
+  "background image a bit more 1337!")
+ (()
+  ()
+  "Keep tweaking"
+  (go terminal:window-shopping:3))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:window-shopping:3
+ ("Now this is a totally bad-ass-looking desktop! Just a little bit more"
+  "tweaking.")
+ (()
+  ()
+  "Keep tweaking"
+  (go terminal:window-shopping:3))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:procrastinating
+ ("Now have you seen the latest shit in Web design? Awesome!")
+ (()
+  ()
+  "Keep surfing, dude"
+  (go terminal:procrastinating:2))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:procrastinating:2
+ ("Wow, your favorite celeb is on twitter!")
+ (()
+  ()
+  "Keep surfing, dude"
+  (go terminal:procrastinating:3))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:procrastinating:3
+ ("Some mega-corp has invented a totally hot, new programming language!"
+  "OK, it is based on a design of the 1950's, but who cares? It's hot!")
+ (()
+  ()
+  "Keep surfing, dude"
+  (go terminal:procrastinating:4))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:procrastinating:4
+ ("Ah, look! LOL cats!!1 Hahaha!")
+ (()
+  ()
+  "Keep surfing, dude"
+  (go terminal:procrastinating:5))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:procrastinating:5
+ ("Let me just look this up in Wikipedia.")
+ (()
+  ()
+  "Keep surfing, dude"
+  (go terminal:procrastinating))
+ (()
+  ()
+  "Do something else"
+  (go terminal)))
+
+(terminal:explore
+ ("<STRONG>*Ahem*</STRONG> Are you sure? Only CS majors and terrorists"
+  "use a command line interface these days!")
+ (()
+  ()
+  "I am a CS major"
+  (go terminal:explore:cs-major))
+ (()
+  ()
+  "I am a terrorist"
+  (go terminal:explore:terrorist))
+ (()
+  ()
+  "I just accidentally clicked this!"
+  (go terminal:explore:suspect))
+ (()
+  ()
+  "I am a hacker"
+  (go terminal:explore:hacker))
+ (()
+  ()
+  "I am an old fart and GUIs give me the creepies"
+  (go terminal:explore:old-fart)))
+
+(terminal:explore:cs-major
+ ("No you are not! Campus security arrives promptly and kicks you out"
+  "of the building.")
+ (()
+  ()
+  "More"
+  (go building:closed:2)))
+
+(terminal:explore:terrorist
+ ("Haha, funny! But just in case campus security will kick you out of"
+  "the building anyway, so the college cannot be sued if you should"
+  "turn out to be a real terrorist.")
+ (()
+  ()
+  "More"
+  (go building:closed:2)))
+
+(terminal:explore:suspect
+ ("<EM>That's what a terrorist would say!</EM> After getting kicked out"
+  "by campus security you sit in front of the closed door of the building."
+  "A black van with tinted windows and missing license plates approaches."))
+
+(terminal:explore:hacker
+ ("Claiming to be a hacker is still a good defense against being"
+  "suspected to be a hacker.")
+  (()
+   ()
+   "The X-terminal opens"
+   (go terminal:session)))
+
+(terminal:explore:old-fart
+ ("Oh, sorry! Did not see the wrinkles!")
+  (()
+   ()
+   "The X-terminal opens"
+   (go terminal:session)))
+
+(terminal:session
+ ("</P><TT><DL><DD>$ <A href=\"../s9fes/index.html\">ls -l</A>"
+  "<DD>$ <A href=\"../s9fes/adventure.adv.html\">cat"
+  "prog/adventure.adv</A></DD></DL></TT><P>"))

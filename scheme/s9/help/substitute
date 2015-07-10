@@ -1,0 +1,7 @@
+S9 LIB  (substitute pair alist)  ==>  pair
+
+Substitute objects in a given PAIR. The association list
+ALIST contains the objects to be substituted as keys and
+the corresponding substitutes as values.
+
+(substitute '(* (+ 5 7) 9) '(((+ 5 7) . 12)))  ==>  (* 12 9)

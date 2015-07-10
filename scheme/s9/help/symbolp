@@ -1,0 +1,10 @@
+R4RS 6.4  (symbol? object)  ==>  boolean
+
+Returns #T if OBJECT is a symbol, otherwise returns #F.
+
+(symbol? 'foo)          ==>  #t
+(symbol? (car '(a b)))  ==>  #t
+(symbol? "bar")         ==>  #f
+(symbol? 'nil)          ==>  #t
+(symbol? '())           ==>  #f
+(symbol? #f)            ==>  #f

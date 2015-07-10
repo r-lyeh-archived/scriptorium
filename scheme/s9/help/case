@@ -1,0 +1,37 @@
+R4RS 4.2.1  (case <key> <clause1> <clause2> ...)  ==>  object
+
+Syntax: <Key> may be any expression. Each <clause> should have the
+form
+
+((<datum1> ...) <expression1> <expression2> ...),
+
+where each <datum> is an external representation of some object.
+All the <datum>s must be distinct. The last <clause> may be an "else
+clause," which has the form
+
+(else <expression1> <expression2> ...).
+
+Semantics: A CASE expression is evaluated as follows. <Key> is
+evaluated and its result is compared against each <datum>. If the
+result of evaluating <key> is equivalent (in the sense of EQV?; see
+section see section 6.2 Equivalence predicates) to a <datum>, then
+the expressions in the corresponding <clause> are evaluated from
+left to right and the result of the last expression in the <clause>
+is returned as the result of the CASE expression. If the result of
+evaluating <key> is different from every <datum>, then if there is
+an ELSE clause its expressions are evaluated and the result of the
+last is the result of the case expression; otherwise the result of
+the CASE expression is unspecified.
+
+(case (* 2 3)
+  ((2 3 5 7) 'prime)
+  ((1 4 6 8 9) 'composite))  ==>  composite
+
+(case (car '(c d))
+  ((a) 'a)
+  ((b) 'b))                  ==>  unspecific
+
+(case (car '(c d))
+  ((a e i o u) 'vowel)
+  ((w y) 'semivowel)
+  (else 'consonant))         ==>  consonant

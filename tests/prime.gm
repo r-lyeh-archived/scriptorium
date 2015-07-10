@@ -1,0 +1,27 @@
+global isprime = function(n)
+{
+    local i;
+    for (i = 2; i < n; i += 1)
+    {
+        if (n % i == 0) {return false;}
+    }
+
+    return true;
+};
+
+
+global primes = function(n)
+{
+    local count = 0;
+    local i;
+    for (i = 2; i <= n; i += 1)
+    {
+        if (isprime(i)) {count += 1;}
+    }
+
+    return count;
+};
+
+
+local N = 200000;
+print("primes: " + primes(N));

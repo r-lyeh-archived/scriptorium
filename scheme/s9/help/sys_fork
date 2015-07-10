@@ -1,0 +1,7 @@
+S9 EXT  (sys:fork)  ==>  integer
+
+Create a copy of the calling process, return the process ID of the
+calling process (the parent process) to the parent process and zero
+to the new process (the child process).
+
+(sys:fork)  ==>  0  ; now there are two S9 interpreters running

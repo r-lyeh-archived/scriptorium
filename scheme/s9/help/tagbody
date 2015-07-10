@@ -1,0 +1,31 @@
+S9 LIB  (tagbody {<label> | <statement>} ...)  ==>  unspecific
+        (go <label>)                           ==>  undefined
+
+        (load-from-library "tagbody.scm")
+
+Implement Common LISP-style TAGBODYs. Each symbol in the TAGBODY
+will be interpreted as a <label> and each list as a <statement>. The
+<statement>s are executed in order exactly like in BEGIN. However,
+when a <statement> executes (go <label>), then control will be
+transferred to the specified label immediately. GO never returns.
+TAGBODY does not deliver any meaningful value.
+
+Caveat: nested TAGBODYs are handled through a global variable.
+
+This construct has probably no practical use in Scheme and I am
+not sure why I wrote it in the first place.
+
+(let ((x   10)
+      (x0  1)
+      (x1  1))
+  (tagbody
+    fib
+      (if (zero? x)
+          (go end))
+      (let ((t x1))
+        (set! x1 (+ x0 x1))
+        (set! x0 t))
+      (set! x (- x 1))
+      (go fib)
+    end)
+  x1)                       ==>  144

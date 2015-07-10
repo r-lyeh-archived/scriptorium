@@ -1,0 +1,13 @@
+R4RS 6.6  (char-alphabetic? char)  ==>  boolean
+          (char-numeric? char)     ==>  boolean
+          (char-whitespace? char)  ==>  boolean
+          (char-upper-case? char)  ==>  boolean
+          (char-lower-case? char)  ==>  boolean
+
+These procedures return #T if their arguments are alphabetic,
+numeric, whitespace, upper case, or lower case characters, respectively,
+otherwise they return #F. The following remarks, which are specific
+to the ASCII character set, are intended only as a guide: The
+alphabetic characters are the 52 upper and lower case letters. The
+numeric characters are the ten decimal digits. The whitespace
+characters are space, tab, line feed, form feed, and carriage return.

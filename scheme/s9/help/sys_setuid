@@ -1,0 +1,9 @@
+S9 EXT  (sys:setgid integer)  ==>  unspecific
+        (sys:setuid integer)  ==>  unspecific
+
+Change the group ID (user ID) of the S9 process to the given
+INTEGER. Only the superuser may change the UID/GID of a process
+to a value other than the current UID/GID.
+
+(sys:setgid (sys:getgid))  ==>  unspecific
+(sys:setuid (sys:getuid))  ==>  unspecific

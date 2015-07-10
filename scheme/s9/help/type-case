@@ -1,0 +1,22 @@
+S9 LIB  (type-case object <clause> ...)  ==>  object
+        (type-of object)                 ==>  symbol
+
+        (load-from-library "type-case.scm")
+
+TYPE-OF returns a symbol describing the type of the given OBJECT.
+The following symbols may be returned by the procedure:
+
+      boolean char eof-object input-port integer output-port
+      pair procedure real string symbol syntax unknown-object
+      vector
+
+(Type-case obj ...)  is shorthand for  (case (type-of obj) ...)
+
+(type-of type-of)  ==>  procedure
+
+(let ((x '#(1 2 3))
+      (i 0))
+  (type-case x
+    ((string) (string-ref x i))
+    ((vector) (vector-ref x i))
+    (else     x)))               ==>  1

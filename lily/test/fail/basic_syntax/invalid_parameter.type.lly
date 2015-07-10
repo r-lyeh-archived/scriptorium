@@ -1,0 +1,7 @@
+#[
+SyntaxError: Class 'asdf' does not exist.
+Where: File "invalid_parameter.type.lly" at line 6
+]#
+
+define f(g: asdf) {
+}

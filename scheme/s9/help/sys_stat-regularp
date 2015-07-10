@@ -1,0 +1,26 @@
+S9 EXT  (sys:lstat-block-dev? string)  ==>  boolean
+        (sys:lstat-char-dev? string)   ==>  boolean
+        (sys:lstat-directory? string)  ==>  boolean
+        (sys:lstat-pipe? string)       ==>  boolean
+        (sys:lstat-regular? string)    ==>  boolean
+        (sys:lstat-socket? string)     ==>  boolean
+        (sys:lstat-symlink? string)    ==>  boolean
+        (sys:stat-block-dev? string)   ==>  boolean
+        (sys:stat-char-dev? string)    ==>  boolean
+        (sys:stat-directory? string)   ==>  boolean
+        (sys:stat-pipe? string)        ==>  boolean
+        (sys:stat-regular? string)     ==>  boolean
+        (sys:stat-socket? string)      ==>  boolean
+
+Check if the file associated with the directory entry STRING
+has a specific property and return a corresponding truth value.
+Note that a return value of #F may indicate either that the given
+does not exists or exists but does not have the desired property.
+
+The SYS:STAT... procedures dereference symlimks while the
+SYS:LSTAT...  procedures check the symlinks themselves. Note that
+there is no SYS:STAT-SYMLINK? procedure, because it would always
+deliver #F.
+
+(sys:stat-directory? ".")   ==>  #t
+(sys:stat-regular? "/dev")  ==>  #f

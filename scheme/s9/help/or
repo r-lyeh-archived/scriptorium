@@ -1,0 +1,14 @@
+R4RS 4.2.1  (or <expression> ...)  ==>  obj
+
+The <expression>s are evaluated from left to right, and the value
+of the first expression that evaluates to a true value (see section
+see section 6.1 Booleans) is returned. Any remaining expressions
+are not evaluated. If all expressions evaluate to false values, the
+value of the last expression is returned. If there are no expressions
+then #F is returned.
+
+(or (= 2 2) (> 2 1))    ==>  #t
+(or (= 2 2) (< 2 1))    ==>  #t
+(or #f #f #f)           ==>  #f
+(or (memq 'b '(a b c))
+    (quotient 3 0))     ==>  (b c)

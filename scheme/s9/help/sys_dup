@@ -1,0 +1,13 @@
+S9 EXT  (sys:dup integer)             ==>  integer
+        (sys:dup2 integer1 integer2)  ==>  integer
+
+SYS:DUP duplicates an existing file descriptor INTEGER and returns
+the new descriptor. Both desciptors can then be used to manipulate
+the same file. All operations affecting one of them also affects
+the other.
+
+In calls to SYS:DUP2, the new descriptor can be specified explicitly
+in the INTEGER2 argument.
+
+(define (redirect-to-file file)
+  (sys:dup2 (sys:creat "transcript-file") 1))

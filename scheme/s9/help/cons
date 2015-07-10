@@ -1,0 +1,11 @@
+R4RS 6.3  (cons object1 object2)  ==>  pair
+
+Returns a newly allocated pair whose car is OBJECT1 and whose cdr
+is OBJECT2. The pair is guaranteed to be different (in the sense
+of EQV?) from every existing object.
+
+(cons 'a '())         ==>  (a)
+(cons '(a) '(b c d))  ==>  ((a) b c d)
+(cons "a" '(b c))     ==>  ("a" b c)
+(cons 'a 3)           ==>  (a . 3)
+(cons '(a b) 'c)      ==>  ((a b) . c)

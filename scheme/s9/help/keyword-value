@@ -1,0 +1,21 @@
+S9 LIB  (accept-keywords string list1 list2)  ==>  #t | undefined
+        (keyword-value list symbol)           ==>  object | undefined
+        (keyword-value list symbol object)    ==>  object
+
+KEYWORD-VALUE finds the value associated with a keyword in a property
+list (keywords in odd positions, values in even positions). When the
+keyword is not found in the plist and a default OBJECT is specified,
+that object is returned. When the keyword is not found and no default
+is given, an error is signalled.
+
+ACCEPT-KEYWORDS checks each keyword in LIST1 against symbols listed
+in LIST2. When LIST1 contains a keyword not contained in LIST2, it
+signals an error. It also signals an error when LIST1 contains a
+trailing keyword (without an associated value).
+When reporting an error ACCEPT-KEYWORD will insert the given STRING
+as the source of the error.
+
+(keyword-value '(foo 1 bar 2) 'bar)  ==>  2
+(keyword-value '(foo 1) 'bar 0)      ==>  0
+
+(accept-keywords "test" '(foo 1 bar 2) '(foo bar))  ==>  #t

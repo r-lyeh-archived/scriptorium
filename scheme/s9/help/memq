@@ -1,0 +1,18 @@
+R4RS 6.3  (memq object list)    ==>  list | #f
+          (memv object list)    ==>  list | #f
+          (member object list)  ==>  list | #f
+
+These procedures return the first sublist of LIST whose car is
+OBJECT, where the sublists of LIST are the non-empty lists returned
+by (list-tail list k) for K less than the length of LIST. If OBJECT
+does not occur in LIST, then #F (not the empty list) is returned.
+MEMQ uses EQ? to compare OBJECT with the elements of LIST, while
+MEMV uses EQV? and MEMBER uses EQUAL?.
+
+(memq 'a '(a b c))             ==>  (a b c)
+(memq 'b '(a b c))             ==>  (b c)
+(memq 'a '(b c d))             ==>  #f
+(memq (list 'a) '(b (a) c))    ==>  #f
+(member (list 'a) '(b (a) c))  ==>  ((a) c)
+(memq 101 '(100 101 102))      ==>  unspecified
+(memv 101 '(100 101 102))      ==>  (101 102)

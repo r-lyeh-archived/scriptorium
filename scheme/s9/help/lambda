@@ -1,0 +1,55 @@
+R4RS 4.1.4  (lambda <formals> <body>)  ==>  procedure
+
+Syntax: <Formals> should be a formal arguments list as described
+below, and <body> should be a sequence of one or more expressions.
+
+Semantics: A LAMBDA expression evaluates to a procedure. The
+environment in effect when the LAMBDA expression was evaluated is
+remembered as part of the procedure. When the procedure is later
+called with some actual arguments, the environment in which the
+LAMBDA expression was evaluated will be extended by binding the
+variables in the formal argument list to fresh locations, the
+corresponding actual argument values will be stored in those
+locations, and the expressions in the body of the LAMBDA expression
+will be evaluated sequentially in the extended environment. The
+result of the last expression in the body will be returned as the
+result of the procedure call.
+
+(lambda (x) (+ x x))      ==>  a procedure
+((lambda (x) (+ x x)) 4)  ==>  8
+
+(define reverse-subtract
+  (lambda (x y) (- y x)))
+(reverse-subtract 7 10)     ==>  3
+
+(define add4
+  (let ((x 4))
+    (lambda (y) (+ x y))))
+(add4 6)                    ==>  10
+
+<Formals> should have one of the following forms:
+
+- (<variable1> ...): The procedure takes a fixed number of arguments;
+  when the procedure is called, the arguments will be stored in the
+  bindings of the corresponding variables.
+
+- <variable>: The procedure takes any number of arguments; when the
+  procedure is called, the sequence of actual arguments is converted
+  into a newly allocated list, and the list is stored in the binding
+  of the <variable>.
+
+- (<variable1> ... <variable_n-1> . <variable_n>): If a space-delimited
+  period precedes the last variable, then the value stored in the
+  binding of the last variable will be a newly allocated list of
+  the actual arguments left over after all the other actual arguments
+  have been matched up against the other formal arguments.
+
+It is an error for a <variable> to appear more than once in <formals>.
+
+((lambda x x) 3 4 5 6)          ==>  (3 4 5 6)
+((lambda (x y . z) z) 3 4 5 6)  ==>  (5 6)
+
+Each procedure created as the result of evaluating a LAMBDA expression
+is tagged with a storage location, in order to make EQV? and EQ?
+work on procedures (see section see section 6.2 Equivalence
+predicates).

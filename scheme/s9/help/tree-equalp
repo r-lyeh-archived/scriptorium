@@ -1,0 +1,13 @@
+S9 LIB  (tree-equal? procedure pair1 pair2)  ==>  boolean
+
+Compare the leaves of two trees PAIR1 and PAIR2 using the predicate
+PROCEDURE. TREE-EQUAL? returns #T if the trees have the same structure
+and (procedure x1 x2) holds for their pairwise leaves.
+
+(tree-equal? (lambda (x y) #t)
+             '(((a . b) (c . d)) (e . f))
+             '(((1 . 2) (3 . 4)) (5 . 6)))  ==>  #t
+
+(tree-equal? eqv?
+             '((1 . 2) (3 . 4))
+             '((1 . 2) (3 4)))              ==> #f

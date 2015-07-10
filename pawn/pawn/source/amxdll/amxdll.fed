@@ -1,0 +1,63 @@
+!if $(Win16)
+LIBRARY       AMX16
+!else
+LIBRARY       AMX32
+!endif
+
+DESCRIPTION  'Pawn Abstract Machine'
+
+!if $(Win16)
+EXETYPE       WINDOWS
+PROTMODE
+CODE          PRELOAD MOVEABLE DISCARDABLE
+DATA          PRELOAD MOVEABLE SINGLE
+HEAPSIZE      4096
+!endif
+
+EXPORTS
+!if $(Win16)
+    WEP                 RESIDENTNAME
+!endif
+    amx_Align16         @4
+    amx_Align32         @4
+    amx_Allot           @12
+    amx_Callback        @16
+    amx_Clone           @12
+    amx_Exec            @12
+    amx_FindNative      @12
+    amx_FindPublic      @12
+    amx_FindPubVar      @12
+    amx_FindTagId       @12
+    amx_Flags           @8
+    amx_GetNative       @12
+    amx_GetPublic       @16
+    amx_GetPubVar       @16
+    amx_GetString       @16
+    amx_GetTag          @16
+    amx_GetUserData     @12
+    amx_Init            @8
+    amx_InitJIT         @12
+    amx_MemInfo         @16
+    amx_NameLength      @8
+    amx_NativeInfo      @8
+    amx_NumNatives      @8
+    amx_NumPublics      @8
+    amx_NumPubVars      @8
+    amx_NumTags         @8
+    amx_Push            @8
+    amx_PushArray       @16
+    amx_PushString      @20
+    amx_RaiseError      @8
+    amx_Register        @12
+    amx_Release         @8
+    amx_SetCallback     @8
+    amx_SetDebugHook    @8
+    amx_SetString       @20
+    amx_SetUserData     @12
+    amx_StrLen          @8
+    amx_UTF8Check       @8
+    amx_UTF8Get         @12
+    amx_UTF8Len         @8
+    amx_UTF8Put         @16
+    amx_InternalDebugProc @4
+    amx_PushAddress     @8

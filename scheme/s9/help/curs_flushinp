@@ -1,0 +1,64 @@
+S9 EXT  (curs:flushinp)                     ==>  unspecific
+        (curs:getch)                        ==>  integer | #f
+        (curs:inch)                         ==>  char
+        (curs:getyx)                        ==>  list
+        (curs:mvgetch integer_y integer_x)  ==>  integer | #f
+        (curs:mvinch integer_y integer_x)   ==>  char
+        (curs:lines)                        ==>  integer
+        (curs:cols)                         ==>  integer
+        (curs:unctrl integer)               ==>  string
+        (curs:ungetch integer)              ==>  unspecific
+
+Curses input routines. This is only a rough summary. See the curses(3)
+manual page or a curses tutorial of your choice for further information.
+
+CURS:FLUSHINP drains all pending keyboard input, so any characters
+typed ahead will never be delivered.
+
+CURS:GETCH fetches the next key from the keyboard queue and delivers
+its keycode. Keycode mostly correspond to ASCII codes. When in keypad
+mode (see CURS:KEYPAD), CURS:GETCH may return special codes for some
+keys that do not have an ASCII code, like the arrow keys for moving
+the cursor. The following special keycode constants exist:
+
+        CURS:KEY-BACKSPACE
+        CURS:KEY-DC          delete-character
+        CURS:KEY-IC          insert-character
+        CURS:KEY-UP
+        CURS:KEY-DOWN
+        CURS:KEY-LEFT
+        CURS:KEY-RIGHT
+        CURS:KEY-HOME
+        CURS:KEY-END
+        CURS:KEY-PPAGE       previous-page
+        CURS:KEY-NPAGE       next-page
+
+Before reading the keyboard queue, CURS:GETCH commits all pending
+writes to the scrren by calling CURS:REFRESH and also synchronizes
+the hardware cursor with the virtual cursor. CURS:GETCH blocks unless
+nodelay mode (see CURS:NODELAY) has been activated. In nodelay mode
+CURS:GETCH returns #F when there are no characters in the keyboard
+queue.
+
+CURS:INCH returns the character found on the current (virtual)
+position on the virtual screen.
+
+CURS:GETYX returns a list containing the current virtual cursor
+position in the format (Y X).
+
+CURS:LINES returns the number of lines in the screen.
+
+CURS:COLS returns the number of columns in the screen.
+
+CURS:MVGETCH moves the cursor to the specified position and then
+performs a GETCH operation.
+
+CURS:MVINCH returns the character found on row INTEGER_Y, column
+INTEGER_X of the virtual screen.
+
+CURS:UNCTRL converts an unreadable character to a readable
+representation. For instance, it returns "^[" for the ESC
+character.
+
+CURS:UNGETCH puts a keycode back to the keyboard queue so that
+a subsequent call to CURS:GETCH or CURS:MVGETCH will deliver it.

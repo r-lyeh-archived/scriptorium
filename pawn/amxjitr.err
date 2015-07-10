@@ -1,0 +1,5 @@
+pawn\source\amx\amxjitr.asm(71): Warning! W262: Text macro was used before definition: code
+pawn\source\amx\amxjitr.asm(72): Warning! W262: Text macro was used before definition: amx
+pawn\source\amx\amxjitr.asm(73): Warning! W262: Text macro was used before definition: retval
+pawn\source\amx\amxjitr.asm(75): Warning! W262: Text macro was used before definition: hea
+pawn\source\amx\amxjitr.asm(76): Warning! W262: Text macro was used before definition: frm

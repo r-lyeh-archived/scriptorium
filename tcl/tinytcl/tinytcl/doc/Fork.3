@@ -1,0 +1,150 @@
+'\"
+'\" Copyright 1989 Regents of the University of California
+'\" Permission to use, copy, modify, and distribute this
+'\" documentation for any purpose and without fee is hereby
+'\" granted, provided that this notice appears in all copies.
+'\" The University of California makes no representations about
+'\" the suitability of this material for any purpose.  It is
+'\" provided "as is" without express or implied warranty.
+'\" 
+'\" $Id: Fork.3,v 1.1.1.1 2001/04/29 20:35:56 karll Exp $
+'\" 
+.so man.macros
+.HS Tcl_Fork tcl
+.BS
+.VS
+.SH NAME
+Tcl_Fork, Tcl_WaitPids, Tcl_DetachPids \- manage child processes
+.SH SYNOPSIS
+.nf
+\fB#include <tcl.h>\fR
+.sp
+int
+\fBTcl_Fork\fR( )
+.sp
+int
+\fBTcl_WaitPids\fR(\fInumPids, pidPtr, statusPtr\fR)
+.sp
+int
+\fBTcl_DetachPids\fR(\fInumPids, pidPtr\fR)
+.SH ARGUMENTS
+.AS int *statusPtr
+.AP int numPids in
+Number of process ids contained in the array pointed to by \fIpidPtr\fR.
+.AP int *pidPtr in
+Address of array containing \fInumPids\fR process ids.
+.AP int *statusPtr out
+Address of place to store status returned by exited/suspended process.
+.BE
+
+.SH DESCRIPTION
+.PP
+These procedures keep track of child processes in order to make it
+easier for one application to manage several children.
+If an application uses
+the UNIX \fIfork\fR and \fIwait\fR kernel calls directly,
+problems occur in situations like the following:
+.IP [1]
+One part of an application creates child C1.  It plans to
+let the child run in background, then later wait for it to
+complete.
+.IP [2]
+Some other part of the application creates another child C2,
+not knowing anything about C1.
+.IP [3]
+The second part of the application uses \fIwait\fR to wait for C2
+to complete.
+.IP [4]
+C1 completes before C2, so C1 is returned by the
+\fIwait\fR kernel call.
+.IP [5]
+The second part of the application doesn't recognize C1, so it
+ignores it and calls \fIwait\fR again.  This time C2
+completes.
+.IP [6]
+The first part of the application eventually decides to wait
+for its child to complete.  When it calls \fIwait\fR there are
+no children left, so \fIwait\fR returns an error and the
+application never gets to examine the exit status for C1.
+.PP
+The procedures \fBTcl_Fork\fR, \fBTcl_WaitPids\fR, and \fBTcl_DetachPids\fR
+get around this problem by keeping a table of child processes and
+their exit statuses.
+They also provide a more flexible waiting
+mechanism than the \fIwait\fR kernel call.
+Tcl-based applications should never call \fIfork\fR and
+\fIwait\fR directly;  they should use \fBTcl_Fork\fR,
+\fBTcl_WaitPids\fR, and \fBTcl_DetachPids\fR.
+.PP
+\fBTcl_Fork\fR calls \fIfork\fR and returns the result of
+the \fIfork\fR kernel call.
+If the \fIfork\fR call was successful then \fBTcl_Fork\fR also
+enters the new process into its internal table of child
+proceses.
+If \fIfork\fR returns an error then \fBTcl_Fork\fR returns that
+same error.
+.PP
+\fBTcl_WaitPids\fR calls \fIwait\fR repeatedly until one of the processes
+in the \fIpidPtr\fR array has exited or been killed or suspended by a
+signal.
+When this occurs, \fBTcl_WaitPids\fR returns the process
+identifier for the process and stores its wait status at
+\fI*statusPtr\fR.
+If the process no longer exists (it exited or was killed by a signal),
+then \fBTcl_WaitPids\fR removes its entry from the internal
+process table.
+If \fIwait\fR returns a process that isn't
+in the \fIpidPtr\fR array, \fBTcl_WaitPids\fR saves its wait
+status in the internal process table and calls \fIwait\fR again.
+If one of the processes in the \fIpidPtr\fR array has already
+exited (or suspended or been killed) when \fBTcl_WaitPids\fR
+is called, that process and its wait status are returned
+immediately without calling \fIwait\fR.
+.PP
+\fBTcl_WaitPids\fR provides two advantages.  First, it allows
+processes to exit in any order, and saves their wait statuses.
+Second, it allows waiting on a number of processes simultaneously,
+returning when any of the processes is returned by \fIwait\fR.
+.PP
+\fBTcl_DetachPids\fR is used to indicate that the application
+no longer cares about the processes given by the \fIpidPtr\fR
+array and will never use \fBTcl_WaitPids\fR to wait for them.
+This occurs, for example, if one or more children are to be
+executed in background and the parent doesn't care whether
+they complete successfully.
+When \fBTcl_DetachPids\fR is called, the internal process
+table entries for the processes are marked so that the
+entries will be removed as soon as the processes exit or
+are killed.
+.PP
+If none of the pids passed to \fBTcl_WaitPids\fR exists in
+the internal process table, then -1 is returned and \fIerrno\fR
+is set to ECHILD.
+If a \fIwait\fR kernel call returns an error,
+then \fBTcl_WaitPids\fR returns that same error.
+If a \fIwait\fR kernel call returns a process that isn't in
+the internal process table,  \fBTcl_WaitPids\fR panics and
+aborts the application.
+If this situation occurs, it means that a process has been
+created without calling \fBTcl_Fork\fR and that its exit
+status is about to be lost.
+.PP
+\fBTcl_WaitPids\fR defines wait statuses to have type \fIint\fR,
+which is correct for POSIX and many variants of UNIX. 
+Some BSD-based UNIX systems still use type \fIunion wait\fR for
+wait statuses;  it should be safe to cast a pointer to a
+\fIunion wait\fR structure to \fI(int *)\fR before passing
+it to \fBTcl_WaitPids\fR as in the following code:
+.nf
+.RS
+
+\fBunion wait status;
+int pid1, pid2;
+\&...
+pid2 = Tcl_WaitPids(1, &pid1, (int *) &status);\fR
+.RE
+.fi
+
+.SH KEYWORDS
+background, child, detach, fork, process, status, wait
+.VE

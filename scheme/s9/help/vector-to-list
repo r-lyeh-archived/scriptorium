@@ -1,0 +1,10 @@
+R4RS 6.8  (vector->list vector)  ==>  list
+          (list->vector list)    ==>  vector
+
+VECTOR->LIST returns a newly allocated list of the objects
+contained in the elements of VECTOR. LIST->VECTOR returns a
+newly created vector initialized to the elements of the list
+LIST.
+
+(vector->list '#(dah dah didah))  ==>  (dah dah didah)
+(list->vector '(dididit dah))     ==>  #(dididit dah)

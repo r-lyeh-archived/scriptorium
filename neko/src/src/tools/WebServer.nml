@@ -1,0 +1,629 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+ 
+type main_function;
+
+type client {
+	sock : Net.socket;
+	in : IO.input;
+	out : IO.output;
+	mutable headers : (string, string) list;
+	mutable headers_sent : bool;
+	mutable return_code : (int, string);
+	mutable main : main_function option;
+}
+
+var mime = [
+	("gif" , "image/gif");
+	("jpeg", "image/jpeg");
+	("jpg", "image/jpeg");
+	("png", "image/png");
+	("css", "text/css");
+	("html", "text/html");
+	("htm", "text/html");
+	("txt", "text/plain");
+	("js", "application/javascript");
+	("pdf", "application/pdf"); // do we really want that ??
+	("xml", "text/xml");
+	("wav", "audio/x-wav")
+];
+
+var cur_path = &Sys.get_cwd();
+var file_log = &None;
+var module_cache = Hashtbl.create();
+var mod_rewrite = &false;
+
+function sys_is_file(file) {
+	neko "$loader.loadprim('std@sys_file_type',1)(file)" == "file"
+}
+
+function page_404(url) {
+"<HTML><HEAD>
+<TITLE>404 Not Found</TITLE>
+</HEAD><BODY>
+<H1>Not Found</H1>
+The requested URL "+url+" was not found on this server.<P>
+<HR>
+<ADDRESS>Neko Web DevServer</ADDRESS>
+</BODY></HTML>"
+}
+
+function page_config() {
+	var path = String.concat " - " neko("@List.@make($loader.path)");
+"<html>
+<head><title>Neko WebServer Config</title></head>
+<body>
+<h1>Neko WebServer Configuration</h1>
+<form action=\"/server:config\" method=\"POST\">
+<table>
+<tr>
+<td>Loader path :</td>
+<td>"+path+"</td>
+</tr>
+<tr>
+<td>Server directory :</td>
+<td><input type=\"input\" size=\"50\" name=\"path\" value=\""+(*cur_path)+"\"/></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td><input type=\"submit\" value=\"Modify\"/></td>
+</tr>
+</form>
+<a href=\"/\">Visit website</a>
+</body>
+</html>"
+}
+
+type http_method {
+	MethodGet;
+	MethodPost;
+	MethodCustom : string;
+}
+
+type http_request {
+	method : http_method;
+	res : string;
+	url : (string, string);
+	version : string;
+	ctype : string option;
+	headers : (string,string) list;
+	mutable params : (string, string) list;
+	mutable post_data : string option;
+}
+
+exception Invalid_char;
+
+function invalid_char(l) { throw Invalid_char };
+
+function part(lex,p,l) { var s = Lexer.current lex; String.sub s p (String.length s - (p+l)) }
+
+function parse_get_params(str) {
+	var params = String.split str ";";
+	var params = List.concat (List.map (function(s) { String.split s "&" }) params);
+	List.map (function(p) {
+		match String.split p "=" {
+		| [] -> ("","")
+		| [p] -> (Net.url_decode p,"")
+		| p :: val -> (Net.url_decode p , Net.url_decode (String.concat "=" val))
+		}
+	}) params;
+}
+
+var http_request_method = Lexer.build [
+  	("GET", function(l) { MethodGet });
+	("POST", function(l) { MethodPost });
+	("PUT", function(l) { MethodCustom "PUT" });
+	("HEAD", function(l) { MethodCustom "HEAD" });
+	("DELETE", function(l) { MethodCustom "DELETE" });
+	("TRACE",function(l) { MethodCustom "TRACE" });
+	("CONNECT",function(l) { MethodCustom "CONNECT" });
+	("OPTIONS",function(l) { MethodCustom "OPTIONS" });
+] invalid_char;
+
+var http_request_url = Lexer.build [
+	(" [^ ]+ ", function(l) {
+		var url = part l 1 1;
+		try {
+			var p = String.find url 0 "?";
+			var base = String.sub url 0 p;
+			var params = String.sub url (p + 1) (String.length url - (p+1));
+			(base, params)
+		} catch {
+			Not_found -> (url,"")
+		}
+	})
+] invalid_char;
+
+var http_request_version = Lexer.build [
+	("HTTP/[0-9.]+\r\n", function(l) { part l 5 2 });
+] invalid_char;
+
+var http_header_value = Lexer.build [
+	("[^\r]+\r\n", function(l) { part l 0 2 })
+] invalid_char;
+
+var http_headers = &Lexer.empty();
+http_headers := Lexer.build [
+	("\r", function(l) {
+		if Lexer.read l != '\n' then throw Invalid_char;
+		[]
+	});
+	("[-A-Za-z0-9_]+: ", function(l) {
+		var s = part l 0 2;
+		var v = Lexer.token l http_header_value;
+		(s,v) :: Lexer.token l (*http_headers)
+	});
+] invalid_char;
+
+function header(name,headers) {
+	try {
+		Some snd(List.find (function((n,_)) { String.lowercase n == String.lowercase name }) headers)
+	} catch {
+		Not_found -> None
+	}
+}
+
+function parse_http_request(c) {
+	var l = Lexer.create();
+	Lexer.input l "http-stream" c.in 1 0;
+	var meth = Lexer.token l http_request_method;
+	var url = Lexer.token l http_request_url;
+	var version = Lexer.token l http_request_version;
+	var headers = Lexer.token l (*http_headers);
+	var params = parse_get_params snd(url);
+	var ctype = header "Content-Type" headers;
+	var post_data, params = if meth == MethodPost && ctype != Some "multipart/form-data" then {
+		var len = match header "Content-Length" headers { None -> 0 | Some len -> int len };
+		if len >= (1 << 18) then {
+			IO.write c.out "HTTP/1.1 200 OK\r\n";
+			IO.write c.out "\n\n";
+			IO.write c.out "Max post data exceeded";
+			printf "Max post data exceeded (%d bytes)\n" len;
+			throw IO.Eof;
+		}
+		var b = Buffer.create();
+		var i = &0;
+		while *i < len {
+			Buffer.add_char b (Lexer.read l);
+			i := *i + 1;
+		}
+		var data = Buffer.string b;
+		(Some data , List.append (parse_get_params data) params);
+	} else
+		(None , params);
+	{
+		method = meth;
+		res = Net.url_decode fst(url);
+		url = url;
+		params = params;
+		version = version;
+		headers = headers;
+		post_data = post_data;
+		ctype = ctype;
+	}
+}
+
+function flog(s) {
+	match *file_log {
+	| None -> ()
+	| Some f ->
+		IO.write f s;
+		IO.flush f;
+	}
+}
+
+function log( fmt : 'a format, args : 'a ) {
+	var s = sprintf fmt args + "\n";
+	print s;
+	flog s;
+}
+
+function init_client(s) {
+	var read, write = Net.socket_io s;
+	var ip , port = Net.socket_peer s;
+	{
+		sock = s;
+		in = read;
+		out = write;
+		headers = [("Content-Type","text/html")];
+		headers_sent = false;
+		return_code = (200,"OK");
+		main = None;
+	}
+}
+
+function rec find_url_file(url,recursive) {
+	var len = String.length url;
+	if len > 0 && String.get url (len - 1) == '/' then {
+		function rec loop(l) {
+			match l {
+			| [] ->
+				if *mod_rewrite then
+					find_url_file (String.sub url 0 (len - 1)) true
+				else
+					None
+			| f :: l ->
+				match find_url_file(url + f) false {
+				| None -> loop l
+				| x -> x
+				}
+			}
+		}
+		loop ["index.html"; "index.htm"; "index.n"];
+	} else {
+		var path = if len > 0 && String.get url 0 == '/' then String.sub url 1 (len - 1) else url;
+		var path = *cur_path + path;
+		if Sys.exists path && sys_is_file path then
+			Some path
+		else if recursive && *mod_rewrite then
+			// if path like /path/to/file then lookup /path/to/file.n
+			match find_url_file (url + ".n") false {
+			| Some url -> Some url
+			| None ->
+				// lookup in subdirectory
+				match List.rev String.split(url,"/") {
+				| [] | [_] -> None
+				| _ :: dir -> find_url_file (String.concat "/" List.rev(dir) + "/") true
+				}
+			}
+		else
+			None
+	}
+}
+
+function log_exception(e) {
+	Stack.dump IO.stderr Stack.exc();
+	IO.printf IO.stderr "Exception : %s\n" string(e);
+}
+
+function print_exception(e) {
+	var stack = Stack.exc();
+	function format(s) {
+		var s = String.concat "&lt;" (String.split s "<");
+		var s = String.concat "&gt;" (String.split s ">");
+		s
+	};
+	Array.iter (function(s) {
+		match s {
+		| Stack.CFunction -> print "Called from a C function<br>"
+		| Stack.Module m -> printf "Called from %s (no debug available)<br>" format(m)
+		| Stack.Pos (file,line) -> printf "Called from %s line %d<br>" (format file,line)
+		}
+	}) stack
+	var s = string(e);
+	printf "Exception : %s" format(s);
+}
+
+function send_headers(c) {
+	if !c.headers_sent then {
+		c.headers_sent := true;
+		IO.write c.out (sprintf "HTTP/1.1 %d %s\r\n" c.return_code);
+		List.iter (function((name,v)) {
+			IO.write c.out (sprintf "%s: %s\r\n" (name,v));
+		}) (List.rev c.headers);
+		IO.write c.out "\r\n";
+	}
+}
+function headers_not_sent(c,s) {
+	// should we send an object like mod_neko failure does ?
+	if c.headers_sent then (neko "$throw")("Cannot set "+s+" : Headers already sent");
+}
+
+function set_header(c,n,v) {
+	headers_not_sent c n;
+	c.headers := (n,v) :: List.filter (function((n2,_)) { n != n2 }) c.headers;
+}
+
+var cur_client : client option ref = &None;
+var cur_request : http_request option ref = &None;
+
+function client() {
+	match *cur_client {
+	| None -> assert()
+	| Some c -> c
+	}
+}
+
+function request() {
+	match *cur_request {
+	| None -> assert()
+	| Some r -> r
+	}
+}
+
+function do_print(v) {
+	var c = client();
+	try {
+		send_headers(c);
+		var s = string(v);
+		IO.write c.out s;
+	} catch {
+		Neko_error e when magic e == "std@socket_send" -> ()
+	}
+}
+
+function init_mod_neko() {
+	// simulate a mod_neko environment
+	var hmethods = Hashtbl.create();
+	function rec flatten(l) {
+		match l {
+		| [] -> neko "null"
+		| (x,y) :: l ->
+			var l = flatten l;
+			neko "$array(x,y,l)"
+		}
+	}
+	Sys.put_env "MOD_NEKO" "1";
+	var jit = Sys.get_env "MOD_NEKO_JIT" != None;
+	neko "$loader.loadprim('std@enable_jit',1)(jit)";
+	function def(name : string,f) {
+		Hashtbl.replace hmethods name magic(f);
+	}
+	function no_param(name,f) {
+		def name neko("function() { f(null) }");
+	}
+	no_param "get_cookies" (function() {
+		flatten (
+			match header "Cookie" request().headers {
+			| None -> []
+			| Some k ->
+				var l = String.split k "; ";
+				List.map (function(k) {
+					match String.split k "=" {
+					| [] | [_] -> (k,"")
+					| k :: l -> (k,String.concat "=" l)
+					}
+				}) l
+			}
+		)
+	});
+	def "set_cookie" (function(name,val) {
+		var c = client();
+		headers_not_sent c "Cookie";
+		c.headers := ("Set-Cookie",name+"="+val+";") :: c.headers;
+	});
+	no_param "get_host_name" (function() {
+		Net.host_to_string fst(Net.socket_host client().sock);
+	});
+	no_param "get_client_ip" (function() {
+		Net.host_to_string fst(Net.socket_peer client().sock);
+	});
+	no_param "get_uri" (function() {
+		var r = request();
+		fst r.url
+	});
+	def "redirect" (function(url) {
+		var c = client();
+		headers_not_sent c "Redirection";
+		set_header c "Location" url;
+		c.return_code := (302, "Found");
+	});
+	def "set_return_code" (function(i) {
+		var c = client();
+		headers_not_sent c "Return code";
+		c.return_code := (i, "OK");
+	});
+	def "set_header" (function(name,val) {
+		var c = client();
+		headers_not_sent c name;
+		set_header c name val;
+	});
+	def "get_client_header" (function(name) {
+		match header name request().headers {
+		| None -> neko "null"
+		| Some h -> h
+		}
+	});
+	no_param "get_client_headers" (function() {
+		flatten request().headers
+	});
+	no_param "get_params_string" (function() {
+		snd request().url
+	});
+	no_param "get_post_data" (function() {
+		match request().post_data {
+		| None -> neko "null"
+		| Some d -> d
+		}
+	});
+	no_param "get_params" (function() {
+		flatten request().params
+	});
+	no_param "cgi_get_cwd" (function() {
+		*cur_path
+	});
+	def "cgi_set_main" (function(f) {
+		client().main := (if f == neko "null" then None else Some f);
+	});
+	no_param "cgi_flush" (function() {
+		IO.flush client().out;
+	});
+	def "parse_multipart_data" (function(part,data) {
+		if request().ctype == Some "multipart/form-data" then (neko "$throw")("parse_multipart_data not implemented");
+	});
+	no_param "get_http_method" (function() {
+		match request().method {
+		| MethodGet -> "GET"
+		| MethodPost -> "POST"
+		| MethodCustom r -> r
+		}
+	});
+	def "log_message" (function (s) {
+		IO.printf IO.stderr "[log] %s\n" s;
+	});
+	function resolve_method(f:string) {
+		try {
+			Hashtbl.find hmethods f
+		} catch {
+			Not_found -> neko "null"
+		}
+	}
+	var loader = neko "{
+		args => $array(),
+		path => $loader.path,
+		cache => $loader.cache,
+		loadmodule => function(name,l) {
+			$loader.cache = this.cache;
+			$loader.loadmodule(name,l);
+		},
+		loadprim => function(prim,nargs) {
+			var l = $ssize(prim);
+			if l > 9 && $ssub(prim,0,9) == 'mod_neko@' {
+				prim = $ssub(prim,9,l-9);
+				var f = resolve_method(prim);
+				if( f == null ) $throw('Unknown mod_neko primitive : '+prim);
+				if( $nargs(f) != nargs ) $throw('Invalid number of arguments for '+prim);
+				return f;
+			}
+			return $loader.loadprim(prim,nargs);
+		}
+	}";
+	var redirect = neko "$loader.loadprim('std@print_redirect',1)";
+	var old_cache = neko "$new($loader.cache)";
+	function(c,r,file) {
+		cur_client := Some c;
+		cur_request := Some r;
+		var main_fun = try {
+			var f = Hashtbl.find module_cache file;
+			c.main := Some f;
+			f
+		} catch {
+			Not_found -> neko "null"
+		};
+		try {
+			redirect(do_print);
+			if main_fun == neko "null" then neko "loader.loadmodule(file,loader)" else neko "main_fun()";
+			redirect(neko "null");
+		} catch {
+			e ->
+				log_exception(e); // stderr
+				try { print_exception(e) } catch { e -> () }; // on screen
+				redirect(neko "null");
+		}
+		if !c.headers_sent then do_print " ";
+		match c.main {
+		| None ->
+			neko "
+				$loader.cache = $new(old_cache);
+				loader.cache = $loader.cache;
+			";
+		| Some f ->
+			Hashtbl.add module_cache file f;
+		}
+	}
+}
+
+var mod_neko = init_mod_neko();
+
+function config(c,r) {
+	try {
+		var dir = List.assoc "path" r.params;
+		var old = Sys.get_cwd();
+		try {
+			Sys.set_cwd dir;
+			cur_path := Sys.get_cwd();
+			Sys.set_cwd old;
+		} catch {
+			e -> log_exception e
+		}
+	} catch {
+		Not_found -> ()
+	}
+	do_print page_config()
+}
+
+function client_msg(c) {
+	var r = parse_http_request c;
+	cur_client := Some c;
+	if r.res == "/server:config" then
+		config(c,r)
+	else match find_url_file r.res true {
+	| None ->
+		c.return_code := (404,"Not Found");
+		do_print page_404(r.res);
+	| Some file ->
+		var ext = String.lowercase (Sys.extension file);
+		if ext == "n" then {
+			log "Request %s [%s]" (r.res, match r.params {
+				| [] -> ""
+				| l -> "\n  " + (String.concat "\n  " (List.map (function((p,v)) { p + " => "+ v }) l)) + "\n"
+			});
+			mod_neko c r file
+		} else {
+			// directly send the file content
+			IO.write c.out "HTTP/1.1 200 OK\r\n";
+			var ctype = try { List.assoc ext mime } catch { Not_found -> "unknown/unknown" };
+			var file_size : int = neko "$loader.loadprim('std@sys_stat',1)(file).size";
+			IO.write c.out ("Content-Type: " + ctype + "\r\n");
+			IO.write c.out ("Content-Length: " + file_size + "\r\n");
+			IO.write c.out "\r\n";
+			var fin = IO.read_file file true;
+			var bufsize = 100000;
+			var n = &(file_size / bufsize);
+			try {
+				while *n > 0 {
+					IO.write c.out IO.read(fin,bufsize);
+					n := *n - 1;
+				}
+				IO.write c.out IO.read(fin,file_size % bufsize);
+			} catch {
+				e -> IO.close_in fin; throw e
+			}
+			IO.close_in fin
+		}
+	}
+}
+
+function client_msg_safe(c) {
+	try {
+		client_msg(c);
+	} catch {
+		| Invalid_char -> printf "Invalid char reveived\n" ();
+		| IO.Eof -> printf "Connection aborted\n" ();
+		| Neko_error e when Reflect.value e == Reflect.VString "std@socket_send" -> printf "Sending file aborted\n" ();
+	}
+	Net.socket_close c.sock;
+	neko "$loader.loadprim('std@run_gc',1)(true)";
+	false
+}
+
+function init() {
+	var head = "Neko Web Server v1.0 - (c)2006-2013 Haxe Foundation";
+	var port = &2000;
+	var host = &"localhost";
+	var decl = [
+		("-p", Args.Int (function(n) { port := n }) , "<port> : change server port");
+		("-h", Args.String (function(h) { host := h }) , "<host> : change server host");
+		("-d", Args.String (function(d) {
+			var old = Sys.get_cwd();
+			Sys.set_cwd d;
+			cur_path := Sys.get_cwd();
+			Sys.set_cwd old;
+		}), "<dir> : change the server base directory");
+		("-log", Args.String (function(s) { file_log := Some (IO.write_file s true) }), "<file> : set log file");
+		("-rewrite", Args.Void (function() { mod_rewrite := true }), ": activate pseudo mod-rewrite for smart urls");
+	];
+	Args.parse head decl (function(f) { throw Args.Invalid });
+	log "Starting Neko Server on %s:%d" (*host,*port);
+	Net.start_server Net.host_resolve(*host) (*port) init_client client_msg_safe;
+}
+

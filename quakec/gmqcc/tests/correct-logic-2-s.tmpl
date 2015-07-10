@@ -1,0 +1,12 @@
+I: correct-logic.qc
+D: vector logic flags
+T: -execute
+C: -std=fteqcc -fcorrect-logic -fshort-logic
+M:         ! & | i N
+M: 0, 0 -> 1 0 0 0 1
+M: 0, x -> 1 0 1 0 1
+M: x, 0 -> 0 0 1 1 0
+M: x, x -> 0 1 1 1 0
+M: 0, y -> 1 0 1 0 1
+M: y, 0 -> 0 0 1 1 0
+M: y, y -> 0 1 1 1 0

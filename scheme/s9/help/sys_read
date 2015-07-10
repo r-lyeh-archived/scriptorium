@@ -1,0 +1,27 @@
+S9 EXT  (sys:read integer1 integer2)  ==>  string
+        (sys:write integer1 string)   ==>  integer
+
+SYS:READ reads up to INTEGER2 bytes directly from file descriptor
+INTEGER1, stores them in a string, and returns that string.
+
+SYS:WRITE writes STRING directly to file descriptor INTEGER1 and
+returns the number of bytes written.
+
+SYS:READ can read a binary file. In this case, it will return
+a string containing characters with no external representation.
+When SYS:READ attempts to read beyond the EOF, it will return
+an empty string rather than the EOF object. Caveat utilitor!
+
+Whenever possible the Scheme I/O functions, such as READ-CHAR,
+WRITE-CHAR, DISPLAY, etc, should be used instead of SYS:READ
+and SYS:WRITE.
+
+; This example will overwrite "tmpfile"!
+;
+(let ((fd (sys:creat "tmpfile" #o644)))
+  (sys:write fd "xyz")
+  (sys:close fd)
+  (set! fd (sys:open "tmpfile" sys:read-only))
+  (let ((s (sys:read fd 17)))
+    (sys:close fd)
+    s))                                 ==>  "xyz"

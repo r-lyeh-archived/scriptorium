@@ -1,0 +1,81 @@
+S9 LIB  (scm2html <option> ...)  ==>  string | unspecific
+
+Render Scheme code in HTML with syntax highlighting and optional
+CSS-based paren-matching. Input is read from (current-input-stream)
+and output is written to (current-output-stream) unless the
+'INPUT-STRING: option is specified (see below).
+
+The rendition of the Scheme code will be placed in a PRE container
+of the class "scheme" (<PRE class=scheme>). When paren-matching is
+enabled, the class will change to "scheme-hl".
+
+The following container classes are used to specify the colors
+and other styles of the individual elements:
+
+      o  comment
+      p  parenthesis
+      s  symbol
+      c  constant
+      r  R4RS procedure
+      y  R4RS syntax
+      x  S9fES procedure
+      z  S9fES syntax
+      m  normal form
+      n  nested expression (for paren matching)
+
+See the "scheme.css" style sheet for examples.
+
+The following <option>s exist;
+
+'FULL-HTML: boolean
+      When set to #T, SCM2HTML will output a full HTML document
+      and not just a PRE container. Will not work in string mode.
+
+'LOUT-MODE: boolean
+      Generate Lout output rather than HTML output.
+
+'INPUT-STRING: string
+      Input is read from a string and output is written to a string.
+      In string mode, the 'FULL-HTML: option does not work. When this
+      option is set, the result of the procedure will be of the form:
+
+              (attributes string)
+
+      where STRING is the output of the rendering process. See the
+      description of 'INITIAL-STYLE: for more information on the
+      ATTRIBUTES part. The output string of SCM2HTML is always
+      lacking a trailing </SPAN> element.
+
+'INITIAL-STYLE: list
+      Initialize the color class and boldface flag with the values taken
+      from LIST. LIST should be the car part of an object returned by
+      SCM2HTML previously. It allows to render multiple lines that are
+      logically connected by preserving the style across line boundaries.
+
+'MARK-S9-PROCS: boolean
+      When set to #T, S9fES procedures will be highlighted with an
+      extra color. Otherwise, they will be rendered in the same color
+      as user-defined symbols.
+
+'MARK-S9-EXTNS: boolean
+      When set to #T, S9fES syntax extensions will be highlighted with
+      an extra color. Otherwise, they will be rendered in the same color
+      as user-defined symbols.
+
+'SHOW-MATCHES: boolean
+      When set to #T, SCM2HTML will insert CSS code that allow to match
+      parentheses interactively in the resulting code by moving the
+      cursor over expressions. Does not work in string mode.
+
+'TILDE-QUOTES: boolean
+      When set to #T, #\~ characters in programs will serve is
+      invisible quotation. Used to facilitate the rendering of
+      evaluation sequences.
+
+'TERMINATE: list
+      Return termination tags for the color and boldface settings
+      specified in LIST (see INPUT-STRING:).
+
+(scm2html 'input-string: "'()")
+   ==> (("c" #f quote 0 ())
+        "<SPAN class=y><B>'</B></SPAN><SPAN class=c>()")

@@ -1,0 +1,17 @@
+R4RS 6.3  (append list ...)         ==>  list
+          (append list ... object)  ==>  object
+
+Returns a list consisting of the elements of the first list followed
+by the elements of the other lists.
+
+(append '(x) '(y))        ==>  (x y)
+(append '(a) '(b c d))    ==>  (a b c d)
+(append '(a (b)) '((c)))  ==>  (a (b) (c))
+
+The resulting list is always newly allocated, except that it shares
+structure with the last list argument. The last argument may actually
+be any object; an improper list results if the last argument is not
+a proper list.
+
+(append '(a b) '(c . d))  ==>  (a b c . d)
+(append '() 'a)           ==>  a

@@ -1,0 +1,15 @@
+S9fES  (reverse! list)  ==>  list
+
+Reverse LIST in situ, thereby destroying the original list.
+Return the reversed list. REVERSE! is much more efficient
+than REVERSE, but does not preserve the original list. When
+porting S9fES programs, REVERSE! can be replaced by REVERSE.
+
+NOTE: When reversing a list that is bound to a symbol, the
+symbol will thereafter be bound to the *last* member of the
+list.
+
+(define x '(1 2 3 4 5))
+
+(reverse! x)  ==>  (5 4 3 2 1)
+x             ==>  (1)

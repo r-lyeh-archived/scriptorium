@@ -1,0 +1,12 @@
+To use the nano syntax highlighting install qc.nanorc somewhere and
+add:
+
+include /directory/qc.nanorc
+
+to your nanorc file located at ~/.nanorc. If the file doesn't exist
+create it.
+
+Optionally you can install it globally by installing qc.nanorc to
+/usr/share/nano
+
+However you still need to provide the include to your ~/.nanorc

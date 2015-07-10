@@ -1,0 +1,5 @@
+S9 EXT  (sys:chdir string)  ==>  unspecific
+
+Change the current working directory to STRING.
+
+(sys:chdir "directory")  ==>  unspecific

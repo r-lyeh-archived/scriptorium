@@ -1,0 +1,9 @@
+S9 LIB  (read-file)             ==>  list
+        (read-file input-port)  ==>  list
+
+Read a text file from an input port, return a list containing
+one string for each line read. When no INPUT-PORT is specified,
+read the current input port.
+
+(with-input-from-file "lib/read-file.scm" read-file)
+  ==>  [lots of lines]

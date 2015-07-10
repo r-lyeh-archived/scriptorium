@@ -1,0 +1,7 @@
+S9 EXT  (sys:getpgid integer)  ==>  integer
+        (sys:setpgid integer)  ==>  unspecific
+
+SYS:GETPGRP returns the process group ID of the S9 process and
+SYS:SETPGRP changes the process group ID of the process.
+
+(sys:setpgrp (sys:getpgrp))  ==>  unspecific

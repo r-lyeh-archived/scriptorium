@@ -1,0 +1,9 @@
+R4RS 6.10  (open-output-file filename)  ==>  output-port
+
+Takes a string naming an output file to be created and returns an
+output port capable of writing characters to a new file by that
+name. If the file cannot be opened, an error is signalled. If a
+file with the given name already exists, the effect is unspecified.
+
+S9fES silently overwrites the existing file when the file specified
+in STRING already exists.

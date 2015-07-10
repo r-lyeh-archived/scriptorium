@@ -1,0 +1,14 @@
+I: truth-flags-2.qc
+D: logic flags
+T: -execute
+C: -std=fteqcc -fshort-logic -ftrue-empty-strings
+M:                 ! & | i N
+M: 'str', 'str' -> 0 1 1 1 0
+M: 'str', ''    -> 0 1 1 1 0
+M: 'str', 0     -> 0 0 1 1 0
+M: '',    'str' -> 0 1 1 1 0
+M: '',    ''    -> 0 1 1 1 0
+M: '',    0     -> 0 0 1 1 0
+M: 0,     'str' -> 1 0 1 0 1
+M: 0,     ''    -> 1 0 1 0 1
+M: 0,     0     -> 1 0 0 0 1

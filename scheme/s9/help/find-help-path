@@ -1,0 +1,6 @@
+S9 LIB  (find-help-path)  ==>  string | #f
+
+Returns the directory in which the online help pages are stored
+of #F when the pages cannot be located.
+
+(find-help-path)  ==>  "/usr/local/share/s9fes/help"

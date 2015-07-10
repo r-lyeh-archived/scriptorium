@@ -1,0 +1,6 @@
+R4RS 6.10.2  (eof-object? object)  ==>  boolean
+
+Returns #T if OBJECT is an end of file object, otherwise returns #F.
+The precise set of end of file objects will vary among implementations,
+but in any case no end of file object will ever be an object that
+can be read in using read.

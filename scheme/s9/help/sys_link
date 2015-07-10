@@ -1,0 +1,6 @@
+S9 EXT  (sys:link string1 string2)  ==>  unspecific
+
+Create a (hard) link STRING2 that refers to the same file as
+STRING1.
+
+(sys:link "file" "new-name")  ==>  unspecific

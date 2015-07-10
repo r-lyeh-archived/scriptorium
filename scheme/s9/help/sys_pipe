@@ -1,0 +1,19 @@
+S9 EXT  (sys:pipe)  ==>  list
+
+Create a Unix pipe (a FIFO structure) and return a list containing
+two file descriptors (integers) for accessing it:
+
+        (read-descriptor write-descriptor)
+
+All data written to the write-descriptor will subsequently
+appear on the read-descriptor. Use the SYS:MAKE-INPUT-PORT and
+SYS:MAKE-OUTPUT-PORT procedures to turn file descriptors into
+I/O ports.
+
+(let* ((p   (sys:pipe))
+       (in  (sys:make-input-port (car p)))
+       (out (sys:make-output-port (cadr p))))
+  (display "foo" out)
+  (newline out)
+  (sys:flush out)
+  (read in))                               ==>  foo

@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{8591ed80-68e1-45ac-b34f-8f2260f9e986}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{c7d75770-90d1-4735-9432-9cde02abd723}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="scintilla">
+      <UniqueIdentifier>{6e22cd4f-efa3-4e58-ada4-55d03fe0af8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gm">
+      <UniqueIdentifier>{158b6835-c631-4c9a-a65e-883f9407e5d8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ChildView.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="gmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="GMLangSettings.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="LanguageSettings.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="NetServer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ScintillaEdit.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmDebugger.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ChildView.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="gmd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="GMLangSettings.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="LanguageSettings.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="NetServer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ScintillaEdit.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Accessor.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\KeyWords.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Platform.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PropSet.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SciLexer.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Scintilla.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ScintillaWidget.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SString.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WindowAccessor.h">
+      <Filter>scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmDebugger.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="gmd.rc">
+      <Filter>src</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\gmd.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\gmd.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="include\Face.py">
+      <Filter>scintilla</Filter>
+    </None>
+    <None Include="include\HFacer.py">
+      <Filter>scintilla</Filter>
+    </None>
+    <None Include="include\Scintilla.iface">
+      <Filter>scintilla</Filter>
+    </None>
+    <None Include="res\bangbang.wav" />
+  </ItemGroup>
+</Project>

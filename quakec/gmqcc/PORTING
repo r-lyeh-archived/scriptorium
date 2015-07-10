@@ -1,0 +1,4 @@
+Porting gmqcc to a new platform is farily trivial, in most cases ansi.c
+will be sufficent enough to get it to run on your favorite platform. If
+however it isn't you can duplicate ansi.c and change it accordingly.
+Changes to platform.h may also be required.

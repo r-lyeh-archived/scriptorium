@@ -1,0 +1,14 @@
+S9 LIB  (false object ...)                   ==>  #f
+        (id object)                          ==>  object
+        (true object ...)                    ==>  #t
+
+        (load-from-library "id.scm")
+
+ID returns the object passed to it.
+
+FALSE returns always #F and TRUE returns always #T, no matter which
+values are passed to them.
+
+(true)          ==>  #t
+(false 1 2 3)   ==>  #f
+(id 'whatever)  ==>  whatever

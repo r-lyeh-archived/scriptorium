@@ -1,0 +1,42 @@
+S9 LIB  (package <name> <option> ... <body>)  ==>  unspecific
+
+PACKAGE packages the definitions in its <body> in such a
+way that they are not visible outside of its body, i.e.
+the scope of each definition is the <body> of the package.
+There must be at least one definition in <body>.
+
+There may be any number of <option>s preceding the definitions
+in the <body> of PACKAGE. All options are lists with a symbol
+beginning with a #\: in their first positions. The following
+options exist:
+
+(:EXPORT symbol ...) lists the symbols to exported from the
+package. When the name X of a definition occurs in :EXPORTS, a
+symbol with the name <name>:X will be made visible outside of
+the package. That symbol will be bound to the same value as X
+inside of the package.
+
+(:IMPORT symbol ...) lists the symbols to imported into the
+package. A symbol that is being imported into a package may be
+redefined later outside of the package without affecting its
+binding inside of the package.
+
+(:MAKE-ALIASES) will create an alias named X for each exported
+symbol named <name>:X, i.e. it will allow to refer to an object
+defined in a package by the same name inside and outside of the
+package.
+
+(begin
+  (package bar
+    (:export foo2 foo3)
+    (:make-aliases)
+    (define (foo-maker n x)
+      (if (zero? n)
+          (lambda ()
+            x)
+          (foo-maker
+            (- n 1)
+            (cons n x))))
+    (define foo2 (foo-maker 2 '()))
+    (define foo3 (foo-maker 3 '())))
+  (list (bar:foo2) (foo3)))           ==>  ((1 2) (1 2 3))

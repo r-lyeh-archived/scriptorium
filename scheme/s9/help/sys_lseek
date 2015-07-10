@@ -1,0 +1,20 @@
+S9 EXT  (sys:lseek integer1 integer2 integer3)  ==>  integer
+
+Move the file pointer of the file descriptor INTEGER1 to the
+position INTEGER2 from the origin INTEGER3. Valid origin values
+include:
+
+        sys:seek-set (0) = seek from the beginning of the file
+        sys:seek-cur (1) = seek from the current position
+        sys:seek-end (2) = seek from the end of the file
+
+SYS:LSEEK returns the current file position after performing the
+seek operation.
+
+(sys:lseek fd 0 sys:seek-end) will position the file pointer at the
+end of the file and return the size of the file. Data subsequently
+written to FD will hence be appended to the corresponding file.
+
+(let ((fd (sys:creat "tmpfile")))
+  (sys:write fd "test")
+  (sys:lseek fd 0 sys:seek-end))   ==>  4

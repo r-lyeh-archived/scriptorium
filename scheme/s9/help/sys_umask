@@ -1,0 +1,22 @@
+S9 EXT  (sys:umask integer)  ==>  integer
+        (sys:umask)          ==>  integer
+
+When applied to a single integer argument, the SYS:UMASK procedure
+sets the file creation mode mask of the S9 process and returns the
+old umask value. When called without any argument, it simply returns
+the current umask value.
+
+The new file creation mode mask will be the lower nine bits of INTEGER,
+corresponding to the following file access permission bits:
+
+        User    Group   Other
+        r w x   r w x   r w x
+        8 7 6   5 4 3   2 1 0
+
+When creating a file with the SYS:CREAT procedure or the
+OPEN-OUTPUT-FILE function, the bits set in the file creation
+mask will be zeroed in the permission bits of the new file.
+E.g., the default mask of #o022 will never allow the group
+or others to write to the new file.
+
+(begin (sys:umask #o22) (sys:umask))  ==>  18

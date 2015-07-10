@@ -1,0 +1,25 @@
+<P>S9fES is a mature, portable, and comprehensible interpreter for
+R4RS Scheme. The core interpreter is written in pure ANSI C (C89), so it
+runs on all platforms offering a C compiler. It can even be compiled
+natively on Plan 9. On Unix-based systems (or MinGW), it also offers 
+an interface to common <A href="ext.html">Unix system calls and
+Curses routines</A>.</P>
+
+<P>The interpreter is built around a toolkit called
+<A href="s9core-$V.tgz">S9core</A> (<A href="s9core.pdf">PDF</A>), which
+contains some basic building blocks for dynamic languages, such as a
+garbage collected heap, bignum arithmetics, etc. (The toolkit is
+included in the S9fES tarball).
+</P>
+
+<P>S9fES has been developed using <A href="edoc.html">EDOC</A>, a literate
+programming tool. The rendered EDOC source code to a previous version is
+available in <A href="../s9book/index.html">print and PDF form</A>. The C
+and Scheme code stripped from the EDOC files is in the <EM>public domain</EM>,
+though, and can be <A href="s9fes-$V.tgz">downloaded</A> here (~580KB).</P>
+
+<P>The interpreter is explained in detail
+in the <A href="../s9book/index.html">Scheme&nbsp;9 Book</A>!
+</P>
+
+<H2>The S9fES Distribution Archive</H2>

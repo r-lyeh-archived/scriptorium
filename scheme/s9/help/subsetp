@@ -1,0 +1,10 @@
+S9 LIB  (subset? list1 list2 ...) ==>  list
+
+        (load-from-library "subsetp.scm")
+
+Check whether each of a sequence of sets is a subset of the subsequent
+set in the list. The test succeeds even if a set is an improper subset
+of (i.e. the same sets) the subsequent one.
+
+(subset? '(a) '(a b) '(a b) '(a b c d))  ==>  #t
+(subset? '(a b c))                       ==>  #t

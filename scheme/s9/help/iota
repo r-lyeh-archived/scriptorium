@@ -1,0 +1,18 @@
+S9 LIB  (iota integer)             ==>  list
+        (iota integer1 integer2)   ==>  list
+        (iota* integer1 integer2)  ==>  list
+
+        (load-from-library "iota.scm")
+
+IOTA creates a sequence of integers starting at 1 and ending
+at INTEGER (including both). When a second argument is passed
+to IOTA, the sequence returned by it will start at INTEGER1
+and ; end at INTEGER2 (again, including both).
+
+IOTA* differs from IOTA in two ways: it always takes two
+arguments and excludes INTEGER2 from the generated sequence.
+
+(iota 7)       ==>  (1 2 3 4 5 6 7)
+(iota 17 21)   ==>  (17 18 19 20 21)
+(iota* 17 21)  ==>  (17 18 19 20)
+(iota* 1 1)    ==>  ()

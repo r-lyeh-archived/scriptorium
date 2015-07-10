@@ -1,0 +1,285 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="gm">
+      <UniqueIdentifier>{8029a022-80c4-4236-8f98-cd6ee05d2bd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="binds">
+      <UniqueIdentifier>{a116bf2d-6c1f-42cd-a4e5-da29ba3d89e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gme">
+      <UniqueIdentifier>{74f46a01-ee8f-47a0-8d35-64a6195e58d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="win32">
+      <UniqueIdentifier>{633c27de-998e-4ee2-82a7-22677cb66727}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\gm\gmArraySimple.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmByteCode.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmByteCodeGen.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmCodeGen.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmCodeGenHooks.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmCodeTree.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmCrc.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmDebug.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmFunctionObject.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmHash.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmIncGC.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmLibHooks.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmListDouble.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmLog.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmMachine.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmMachineLib.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmMem.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmMemChain.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmMemFixed.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmMemFixedSet.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmOperators.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmParser.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmScanner.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmStream.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmStreamBuffer.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmStringObject.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmTableObject.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmThread.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmUserObject.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmUtil.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gm\gmVariable.cpp">
+      <Filter>gm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmArrayLib.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmCall.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmGCRoot.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmGCRootUtil.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmHelpers.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmMathLib.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmStringLib.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmSystemLib.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\binds\gmVector3Lib.cpp">
+      <Filter>binds</Filter>
+    </ClCompile>
+    <ClCompile Include="gme.cpp">
+      <Filter>gme</Filter>
+    </ClCompile>
+    <ClCompile Include="NetClient.cpp">
+      <Filter>gme</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>gme</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\gm\gmArraySimple.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmByteCode.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmByteCodeGen.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmCodeGen.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmCodeGenHooks.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmCodeTree.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmConfig.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmCrc.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmDebug.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmFunctionObject.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmHash.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmIncGC.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmIterator.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmLibHooks.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmListDouble.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmLog.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmMachine.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmMachineLib.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmMem.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmMemChain.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmMemFixed.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmMemFixedSet.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmOperators.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmParser.cpp.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmScanner.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmStream.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmStreamBuffer.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmStringObject.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmTableObject.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmThread.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmUserObject.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmUtil.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gm\gmVariable.h">
+      <Filter>gm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmArrayLib.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmCall.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmGCRoot.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmGCRootUtil.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmHelpers.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmMathLib.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmStringLib.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmSystemLib.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\binds\gmVector3Lib.h">
+      <Filter>binds</Filter>
+    </ClInclude>
+    <ClInclude Include="NetClient.h">
+      <Filter>gme</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>gme</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\win32msvc\gmConfig_p.h">
+      <Filter>win32</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

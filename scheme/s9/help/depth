@@ -1,0 +1,5 @@
+S9 LIB  (depth list)  ==>  integer
+
+Compute the depth of a list.
+
+(depth '(a (b (c d (e)))))  ==>  4

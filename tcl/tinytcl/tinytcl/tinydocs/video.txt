@@ -1,0 +1,58 @@
+DOS Video functions
+
+$Id: video.txt,v 1.1.1.1 2001/04/29 20:36:22 karll Exp $
+
+video normal -- select normal video brightness
+video dim -- select dim video brightness
+video bright -- select bright video
+
+video write data -- write data given the current video attributes for color,
+intensity, etc.  Data can contain multiple lines.  However they must currently
+be separated by carriage-return, linefeed (\r\n), not just linefeed.
+
+video goto x y -- set the cursor to a specific location.  1,1 is the top
+left corner.
+
+video bgcolor n -- set the background color to an integer between 0 and 7
+	0 = black
+	1 = blue
+	2 = green
+	3 = cyan
+	4 = red
+	5 = magenta
+	6 = brown
+	7 = lightgray
+
+video color n -- set the foreground color to an integer between 0 and 15
+	0 = black
+	1 = blue
+	2 = green
+	3 = cyan
+	4 = red
+	5 = magenta
+	6 = brown
+	7 = lightgray
+	8 = darkgray
+	9 = lightblue
+	10 = lightgreen
+	11 = lightcyan
+	12 = lightred
+	13 = lightmagenta
+	14 = yellow
+	15 = white
+
+video color n blink -- set foreground color and blink it
+
+Note that light colors (8-15) may not be defined for certain video hardware
+and, if not, the card will fall back to the corresponding 0-7 color.
+
+video clear -- Clear the screen, same as cls.
+
+video direct -- get or set whether or not we write directly to video or
+go through the BIOS.
+
+video direct 1 -- Write directly to video memory.
+video direct 0 -- Wite to the display through the BIOS.
+
+video direct -- return the current status, 1 or 0.
+

@@ -1,0 +1,10 @@
+R4RS 6.8  (vector-set! vector integer object)  ==>  unspecific
+
+INTEGER must be a valid index of VECTOR. VECTOR-SET! stores OBJECT
+in the element at the INTEGER'th position of VECTOR. The value
+returned by VECTOR-SET! is unspecified.
+
+(let ((vec (vector 0 '(2 2 2 2) "Anna")))
+  (vector-set! vec 1 '("Sue" "Sue"))
+  vec)                                    ==>  #(0 ("Sue" "Sue") "Anna")
+(vector-set! '#(0 1 2) 1 "doe")           ==>  error  ; constant vector

@@ -1,0 +1,58 @@
+
+	S9 CORE
+	A Toolkit for Implementing Dynamic Languages
+	By Nils M Holm, 2015
+	In the public domain
+
+
+	S9core is an easy-to-use toolbox for designers of programming
+	languages. It frees the implementor from re-inventing the wheel.
+	It is a single-file collection of functions providing
+
+	- a garbage collected heap
+
+	- bignum (arbitrary precision) integer arithmetics
+
+	- platform-independent real number arithmetics
+
+	- garbage collected I/O ports
+
+	- persistent heap images
+
+	- etc
+
+	S9core is available on all platforms providing a C89 compiler
+	as well as on Plan9 (native).
+
+	See the documentation in s9core.pdf for further details.
+
+
+	COMPILING S9 CORE
+
+	Building S9core is part of building S9. Running "make test"
+	will test the S9 interpreter and thereby also perform a
+	thorough test of the S9core functions.
+
+	To use S9core in your project, there are two options:
+
+	- copy the files "s9core.c" and "s9core.h" to you new project
+	  directory and just compile and link them against the other
+	  files
+
+	- #include <s9core.h> in your project and link against s9core.a
+
+	If you want to include the "s9core.c" and "s9core.h" files in
+	your project, note that you can compile s9core with
+
+		cc -DTEST -o s9core s9core.c
+
+	to obtain an executable that will perform a quick self-test
+	when called. It will not print anything when the test succeeds
+	and print some diagnostic message and exit with a failure code
+	otherwise.
+
+	Feel free to include S9core in any project you like. It's in
+	the public domain.
+
+	ENJOY!
+

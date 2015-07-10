@@ -1,0 +1,5 @@
+S9 LIB  (union list ...)  ==>  list
+
+Compute the union of a series of sets.
+
+(union '(v w x) '(w x y) '(x y z))  ==>  (v w x y z)

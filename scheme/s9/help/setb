@@ -1,0 +1,11 @@
+R4RS 4.1.6  (set! <variable> <expression>)  ==>  unspecific
+
+<Expression> is evaluated, and the resulting value is stored in the
+location to which <variable> is bound. <Variable> must be bound
+either in some region enclosing the SET! expression or at top level.
+The result of the SET! expression is unspecified.
+
+(define x 2)
+(+ x 1)       ==>  3
+(set! x 4)    ==>  unspecified
+(+ x 1)       ==>  5

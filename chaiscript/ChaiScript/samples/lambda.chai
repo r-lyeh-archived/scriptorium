@@ -1,0 +1,5 @@
+var add2 = fun(x, y) { x + y }
+var add1 = fun(x, f) { f(3,x) }
+print(add2(3, 4))
+
+print(add1(2, add2))

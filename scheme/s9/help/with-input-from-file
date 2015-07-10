@@ -1,0 +1,15 @@
+R4RS 6.10  (with-input-from-file string procedure^0)  ==>  object
+           (with-output-to-file string procedure^0)   ==>  object
+
+PROCEDURE^0 must be a procedure of no arguments, and STRING must
+be a string naming a file. For WITH-INPUT-FROM-FILE, the file must
+already exist; for WITH-OUTPUT-TO-FILE, the effect is unspecified
+if the file already exists. The file is opened for input or output,
+an input or output port connected to it is made the default value
+returned by CURRENT-INPUT-PORT or CURRENT-OUTPUT-PORT, and the thunk
+is called with no arguments.  When the thunk returns, the port is
+closed and the previous default is restored. WITH-INPUT-FROM-FILE
+and WITH-OUTPUT-TO-FILE return the value yielded by PROCEDURE^0.
+
+S9fES silently overwrites the existing file when the file specified
+with WITH-OUTPUT-TO-FILE already exists.

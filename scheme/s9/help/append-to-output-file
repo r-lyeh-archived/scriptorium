@@ -1,0 +1,9 @@
+S9 LIB  (append-to-output-file string)  ==>  output-port
+
+Take a string naming an output file and return an output port
+capable of writing characters to the that file. Characters
+written to the port will be appended to the file. When the
+file does not exist when this procedure is called, it will
+be created. If the file cannot be opened, an error is signalled.
+
+(append-to-output-file "logfile")  ==>  #<output-port>

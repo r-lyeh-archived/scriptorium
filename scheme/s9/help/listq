@@ -1,0 +1,9 @@
+S9 LIB  (listq object ...)  ==>  list
+
+LISTQ is like LIST, but quotes each OBJECT passed to it.
+Rationale: (list a b c)    evaluates a, b, and c
+           '(a b c)        makes the list immutable
+           `(a b c)        may be inefficient
+           (list 'a 'b 'c) is awkward
+
+(listq a (b c) d)  ==>  (a (b c) d)

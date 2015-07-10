@@ -1,0 +1,17 @@
+S9 LIB  (dirname string)  ==>  string
+
+Return the directory part of the path name in STRING. Note that
+DIRNAME performs merely a syntaxical operation without any regard
+to the actual file system structure, i.e.
+
+      (dirname "/foo/bar")  ==>  "/foo"
+
+even if "bar" is also a directory. DIRNAME also takes care of
+trailing slashes and recognizes some special cases (see examples).
+
+(dirname "/foo/bar/baz")  ==>  "/foo/bar"
+(dirname "foo/bar")       ==>  "foo"
+(dirname "foo/bar/")      ==>  "foo"
+(dirname "/foo")          ==>  "/"
+(dirname "/")             ==>  "/"
+(dirname "foo")           ==>  "."

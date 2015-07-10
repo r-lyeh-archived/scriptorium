@@ -1,0 +1,15 @@
+R4RS 6.10.3  (display object)              ==>  unspecific
+             (display object output-port)  ==>  unspecific
+
+Writes a representation of OBJECT to the given OUTPUT-PORT. Strings
+that appear in the written representation are not enclosed in
+double quotes, and no characters are escaped within those strings.
+Character objects appear in the representation as if written by
+write-char instead of by write. DISPLAY returns an unspecified
+value. The OUTPUT-PORT argument may be omitted, in which case it
+defaults to the value returned by CURRENT-OUTPUT-PORT.
+
+Rationale: WRITE is intended for producing machine-readable output
+and DISPLAY is for producing human-readable output. Implementations
+that allow "slashification" within symbols will probably want WRITE
+but not DISPLAY to slashify funny characters in symbols.

@@ -1,0 +1,21 @@
+S9 LIB  (vector-map procedure vector ...)   ==>  vector
+        (vector-map! procedure vector ...)  ==>  unspecific
+
+        (load-from-library "vector-map.scm")
+
+Map a procedure over a set of vectors, giving a new vector
+
+      (vector (f (vector-ref v0 i) ... ) ...)
+
+where F is the given PROCEDURE, V0 is the first and VN is the last
+VECTOR specified. The arity of PROCEDURE must match the number of
+vectors passed to these procedures. VECTOR-MAP is to vectors what
+MAP is to lists.
+
+VECTOR-MAP! does not create a fresh vector, but changes the members
+of the *first* vector in situ.
+
+(vector-map + '#(1 2 3) '#(4 5 6))  ==>  #(5 7 9)
+(let ((v (vector 1 2 3)))
+  (vector-map! - v)
+  v)                                ==>  #(-1 -2 -3)

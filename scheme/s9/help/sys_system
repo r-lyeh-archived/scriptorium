@@ -1,0 +1,6 @@
+S9 EXT  (sys:system string)  ==>  integer
+
+Run the command STRING and return its exit status.
+
+(sys:system "ls")              ==>  0
+(sys:system "ls nonexistent")  ==>  1

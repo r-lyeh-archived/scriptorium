@@ -1,0 +1,38 @@
+R4RS 4.2.2  (letrec <bindings> <body>)  ==>  object
+
+Syntax: <Bindings> should have the form
+
+((<variable> <init>) ...),
+
+and <body> should be a sequence of one or more expressions. It is
+an error for a <variable> to appear more than once in the list of
+variables being bound.
+
+Semantics: The <variable>s are bound to fresh locations holding
+undefined values, the <init>s are evaluated in the resulting
+environment (in some unspecified order), each <variable> is assigned
+to the result of the corresponding <init>, the <body> is evaluated
+in the resulting environment, and the value of the last expression
+in <body> is returned. Each binding of a <variable> has the entire
+LETREC expression as its region, making it possible to define
+mutually recursive procedures.
+
+(letrec ((even?
+           (lambda (n)
+             (if (zero? n)
+                 #t
+                 (odd? (- n 1)))))
+         (odd?
+           (lambda (n)
+             (if (zero? n)
+                 #f
+                 (even? (- n 1))))))
+  (even? 88))                         ==>  #t
+
+One restriction on LETREC is very important: it must be possible
+to evaluate each <init> without assigning or referring to the value
+of any <variable>. If this restriction is violated, then it is an
+error. The restriction is necessary because Scheme passes arguments
+by value rather than by name. In the most common uses of LETREC,
+all the <init>s are LAMBDA expressions and the restriction is
+satisfied automatically.

@@ -1,0 +1,20 @@
+R4RS 6.4  (string->symbol string)  ==>  symbol
+
+Returns the symbol whose name is STRING. This procedure can create
+symbols with names containing special characters or letters in the
+non-standard case, but it is usually a bad idea to create such
+symbols because in some implementations of Scheme they cannot be
+read as themselves. See SYMBOL->STRING.
+
+The following examples assume that the implementation's standard
+case is lower case:
+
+(eq? 'mISSISSIppi 'mississippi)                    ==>  #t
+(string->symbol "mISSISSIppi")                     ==>  the symbol with
+                                                        name "mISSISSIppi"
+(eq? 'bitBlt (string->symbol "bitBlt"))            ==>  #f
+(eq? 'JollyWog
+     (string->symbol (symbol->string 'JollyWog)))  ==>  #t
+
+(string=? (symbol->string (string->symbol "K. Harper, M.D."))
+          "K. Harper, M.D."                        ==>  #t

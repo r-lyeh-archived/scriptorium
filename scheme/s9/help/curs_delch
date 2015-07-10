@@ -1,0 +1,35 @@
+S9 EXT  (curs:delch)                        ==>  unspecific
+        (curs:deleteln)                     ==>  unspecific
+        (curs:insch)                        ==>  unspecific
+        (curs:insertln)                     ==>  unspecific
+        (curs:mvdelch integer_y integer_x)  ==>  unspecific
+        (curs:mvinsch integer_y integer_x)  ==>  unspecific
+
+Curses routines for inserting and deleting lines and characters on
+the screen. This is only a rough summary. See the curses(3) manual
+page or a curses tutorial of your choice for further information.
+
+All of these operations will not take effect before CURS:REFRESH
+is called.
+
+CURS:DELCH deletes the character on the current virtual cursor
+position from the virtual screen. Characters to the right of
+the current position will move to the left to fill the resulting
+gap.
+
+CURS:DELETELN deletes all characters in the current line of the
+virtual cursor. All lines below that line will move up to fill
+the resulting gap.
+
+CURS:INSCH inserts a blank character at the current virtual cursor
+position into the virtual screen. All characters to the right of
+the current position will move to the right to make space for the
+new character.
+
+CURS:INSERTLN inserts a blank line at the current virtual cursor
+position. All lines below that line will move down make space for
+the new line.
+
+CURS:MVDELCH deletes a character from a specific position.
+
+CURS:MVINSCH inserts a blank character at a specific position.

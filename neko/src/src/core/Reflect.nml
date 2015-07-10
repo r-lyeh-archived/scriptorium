@@ -1,0 +1,155 @@
+/*
+ * Copyright (C)2005-2012 Haxe Foundation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+type neko_object;
+type neko_abstract;
+type neko_function;
+type neko_array;
+type neko_loader;
+type module;
+
+type value {
+	VNull;
+	VInt : int;
+	VFloat : float;
+	VBool : bool;
+	VString : string;
+	VObject : neko_object;
+	VAbstract : neko_abstract;
+	VFunction : neko_function;
+	VArray : neko_array;
+}
+
+neko("
+	@module_read = $loader.loadprim('std@module_read',2);
+	@module_name = $loader.loadprim('std@module_name',1);
+	@module_exports = $loader.loadprim('std@module_exports',1);
+	@module_loader = $loader.loadprim('std@module_loader',1);
+	@module_exec = $loader.loadprim('std@module_exec',1);
+	@module_nglobals = $loader.loadprim('std@module_nglobals',1);
+	@module_global_get = $loader.loadprim('std@module_global_get',2);
+	@module_global_set = $loader.loadprim('std@module_global_set',3);
+	@module_code_size = $loader.loadprim('std@module_code_size',1);
+	@module_read_path = $loader.loadprim('std@module_read_path',3);
+");
+
+function value( n : neko_value ) : value {
+	var i = function() { invalid_arg() };
+	neko("
+		switch $typeof(n) {
+		$tnull => VNull
+		$tint => VInt(n)
+		$tfloat => VFloat(n)
+		$tbool => VBool(n)
+		$tstring => VString(n)
+		$tobject => VObject(n)
+		$tabstract => VAbstract(n)
+		$tfunction => VFunction(n)
+		$tarray => VArray(n)
+		default => i()
+		}
+	");
+}
+
+function neko_value(v) : neko_value {
+	match v {
+	| VNull -> neko("null")
+	| VInt i -> magic i
+	| VFloat f -> magic f
+	| VBool b -> magic b
+	| VString s -> magic s
+	| VObject o -> magic o
+	| VAbstract a -> magic a
+	| VFunction f -> magic f
+	| VArray a -> magic a
+	}
+}
+
+function asize(a : neko_array) : int {
+	neko("$asize(a)");
+}
+
+function aget(a : neko_array, p : int) : value {
+	value(neko("a[p]"));
+}
+
+function aset(a : neko_array, p : int, v : value) : void {
+	var v = neko_value v;
+	neko("a[p] = v");
+}
+
+function module_read( fread : string -> int -> int -> int ) : module {
+	neko("@module_read(fread,$loader)");
+}
+
+var __list_dep = List.map
+
+function loader_path() : string list {
+	neko("@List.@make($loader.path)");
+}
+
+function module_read_path( path : string array, name : string, loader : neko_loader ) : module {
+	neko("
+		var h;
+		var n = path[2];
+		path = path[0];
+		while( n > 0 ) {
+			n -= 1;
+			h = $array(path[n],h);
+		}
+		@module_read_path(h,name,loader);
+	");
+}
+
+function module_name( m : module ) : string {
+	neko("@module_name(m)");
+}
+
+function module_execute( m : module ) {
+	value neko("@module_exec(m)");
+}
+
+function module_exports( m : module ) {
+	value neko("@module_exports(m)")
+}
+
+function module_loader( m : module ) {
+	value neko("@module_loader(m)")
+}
+
+function module_globals_count( m : module ) : int {
+	neko("@module_nglobals(m)");
+}
+
+function module_get_global( m : module, n : int ) {
+	value neko("@module_global_get(m,n)");
+}
+
+function module_set_global( m : module, n : int, v : value ) : void {
+	var v = neko_value v;
+	neko("@module_global_set(m,n,v)");
+}
+
+function module_code_size( m : module ) : int {
+	neko("@module_code_size(m)");
+}
+

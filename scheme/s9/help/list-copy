@@ -1,0 +1,6 @@
+S9 LIB  (list-copy list)  ==>  list
+
+Copy the spine of a proper list, creating a fresh list with the
+same elements as the original list.
+
+(list-copy '(foo bar baz))  ==>  (foo bar baz)

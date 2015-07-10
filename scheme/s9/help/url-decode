@@ -1,0 +1,9 @@
+S9 LIB  (url-decode string)  ==>  string
+
+Decode an URL-encoded string. In an URL-encoded string, each subsequence
+of the form %NN represents a character with the ASCII code NN, where NN
+is a two-digit hexa-decimal number. URL-DECODE creates a fresh string
+where each %NN sequence has been replaced by the corresponding character.
+When STRING contains invalid %NN sequences, URL-DECODE returns #F.
+
+(url-decode "%46%4F%4FBAR")  ==>  "FOOBAR"

@@ -1,0 +1,49 @@
+S9fES **              ==>  object
+      *epsilon*       ==>  real
+      *extensions*    ==>  list
+      *host-system*   ==>  symbol
+      *library-path*  ==>  string
+      *loading*       ==>  boolean
+
+These are dynamic variables defined at the top level of S9fES.
+** evaluates to the result most recently displayed at the REPL.
+
+*EPSILON* is the smallest real number that can be represented
+without loss of precision by the given S9 implementation.
+
+*EXTENSIONS* lists the extension procedures provided by the
+extended interpreter (if any).
+
+*HOST-SYSTEM* is the host system on which S9fES is running. It
+is currently either UNIX, PLAN9, or #F (unknown).
+
+*LIBRARY-PATH* is a string containing the value of the
+S9FES_LIBRARY_PATH environment variable as initialized when the
+interpreter launches (or a reasonable default value).
+
+*LOADING* is set to #T when the interpreter loads a file and
+otherwise to #F. Altering the value of *LOADING* by a program
+will lead to undefined behavior of S9fES.
+
+(cons 1 2)      ==>  (1 . 2)
+(car **)        ==>  1
+
+*epsilon*       ==>  10e-17
+
+*extensions*    ==>  ()
+
+*host-sytstem*  ==>  unix
+
+*library-path*  ==>  ".:~/.s9fes:/u/share/s9fes"
+
+*loading*       ==>  #f
+
+If you want to change the values of these variables temporarily at
+run time, you need the FLUID-LET syntax, which is contained in the
+S9fES extension library:
+
+(let ((*library-path* "some-new-path"))
+  (load-from-library "in-new-path.scm"))       ==>  error
+
+(fluid-let ((*library-path* "some-new-path"))
+  (load-from-library "in-new-path.scm"))       ==>  OK

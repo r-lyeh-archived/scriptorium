@@ -1,0 +1,23 @@
+S9 LIB  (vector-copy vector)                           ==>  vector
+        (vector-copy vector integer1)                  ==>  vector
+        (vector-copy vector integer1 integer2)         ==>  vector
+        (vector-copy vector integer1 integer2 object)  ==>  vector
+
+Returns a copy of the given vector. When INTEGER1 and INTEGER2
+are specified, extract a subvector starting at position INTEGER1
+and ending at INTEGER2 (excluding the INTEGER2'th element). When
+INTEGER2 is omitted, it defaults to the length of the input vector.
+
+(vector-copy '#(a b c d e f))      ==>  #(a b c d e f)
+(vector-copy '#(a b c d e f) 3)    ==>  #(d e f)
+(vector-copy '#(a b c d e f) 2 5)  ==>  #(c d e)
+
+When the 'end' argument (INTEGER2) is larger than the length of
+the input vector, then extra slots will be added to the fresh copy:
+
+(vector-copy '#(a b c d e f) 4 7)  ==>  #(e f #<unspecific>)
+
+An extra argument (OBJECT) may be added to fill extra slots with
+a specific value:
+
+(vector-copy '#(a b c d e f) 5 10 'x)  ==>  #(f x x x x)

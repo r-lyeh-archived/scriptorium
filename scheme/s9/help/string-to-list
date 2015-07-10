@@ -1,0 +1,7 @@
+R4RS 6.7  (string->list string)  ==>  list
+          (list->string chars)   ==>  string
+
+STRING->LIST returns a newly allocated list of the characters that
+make up the given string. LIST->STRING returns a newly allocated
+string formed from the characters in the list CHARS. STRING->LIST
+and LIST->STRING are inverses so far as EQUAL? is concerned.

@@ -1,0 +1,64 @@
+GMQCC is quite feature complete.  But that doesn't address the fact that
+it can be improved.  This is a list of things that we'd like to support
+in the distant future.  When the time comes, we can just select a topic
+from here and open a ticket for it on the issue tracker.  But for the
+meantime, this is sort of a cultivating flat file database.
+
+Optimizations:
+    The following are optimizations that can be implemented after the
+    transformation into static-single assignment (SSA).
+
+        Global Value Numbering:
+            Eliminate redundancy by constructing a value graph of the source
+            then determining which values are computed by equivalent expressions.
+            Similar to Common Subexpression Elimination (CSE), however expressions
+            are determined via underlying equivalence, opposed to lexically identical
+            expressions (CSE).
+
+    The following are optimizations that can be implemented before the
+    transformation into a binary (code generator).
+
+        Code factoring:
+            The process of finding sequences of code that are identical,
+            or can be parameterized or reordered to be identical.
+            Which can be replaced with calls to a shared subroutine. To
+            reduce duplicated code. (Size optimization)
+
+Language Features:
+    The following are language features that we'd like to see implemented in the
+    future.
+
+    AST Macros:
+        Macros with sanity.  Not textual substiution.
+
+    Classes:
+        Like C++, but minus the stupidity:
+            - No type operator overloads
+            - Keep operator overloading for basic operators though.
+            - No inheritance
+            - No virtuals / pure virtuals
+            - Essentially "C structs but with operators" :)
+
+    Overloaded Functions:
+        Ability to make individual functions with the same name, but take
+        different amount of arguments or type of arguments.
+
+    Default Argument Substiution:
+        Ability to specify default values for arguments in functions.
+        void foo(string bar, string baz="default");
+        Supplying just one argument will expand the second argument to
+        become "default", otherwise if two arguments are specified then
+        the "default" string is overrode with what ever the user passes.
+
+    Namespaces:
+        There is already a ticket open on this. They'd work just like C++
+        identically even.
+
+Testsuite:
+    The following are things we'd like to see added to the testsuite
+    in the distant future:
+
+    Interface:
+        Ability to select individual tests, or set parameters manually
+        opposed to using the static task-template files. (A method to
+        override them rather).

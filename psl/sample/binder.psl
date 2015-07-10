@@ -1,0 +1,12 @@
+// binder sample
+
+// function
+cfunc(1);
+cfunc("2str"); // auto cast to int
+print(""+rfunc(10)+"\n");
+
+// class
+print("I:"+instance.getInt()+"\n");
+print("F:"+instance.getFloat()+"\n");
+instance.setMember(256);
+print("S:"+instance.getInt()+"\n");

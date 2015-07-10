@@ -1,0 +1,11 @@
+S9 EXT  (sys:inet-getpeername integer)  ==>  list
+
+Find out the peer name (IP address and port) of the remote host
+connected through the socket described by the file descriptor
+INTEGER (this descriptor is typically returned by SYS:INET-ACCEPT).
+Return a list of the form
+
+        (ip-address port)
+
+where IP-ADDRESS is a string and PORT is an integer. When no
+peer name could be associated with INTEGER, return #F.

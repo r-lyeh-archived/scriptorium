@@ -1,0 +1,5 @@
+R4RS 6.10  (open-input-file filename)  ==>  input-port
+
+Takes a string naming an existing file and returns an input port
+capable of delivering characters from the file. If the file cannot
+be opened, an error is signalled.

@@ -1,0 +1,7 @@
+S9 EXT  (sys:getgid)  ==>  integer
+        (sys:getuid)  ==>  integer
+
+Return the group ID (user ID) of the S9 process.
+
+(sys:getgid)  ==>  1001
+(sys:getuid)  ==>  1001

@@ -1,0 +1,3038 @@
+/*  Pawn compiler - Peephole optimizer "sequences" strings (plain
+ *                  and compressed formats)
+ *
+ *  Copyright (c) ITB CompuPhase, 2000-2011
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ *  use this file except in compliance with the License. You may obtain a copy
+ *  of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License for the specific language governing permissions and limitations
+ *  under the License.
+ *
+ *  Version: $Id: sc7.sch 4731 2012-06-21 11:11:18Z thiadmer $
+ */
+
+/* Special characters in the strings of this file:
+ *  %1 to %5    parameters that are replaced, the parameters should be numerical
+ *              (hexadecimal) values
+ *  %0          a parameter that is replaced with its packed value (so on a
+ *              32-bit system, 00001234 gets replaced by 1234)
+ *  -           in front of a parameter, - means that the parameter is replaced
+ *              by the negated value from the source; this token is valid only
+ *              in the replacement string
+ *  +           between two parameters, + means that the parameters are replaced
+ *              by the sum; this token is valid only in the replacement string
+ *  ~           in front of a parameter, and optional space, which should precede
+ *              an optional variable
+ *  #           in front of a literal value, the expanded hexadecimal version of
+ *              that literal value (so #5 becomes 00000005 on a 32-bit system);
+ *              this token is valid only in the replacement string
+ */
+
+SC_FUNC int strexpand(char *dest, unsigned char *source, int maxlen, unsigned char pairtable[128][2]);
+
+#define SCPACK_TERMINATOR ,     /* end each section with a comma */
+
+#define SCPACK_TABLE sequences_table
+/*-*SCPACK start of pair table, do not change or remove this line */
+unsigned char sequences_table[][2] = {
+  {105,32}, {114,128}, {112,129}, {46,130}, {49,33}, {37,132}, {32,37}, {97,100}, {115,104}, {117,136}, {112,137}, {46,115}, {32,133}, {108,111}, {59,36}, {141,135},
+  {50,33}, {97,108}, {145,116}, {46,146}, {46,112}, {105,33}, {131,133}, {114,33}, {131,37}, {97,151}, {112,153}, {142,154}, {115,116}, {143,139}, {46,99}, {114,149},
+  {148,159}, {48,33}, {152,144}, {135,100}, {110,156}, {111,164}, {99,165}, {147,33}, {134,144}, {112,111}, {169,112}, {138,114}, {112,33}, {134,161}, {120,172}, {101,174},
+  {142,175}, {134,51}, {138,160}, {170,167}, {147,140}, {157,162}, {126,37}, {134,49}, {177,33}, {103,33}, {104,185}, {99,186}, {120,187}, {163,114}, {46,135}, {122,101},
+  {190,114}, {191,114}, {101,113}, {155,138}, {166,150}, {110,100}, {46,149}, {105,110}, {32,35}, {134,52}, {199,99}, {101,99}, {100,203}, {155,171}, {140,176}, {157,150},
+  {53,33}, {163,33}, {194,33}, {138,109}, {189,150}, {201,33}, {143,150}, {108,158}, {134,50}, {106,193}, {105,100}, {115,103}, {115,108}, {218,120}, {147,168}, {178,181},
+  {117,197}, {136,215}, {111,224}, {98,226}, {114,101}, {228,102}, {193,111}, {227,115}, {180,181}, {183,216}, {217,140}, {143,162}, {231,184}, {179,209}, {108,229}, {183,168},
+  {139,140}, {138,158}, {171,109}, {197,33}, {170,160}, {152,161}, {97,243}, {139,173}, {147,173}, {182,50}, {182,51}, {134,48}, {233,177}, {251,183}, {250,182}
+};
+/*-*SCPACK end of pair table, do not change or remove this line */
+
+typedef struct {
+  const char *find;
+  const char *replace;
+  short opc,arg;        /* number of opcodes/arguments saved (may be negative!) */
+} SEQUENCE;
+static const char separator_macro[] = {sOPTIMIZE_MACRO,'\0'};
+static const char separator_full[] = {sOPTIMIZE_FULL,'\0'};
+static const SEQUENCE sequences_cmp[] = {
+  /* A very common sequence in four varieties
+   *    load.s.pri %1           load.s.pri %2
+   *    push.pri                load.s.alt %1
+   *    load.s.pri %2           -
+   *    pop.alt                 -
+   *    --------------------------------------
+   *    load.pri %1             load.s.pri %2
+   *    push.pri                load.alt %1
+   *    load.s.pri %2           -
+   *    pop.alt                 -
+   *    --------------------------------------
+   *    load.s.pri %1           load.pri %2
+   *    push.pri                load.s.alt %1
+   *    load.pri %2             -
+   *    pop.alt                 -
+   *    --------------------------------------
+   *    load.pri %1             load.pri %2
+   *    push.pri                load.alt %1
+   *    load.pri %2             -
+   *    pop.alt                 -
+   */
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!push.pri!load.s.pri %2!pop.alt!",
+      "load.s.pri %2!load.s.alt %1!",
+    #else
+      "\317\337\263",
+      "\265\235\264",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!push.pri!load.s.pri %2!pop.alt!",
+      "load.s.pri %2!load.alt %1!",
+    #else
+      "\326\337\263",
+      "\265\217\264",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!push.pri!load.pri %2!pop.alt!",
+      "load.pri %2!load.s.alt %1!",
+    #else
+      "\317\262\353\263",
+      "\353\235\264",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!push.pri!load.pri %2!pop.alt!",
+      "load.pri %2!load.alt %1!",
+    #else
+      "\326\262\353\263",
+      "\353\217\264",
+    #endif
+    4-2, 2-2
+  },
+  /* (#1#) The above also occurs with "addr.pri" (array
+   * indexing) as the first line; so that adds 2 cases.
+   */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!pop.alt!",
+      "addr.alt %1!load.s.pri %2!",
+    #else
+      "\324\337\263",
+      "\275\350",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.pri %2!pop.alt!",
+      "addr.alt %1!load.pri %2!",
+    #else
+      "\324\262\353\263",
+      "\275\264\353",
+    #endif
+    4-2, 2-2
+  },
+  /* And the same sequence with const.pri as either the first
+   * or the second load instruction: four more cases.
+   */
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!pop.alt!",
+      "load.s.pri %2!const.alt %1!",
+    #else
+      "\304\337\263",
+      "\265\246\264",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.pri %2!pop.alt!",
+      "load.pri %2!const.alt %1!",
+    #else
+      "\304\262\353\263",
+      "\353\246\264",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!push.pri!const.pri %2!pop.alt!",
+      "const.pri %2!load.s.alt %1!",
+    #else
+      "\317\262\246\242\263",
+      "\246\242\235\264",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!push.pri!const.pri %2!pop.alt!",
+      "const.pri %2!load.alt %1!",
+    #else
+      "\326\262\246\242\263",
+      "\246\242\217\264",
+    #endif
+    4-2, 2-2
+  },
+  /* The same as above, but now with "addr.pri" (array
+   * indexing) on the first line and const.pri on
+   * the second.
+   */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!const.pri %2!pop.alt!",
+      "addr.alt %1!const.pri %2!",
+    #else
+      "\324\262\246\242\263",
+      "\275\264\246\242",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!zero.pri!pop.alt!",
+      "addr.alt %1!zero.pri!",
+    #else
+      "\324\262\346\240\263",
+      "\275\264\346\240",
+    #endif
+    4-2, 1-1
+  },
+  /* ??? add references */
+  /* Chained relational operators can contain sequences like:
+   *    xchg                    load.s.pri %1
+   *    push.pri                -
+   *    load.s.pri %1           -
+   *    pop.alt                 -
+   * The above also accurs for "load.pri" and for "const.pri",
+   * so add another two cases.
+   */
+  {
+    #ifdef SCPACK
+      "xchg!push.pri!load.s.pri %1!pop.alt!",
+      "load.s.pri %1!",
+    #else
+      "\274\262\317\263",
+      "\317",
+    #endif
+    4-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!push.pri!load.pri %1!pop.alt!",
+      "load.pri %1!",
+    #else
+      "\274\262\326\263",
+      "\326",
+    #endif
+    4-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!push.pri!const.pri %1!pop.alt!",
+      "const.pri %1!",
+    #else
+      "\274\262\304\263",
+      "\304",
+    #endif
+    4-1, 1-1
+  },
+  /* More optimizations for chained relational operators; the
+   * continuation sequences can be simplified if they turn out
+   * to be termination sequences:
+   *    xchg                    sless       also for sless, sgeq and sleq
+   *    sgrtr                   pop.alt
+   *    swap.alt                and
+   *    and                     ;$exp
+   *    pop.alt                 -
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    xchg                    sless       also for sless, sgeq and sleq
+   *    sgrtr                   pop.alt
+   *    swap.alt                and
+   *    and                     jzer %1
+   *    pop.alt                 -
+   *    jzer %1                 -
+   */
+  {
+    #ifdef SCPACK
+      "xchg!sgrtr!swap.alt!and!pop.alt!;$exp!",
+      "sless!pop.alt!and!;$exp!",
+    #else
+      "\274\333rt\227swap\247\366\263\260",
+      "\334ess!\263\366\260",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sless!swap.alt!and!pop.alt!;$exp!",
+      "sgrtr!pop.alt!and!;$exp!",
+    #else
+      "\274\334ess!swap\247\366\263\260",
+      "\333rt\227\263\366\260",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sgeq!swap.alt!and!pop.alt!;$exp!",
+      "sleq!pop.alt!and!;$exp!",
+    #else
+      "\274\333\322swap\247\366\263\260",
+      "\334\322\263\366\260",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sleq!swap.alt!and!pop.alt!;$exp!",
+      "sgeq!pop.alt!and!;$exp!",
+    #else
+      "\274\334\322swap\247\366\263\260",
+      "\333\322\263\366\260",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sgrtr!swap.alt!and!pop.alt!jzer %1!",
+      "sless!pop.alt!and!jzer %1!",
+    #else
+      "\274\333rt\227swap\247\366\263\352",
+      "\334ess!\263\366\352",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sless!swap.alt!and!pop.alt!jzer %1!",
+      "sgrtr!pop.alt!and!jzer %1!",
+    #else
+      "\274\334ess!swap\247\366\263\352",
+      "\333rt\227\263\366\352",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sgeq!swap.alt!and!pop.alt!jzer %1!",
+      "sleq!pop.alt!and!jzer %1!",
+    #else
+      "\274\333\322swap\247\366\263\352",
+      "\334\322\263\366\352",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sleq!swap.alt!and!pop.alt!jzer %1!",
+      "sgeq!pop.alt!and!jzer %1!",
+    #else
+      "\274\334\322swap\247\366\263\352",
+      "\333\322\263\366\352",
+    #endif
+    5-3, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sgrtr!;$exp!",
+      "sless!;$exp!",
+    #else
+      "\274\333rt\227\260",
+      "\334ess!\260",
+    #endif
+    2-1, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sless!;$exp!",
+      "sgrtr!;$exp!",
+    #else
+      "\274\334ess!\260",
+      "\333rt\227\260",
+    #endif
+    2-1, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sgeq!;$exp!",
+      "sleq!;$exp!",
+    #else
+      "\274\333\322\260",
+      "\334\322\260",
+    #endif
+    2-1, 0-0
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sleq!;$exp!",
+      "sgeq!;$exp!",
+    #else
+      "\274\334\322\260",
+      "\333\322\260",
+    #endif
+    2-1, 0-0
+  },
+  /* The entry to chained operators is also opt to optimization
+   *    load.s.pri %1           load.s.pri %2
+   *    load.s.alt %2           load.s.alt %1
+   *    xchg                    -
+   *    --------------------------------------
+   *    load.s.pri %1           load.pri %2
+   *    load.alt %2             load.s.alt %1
+   *    xchg                    -
+   *    --------------------------------------
+   *    load.s.pri %1           const.pri %2
+   *    const.alt %2            load.s.alt %1
+   *    xchg                    -
+   *    --------------------------------------
+   * and all permutations...
+   */
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!load.s.alt %2!xchg!",
+      "load.s.pri %2!load.s.alt %1!",
+    #else
+      "\317\235\336\274",
+      "\265\235\264",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!load.alt %2!xchg!",
+      "load.pri %2!load.s.alt %1!",
+    #else
+      "\317\217\336\274",
+      "\353\235\264",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!const.alt %2!xchg!",
+      "const.pri %2!load.s.alt %1!",
+    #else
+      "\317\246\336\274",
+      "\246\242\235\264",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!load.s.alt %2!xchg!",
+      "load.s.pri %2!load.alt %1!",
+    #else
+      "\326\235\336\274",
+      "\265\217\264",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!load.alt %2!xchg!",
+      "load.pri %2!load.alt %1!",
+    #else
+      "\326\217\336\274",
+      "\353\217\264",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!const.alt %2!xchg!",
+      "const.pri %2!load.alt %1!",
+    #else
+      "\326\246\336\274",
+      "\246\242\217\264",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!load.s.alt %2!xchg!",
+      "load.s.pri %2!const.alt %1!",
+    #else
+      "\304\235\336\274",
+      "\265\246\264",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!load.alt %2!xchg!",
+      "load.pri %2!const.alt %1!",
+    #else
+      "\304\217\336\274",
+      "\353\246\264",
+    #endif
+    3-2, 2-2
+  },
+  /* some sequences where PRI is moved to ALT can be optimized
+   * further when considering what follows
+   *    xchg                    const.alt %1
+   *    const.pri %1            -
+   *    xchg                    -
+   * (also for load.s.pri and load.pri)
+   *    --------------------------------------
+   *    lref.pri %1             lref.alt %1
+   *    xchg                    [load.pri %2]
+   *    [load.pri %2]           -
+   * (where [load.pri %2] may also be another operatrion loading PRI)
+   */
+  {
+    #ifdef SCPACK
+      "xchg!const.pri %1!xchg!",
+      "const.alt %1!",
+    #else
+      "\274\304\274",
+      "\246\264",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!load.pri %1!xchg!",
+      "load.alt %1!",
+    #else
+      "\274\326\274",
+      "\217\264",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!load.s.pri %1!xchg!",
+      "load.s.alt %1!",
+    #else
+      "\274\317\274",
+      "\235\264",
+    #endif
+    3-1, 1-1
+  },
+  /* ----- */
+  {
+    #ifdef SCPACK
+      "lref.pri %1!xchg!load.pri %2!",
+      "lref.alt %1!load.pri %2!",
+    #else
+      "\356\226\274\353",
+      "\356\264\353",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "lref.pri %1!xchg!load.s.pri %2!",
+      "lref.alt %1!load.s.pri %2!",
+    #else
+      "\356\226\274\265",
+      "\356\350",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "lref.pri %1!xchg!const.pri %2!",
+      "lref.alt %1!const.pri %2!",
+    #else
+      "\356\226\274\246\242",
+      "\356\264\246\242",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "lref.s.pri %1!xchg!load.pri %2!",
+      "lref.s.alt %1!load.pri %2!",
+    #else
+      "\356\213\226\274\353",
+      "\356\213\264\353",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "lref.s.pri %1!xchg!load.s.pri %2!",
+      "lref.s.alt %1!load.s.pri %2!",
+    #else
+      "\356\213\226\274\265",
+      "\356\213\350",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "lref.s.pri %1!xchg!const.pri %2!",
+      "lref.s.alt %1!const.pri %2!",
+    #else
+      "\356\213\226\274\246\242",
+      "\356\213\264\246\242",
+    #endif
+    3-2, 2-2
+  },
+  /* For packed arrays, array access can be optimized (packed arrays
+   * do not take advantage of the LIDX or IDXADDR instructions).
+   *    addr.pri %1             addr.alt %1
+   *    push.pri                load.s.pri %2
+   *    load.s.pri %2           bounds %3
+   *    bounds %3               -
+   *    pop.alt                 -
+   *
+   * Notes (additional cases):
+   * 1. instruction addr.pri can also be const.pri (for
+   *    global arrays)
+   * 2. the bounds instruction can be absent, but that
+   *    case is already handled (see #1#)
+   */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!bounds %3!pop.alt!",
+      "addr.alt %1!load.s.pri %2!bounds %3!",
+    #else
+      "\324\337\354\263",
+      "\275\350\354",
+    #endif
+    5-3, 3-3
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!bounds %3!pop.alt!",
+      "const.alt %1!load.s.pri %2!bounds %3!",
+    #else
+      "\304\337\354\263",
+      "\246\350\354",
+    #endif
+    5-3, 3-3
+  },
+  /* During a calculation, the intermediate result must sometimes
+   * be moved from PRI to ALT, like in:
+   *    push.pri                xchg
+   *    load.s.pri %1           load.s.pri %1
+   *    pop.alt                 -
+   *
+   * The above also accurs for "load.pri" and for "const.pri",
+   * so add another two cases.
+   */
+  {
+    #ifdef SCPACK
+      "push.pri!load.s.pri %1!pop.alt!",
+      "xchg!load.s.pri %1!",
+    #else
+      "\262\317\263",
+      "\274\317",
+    #endif
+    3-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!load.pri %1!pop.alt!",
+      "xchg!load.pri %1!",
+    #else
+      "\262\326\263",
+      "\274\326",
+    #endif
+    3-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!const.pri %1!pop.alt!",
+      "xchg!const.pri %1!",
+    #else
+      "\262\304\263",
+      "\274\304",
+    #endif
+    3-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!zero.pri!pop.alt!",
+      "xchg!zero.pri!",
+    #else
+      "\262\346\240\263",
+      "\274\346\240",
+    #endif
+    3-2, 0-0
+  },
+  /* An even simpler PUSH/POP optimization (occurs in
+   * switch statements):
+   *    push.pri                xchg
+   *    pop.alt                 -
+   * Note that it is somewhat dangerous to do this, as
+   * the original sequence keeps PRI and the new sequence
+   * destroys it.
+   */
+  {
+    #ifdef SCPACK
+      "push.pri!pop.alt!",
+      "xchg!",
+    #else
+      "\262\263",
+      "\274",
+    #endif
+    2-1, 0-0
+  },
+  /* Redundant pushes (happens in some array operations)
+   *    pop.alt                -
+   *    push.alt               -
+   */
+  {
+    #ifdef SCPACK
+      "pop.alt!push.alt!",
+      ";!",
+    #else
+      "\263\212\247",
+      ";!",
+    #endif
+    2-0, 0-0
+  },
+  /* Some simple arithmetic sequences
+   */
+  {
+    #ifdef SCPACK
+      "xchg!load.s.pri %1!add!",
+      "load.s.alt %1!add!",
+    #else
+      "\274\317\321",
+      "\235\264\321",
+    #endif
+    3-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!load.pri %1!add!",
+      "load.alt %1!add!",
+    #else
+      "\274\326\321",
+      "\217\264\321",
+    #endif
+    3-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!const.pri %1!add!",
+      "const.alt %1!add!",
+    #else
+      "\274\304\321",
+      "\246\264\321",
+    #endif
+    3-2, 1-1
+  },
+  /* References with a default value generate new cells on the heap
+   * dynamically. That code often ends with:
+   *    xchg                    push.alt
+   *    push.pri                -
+   */
+  {
+    #ifdef SCPACK
+      "xchg!push.pri!",
+      "push.alt!",
+    #else
+      "\274\262",
+      "\212\247",
+    #endif
+    2-1, 0-0
+  },
+  /* Test for zero (common case, especially for strings)
+   * E.g. the test expression of: "for (i=0; str{i}!=0; ++i)"
+   *
+   *    zero.alt                jzer %1
+   *    eq                      -
+   *    jnz %1                  -
+   *    --------------------------------------
+   *    zero.alt                jnz %1
+   *    eq                      -
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    zero.alt                jzer %1
+   *    neq                     -
+   *    jzer %1                 -
+   */
+  {
+    #ifdef SCPACK
+      "zero.alt!eq!jnz %1!",
+      "jzer %1!",
+    #else
+      "\346\247\322jnz\214",
+      "\352",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "zero.alt!eq!jzer %1!",
+      "jnz %1!",
+    #else
+      "\346\247\322\352",
+      "jnz\214",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "zero.alt!neq!jzer %1!",
+      "jzer %1!",
+    #else
+      "\346\247n\322\352",
+      "\352",
+    #endif
+    3-1, 1-1
+  },
+  /* Array comparison has a NOT instruction that can sometimes be optimized away
+   *    not                     jnz %1
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    not                     jzer %1
+   *    jnz %1                  -
+   */
+  {
+    #ifdef SCPACK
+      "not!jzer %1!",
+      "jnz %1!",
+    #else
+      "not!\352",
+      "jnz\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "not!jnz %1!",
+      "jzer %1!",
+    #else
+      "not!jnz\214",
+      "\352",
+    #endif
+    2-1, 1-1
+  },
+
+  /* Incrementing and decrementing global and local variables, and reference
+   * arguments may have redundant PUSH/POP instructions, for example when the
+   * primary register is altered after restoring it, or at the end of an
+   * expression.
+   *    push.pri                load.s.pri %1   ; reference argument
+   *    load.s.pri %1           inc.i
+   *    inc.i                   lref.s.pri %2
+   *    pop.pri                 -
+   *    lref.s.pri %2           -
+   *    --------------------------------------
+   *    push.pri                load.s.pri %1
+   *    load.s.pri %1           inc.i
+   *    inc.i                   ;$exp
+   *    pop.pri                 -
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    push.pri                addr.pri %1     ; local variable
+   *    addr.pri %1             inc.i
+   *    inc.i                   load.s.pri %2
+   *    pop.pri                 -
+   *    load.s.pri %2           -
+   *    --------------------------------------
+   *    push.pri                const.pri %1    ; global variable
+   *    const.pri %1            inc.i
+   *    inc.i                   load.pri %2
+   *    pop.pri                 -
+   *    load.pri %2             -
+   * The same is true for dec.i sequences.
+   */
+  {
+    #ifdef SCPACK
+      "push.pri!load.s.pri %1!inc.i!pop.pri!lref.s.pri %2!",
+      "load.s.pri %1!inc.i!lref.s.pri %2!",
+    #else
+      "\262\317\312\306\364\356\213\242",
+      "\317\312\306\356\213\242",
+    #endif
+    5-3, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!load.s.pri %1!inc.i!pop.pri!;$exp!",
+      "load.s.pri %1!inc.i!;$exp!",
+    #else
+      "\262\317\312\306\364\260",
+      "\317\312\306\260",
+    #endif
+    4-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!addr.pri %1!inc.i!pop.pri!;load.s.pri %2!",
+      "addr.pri %1!inc.i!;load.s.pri %2!",
+    #else
+      "\262\324\312\306\364;\265",
+      "\324\312\306;\265",
+    #endif
+    5-3, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!addr.pri %1!inc.i!pop.pri!;$exp!",
+      "addr.pri %1!inc.i!;$exp!",
+    #else
+      "\262\324\312\306\364\260",
+      "\324\312\306\260",
+    #endif
+    4-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!const.pri %1!inc.i!pop.pri!;load.pri %2!",
+      "const.pri %1!inc.i!;load.pri %2!",
+    #else
+      "\262\304\312\306\364;\353",
+      "\304\312\306;\353",
+    #endif
+    5-3, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!const.pri %1!inc.i!pop.pri!;$exp!",
+      "const.pri %1!inc.i!;$exp!",
+    #else
+      "\262\304\312\306\364\260",
+      "\304\312\306\260",
+    #endif
+    4-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!load.s.pri %1!dec.i!pop.pri!lref.s.pri %2!",
+      "load.s.pri %1!dec.i!lref.s.pri %2!",
+    #else
+      "\262\317\314\306\364\356\213\242",
+      "\317\314\306\356\213\242",
+    #endif
+    5-3, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!load.s.pri %1!dec.i!pop.pri!;$exp!",
+      "load.s.pri %1!dec.i!;$exp!",
+    #else
+      "\262\317\314\306\364\260",
+      "\317\314\306\260",
+    #endif
+    4-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!addr.pri %1!dec.i!pop.pri!;load.s.pri %2!",
+      "addr.pri %1!dec.i!;load.s.pri %2!",
+    #else
+      "\262\324\314\306\364;\265",
+      "\324\314\306;\265",
+    #endif
+    5-3, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!addr.pri %1!dec.i!pop.pri!;$exp!",
+      "addr.pri %1!dec.i!;$exp!",
+    #else
+      "\262\324\314\306\364\260",
+      "\324\314\306\260",
+    #endif
+    4-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!const.pri %1!dec.i!pop.pri!;load.pri %2!",
+      "const.pri %1!dec.i!;load.pri %2!",
+    #else
+      "\262\304\314\306\364;\353",
+      "\304\314\306;\353",
+    #endif
+    5-3, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri!const.pri %1!dec.i!pop.pri!;$exp!",
+      "const.pri %1!dec.i!;$exp!",
+    #else
+      "\262\304\314\306\364\260",
+      "\304\314\306\260",
+    #endif
+    4-2, 1-1
+  },
+
+
+  /* ----------------------------------- */
+  /* Supplemental and macro instructions */
+  /* ----------------------------------- */
+
+  /* separator, so optimizer can stop before generating macro opcodes */
+  { separator_macro, "", 0 },
+
+  /* Array indexing can merit from special instructions.
+   * Simple indexed array lookup can be optimized quite
+   * a bit.
+   *    addr.pri %1             addr.alt %1
+   *    push.pri                load.s.pri %2
+   *    load.s.pri %2           bounds %3
+   *    bounds %3               lidx.b %4
+   *    shl.c.pri %4            -
+   *    pop.alt                 -
+   *    add                     -
+   *    load.i                  -
+   *
+   * And to prepare for storing a value in an array
+   *    addr.pri %1             addr.alt %1
+   *    push.pri                load.s.pri %2
+   *    load.s.pri %2           bounds %3
+   *    bounds %3               idxaddr.b %4
+   *    shl.c.pri %4            -
+   *    pop.alt                 -
+   *    add                     -
+   *
+   * Notes (additional cases):
+   * 1. instruction addr.pri can also be const.pri (for
+   *    global arrays)
+   * 2. the bounds instruction can be absent
+   * 3. when "%4" (the shift value) is the 2 (with 32-bit cells), use the
+   *    even more optimal instructions LIDX and IDDXADDR
+   *
+   * If the array index is more complex, one can only optimize
+   * the last four instructions:
+   *    shl.c.pri %1            pop.alt
+   *    pop.alt                 lidx.b %1
+   *    add                     -
+   *    loadi                   -
+   *    --------------------------------------
+   *    shl.c.pri %1            pop.alt
+   *    pop.alt                 idxaddr.b %1
+   *    add                     -
+   */
+#if !defined BIT16
+  /* loading from array, "cell" shifted */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri 2!pop.alt!add!load.i!",
+      "addr.alt %1!load.s.pri %2!bounds %3!lidx!",
+    #else
+      "\324\337\354\341\203\220\355\217\306",
+      "\275\350\354l\335!",
+    #endif
+    8-4, 4-3
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri 2!pop.alt!add!load.i!",
+      "const.alt %1!load.s.pri %2!bounds %3!lidx!",
+    #else
+      "\304\337\354\341\203\220\355\217\306",
+      "\246\350\354l\335!",
+    #endif
+    8-4, 4-3
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!shl.c.pri 2!pop.alt!add!load.i!",
+      "addr.alt %1!load.s.pri %2!lidx!",
+    #else
+      "\324\337\341\203\220\355\217\306",
+      "\275\350l\335!",
+    #endif
+    7-3, 3-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!shl.c.pri 2!pop.alt!add!load.i!",
+      "const.alt %1!load.s.pri %2!lidx!",
+    #else
+      "\304\337\341\203\220\355\217\306",
+      "\246\350l\335!",
+    #endif
+    7-3, 3-2
+  },
+#endif
+  /* loading from array, not "cell" shifted */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri %4!pop.alt!add!load.i!",
+      "addr.alt %1!load.s.pri %2!bounds %3!lidx.b %4!",
+    #else
+      "\324\337\354\341\2304!\355\217\306",
+      "\275\350\354l\335.b\325",
+    #endif
+    8-4, 4-4
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri %4!pop.alt!add!load.i!",
+      "const.alt %1!load.s.pri %2!bounds %3!lidx.b %4!",
+    #else
+      "\304\337\354\341\2304!\355\217\306",
+      "\246\350\354l\335.b\325",
+    #endif
+    8-4, 4-4
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!shl.c.pri %3!pop.alt!add!load.i!",
+      "addr.alt %1!load.s.pri %2!lidx.b %3!",
+    #else
+      "\324\337\341\2303!\355\217\306",
+      "\275\350l\335.b\270",
+    #endif
+    7-3, 3-3
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!shl.c.pri %3!pop.alt!add!load.i!",
+      "const.alt %1!load.s.pri %2!lidx.b %3!",
+    #else
+      "\304\337\341\2303!\355\217\306",
+      "\246\350l\335.b\270",
+    #endif
+    7-3, 3-3
+  },
+#if !defined BIT16
+  /* array index calculation for storing a value, "cell" aligned */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri 2!pop.alt!add!",
+      "addr.alt %1!load.s.pri %2!bounds %3!idxaddr!",
+    #else
+      "\324\337\354\341\203\220\355",
+      "\275\350\354\335\243\227",
+    #endif
+    7-4, 4-3
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri 2!pop.alt!add!",
+      "const.alt %1!load.s.pri %2!bounds %3!idxaddr!",
+    #else
+      "\304\337\354\341\203\220\355",
+      "\246\350\354\335\243\227",
+    #endif
+    7-4, 4-3
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!shl.c.pri 2!pop.alt!add!",
+      "addr.alt %1!load.s.pri %2!idxaddr!",
+    #else
+      "\324\337\341\203\220\355",
+      "\275\350\335\243\227",
+    #endif
+    6-3, 3-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!shl.c.pri 2!pop.alt!add!",
+      "const.alt %1!load.s.pri %2!idxaddr!",
+    #else
+      "\304\337\341\203\220\355",
+      "\246\350\335\243\227",
+    #endif
+    6-3, 3-2
+  },
+#endif
+  /* array index calculation for storing a value, not "cell" packed */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri %4!pop.alt!add!",
+      "addr.alt %1!load.s.pri %2!bounds %3!idxaddr.b %4!",
+    #else
+      "\324\337\354\341\2304!\355",
+      "\275\350\354\335\275.b\325",
+    #endif
+    7-4, 4-4
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!bounds %3!shl.c.pri %4!pop.alt!add!",
+      "const.alt %1!load.s.pri %2!bounds %3!idxaddr.b %4!",
+    #else
+      "\304\337\354\341\2304!\355",
+      "\246\350\354\335\275.b\325",
+    #endif
+    7-4, 4-4
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!load.s.pri %2!shl.c.pri %3!pop.alt!add!",
+      "addr.alt %1!load.s.pri %2!idxaddr.b %3!",
+    #else
+      "\324\337\341\2303!\355",
+      "\275\350\335\275.b\270",
+    #endif
+    6-3, 3-3
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!load.s.pri %2!shl.c.pri %3!pop.alt!add!",
+      "const.alt %1!load.s.pri %2!idxaddr.b %3!",
+    #else
+      "\304\337\341\2303!\355",
+      "\246\350\335\275.b\270",
+    #endif
+    6-3, 3-3
+  },
+#if !defined BIT16
+  /* the shorter array indexing sequences, see above for comments */
+  {
+    #ifdef SCPACK
+      "shl.c.pri 2!pop.alt!add!loadi!",
+      "pop.alt!lidx!",
+    #else
+      "\341\203\220\355\217\225",
+      "\263l\335!",
+    #endif
+    4-2, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "shl.c.pri 2!pop.alt!add!",
+      "pop.alt!idxaddr!",
+    #else
+      "\341\203\220\355",
+      "\263\335\243\227",
+    #endif
+    3-2, 1-0
+  },
+#endif
+  {
+    #ifdef SCPACK
+      "shl.c.pri %1!pop.alt!add!loadi!",
+      "pop.alt!lidx.b %1!",
+    #else
+      "\341\226\355\217\225",
+      "\263l\335.b\214",
+    #endif
+    4-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "shl.c.pri %1!pop.alt!add!",
+      "pop.alt!idxaddr.b %1!",
+    #else
+      "\341\226\355",
+      "\263\335\275.b\214",
+    #endif
+    3-2, 1-1
+  },
+  /* Declaration of simple variables often follows the sequence:
+   *    ;$lcl <name> <stk>      ;$lcl <name> <stk>
+   *    stack -4                push.c <constval>
+   *    const.pri <constval>    ;$exp
+   *    stor.s <stk>            -
+   *    ;$exp                   -
+   */
+  {
+    #ifdef SCPACK
+      ";$lcl %1 %2!stack -4!const.pri %3!stor.s %2!;$exp!",
+      ";$lcl %1 %2!push.c %3!;$exp!",
+    #else
+      "\216lcl\357\234ack -4!\246\2303!\234or\213\250\260",
+      "\216lcl\357\361\270\260",
+    #endif
+    3-1, 3-1
+  },
+  {
+    #ifdef SCPACK
+      ";$lcl %1 %2!stack -4!zero.pri!stor.s %2!;$exp!",
+      ";$lcl %1 %2!push.c #0!;$exp!",
+    #else
+      "\216lcl\357\234ack -4!\346\240\234or\213\250\260",
+      "\216lcl\357\361\310\241\260",
+    #endif
+    3-1, 2-1
+  },
+  /* simple arithmetic sequences, involving subtraction */
+  {
+    #ifdef SCPACK
+      "xchg!load.s.pri %1!sub!",
+      "load.s.alt %1!sub.inv!",
+    #else
+      "\274\317sub!",
+      "\235\264sub.\307v!",
+    #endif
+    3-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!load.pri %1!sub!",
+      "load.alt %1!sub.inv!",
+    #else
+      "\274\326sub!",
+      "\217\264sub.\307v!",
+    #endif
+    3-2, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!const.pri %1!sub!",
+      "const.alt %1!sub.inv!",
+    #else
+      "\274\304sub!",
+      "\246\264sub.\307v!",
+    #endif
+    3-2, 1-1
+  },
+  /* optimizing the calling of native functions (which always have a parameter
+   * count pushed before, and the stack pointer restored afterwards
+   */
+  {
+    #ifdef SCPACK
+      "push.c %1!sysreq %2!stack %3!",        //note: %3 == %1 + 4
+      "sysreq.n %2 %1!",
+    #else
+      "\361\214sysr\302\250\234ack\270",
+      "sysr\302.n\330\214",
+    #endif
+    3-1, 3-2
+  },
+  /* User-defined operators first load the operands into registers and
+   * then have them pushed onto the stack. This can give rise to sequences
+   * like:
+   *    const.pri %1            push.c %1
+   *    const.alt %2            push.c %2
+   *    push.pri                -
+   *    push.alt                -
+   * A similar sequence occurs with the two PUSH.pri/alt instructions inverted.
+   * The first, second, or both CONST.pri/alt instructions can also be
+   * LOAD.pri/alt.
+   * This gives 2 x 4 cases.
+   */
+  {
+    #ifdef SCPACK
+      "const.pri %1!const.alt %2!push.pri!push.alt!",
+      "push.c %1!push.c %2!",
+    #else
+      "\304\246\336\262\212\247",
+      "\361\214\361\250",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!const.alt %2!push.alt!push.pri!",
+      "push.c %2!push.c %1!",
+    #else
+      "\304\246\336\212\247\262",
+      "\361\250\361\214",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!load.alt %2!push.pri!push.alt!",
+      "push.c %1!push %2!",
+    #else
+      "\304\217\336\262\212\247",
+      "\361\214\212\250",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!load.alt %2!push.alt!push.pri!",
+      "push %2!push.c %1!",
+    #else
+      "\304\217\336\212\247\262",
+      "\212\250\361\214",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!const.alt %2!push.pri!push.alt!",
+      "push %1!push.c %2!",
+    #else
+      "\326\246\336\262\212\247",
+      "\212\214\361\250",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!const.alt %2!push.alt!push.pri!",
+      "push.c %2!push %1!",
+    #else
+      "\326\246\336\212\247\262",
+      "\361\250\212\214",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!load.alt %2!push.pri!push.alt!",
+      "push %1!push %2!",
+    #else
+      "\326\217\336\262\212\247",
+      "\212\214\212\250",
+    #endif
+    4-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!load.alt %2!push.alt!push.pri!",
+      "push %2!push %1!",
+    #else
+      "\326\217\336\212\247\262",
+      "\212\250\212\214",
+    #endif
+    4-2, 2-2
+  },
+  /* Function calls (parameters are passed on the stack)
+   *    load.s.pri %1           push.s %1
+   *    push.pri                -
+   *    --------------------------------------
+   *    load.pri %1             push %1
+   *    push.pri                -
+   *    --------------------------------------
+   *    const.pri %1            push.c %1
+   *    push.pri                -
+   *    --------------------------------------
+   *    zero.pri                push.c 0
+   *    push.pri                -
+   *    --------------------------------------
+   *    addr.pri %1             push.adr %1
+   *    push.pri                -
+   *
+   * However, PRI must not be needed after this instruction
+   * if this shortcut is used. Check for the ;$par comment.
+   */
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!push.pri!;$par!",
+      "push.s %1!;$par!",
+    #else
+      "\317\262\233",
+      "\212\360\233",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!push.pri!;$par!",
+      "push %1!;$par!",
+    #else
+      "\326\262\233",
+      "\212\214\233",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!push.pri!;$par!",
+      "push.c %1!;$par!",
+    #else
+      "\304\262\233",
+      "\361\214\233",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "zero.pri!push.pri!;$par!",
+      "push.c #0!;$par!",
+    #else
+      "\346\240\262\233",
+      "\361\310\241\233",
+    #endif
+    2-1, 0-1
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!push.pri!;$par!",
+      "push.adr %1!;$par!",
+    #else
+      "\324\262\233",
+      "\212\300\214\233",
+    #endif
+    2-1, 1-1
+  },
+  /* Native function calls with parameters that must be relocated.
+   * Note that global variables cannot hold an address and therefore
+   * no "pushr" instruction exists (a local variable holds an address
+   * if that variable is a function argument that refers to an array).
+   *
+   *    load.s.pri %1           pushr.s %1
+   *    pushr.pri               -
+   *    --------------------------------------
+   *    const.pri %1            pushr.c %1
+   *    pushr.pri               -
+   *    --------------------------------------
+   *    zero.pri                pushr.c 0
+   *    pushr.pri               -
+   *    --------------------------------------
+   *    addr.pri %1             pushr.adr %1
+   *    pushr.pri               -
+   *
+   * Again, PRI must not be needed after this instruction
+   * if this shortcut is used. Check for the ;$par comment.
+   */
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!pushr.pri!;$par!",
+      "pushr.s %1!;$par!",
+    #else
+      "\317\253\240\233",
+      "\253\360\233",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!pushr.pri!;$par!",
+      "pushr.c %1!;$par!",
+    #else
+      "\304\253\240\233",
+      "\253\236\214\233",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "zero.pri!pushr.pri!;$par!",
+      "pushr.c #0!;$par!",
+    #else
+      "\346\240\253\240\233",
+      "\253\236\310\241\233",
+    #endif
+    2-1, 0-1
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!pushr.pri!;$par!",
+      "pushr.adr %1!;$par!",
+    #else
+      "\324\253\240\233",
+      "\253\300\214\233",
+    #endif
+    2-1, 1-1
+  },
+  /* Simple arithmetic operations on constants. Subtraction is handled in
+   * a separate section, because it is not commutative.
+   *    const.alt %1            add.c %1
+   *    add                     -
+   *    --------------------------------------
+   *    const.alt %1            smul.c %1
+   *    smul                    -
+   *    --------------------------------------
+   *    const.alt %1            eq.c.pri %1
+   *    eq                      -
+   */
+  {
+    #ifdef SCPACK
+      "const.alt %1!add!",
+      "add.c %1!",
+    #else
+      "\246\264\321",
+      "\243\236\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "const.alt %1!smul!",
+      "smul.c %1!",
+    #else
+      "\246\264smul!",
+      "smu\327\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "const.alt %1!eq!",
+      "eq.c.pri %1!",
+    #else
+      "\246\264\322",
+      "\302\236\226",
+    #endif
+    2-1, 1-1
+  },
+  /* Subtraction of a constant. Note that the subtraction is converted to
+   * the addition of the inverse value.
+   *    const.pri %1            load.s.pri %2
+   *    load.s.alt %2           add.c -%1
+   *    sub                     -
+   *    --------------------------------------
+   *    const.pri %1            load.pri %2
+   *    load.alt %2             add.c -%1
+   *    sub                     -
+   */
+  {
+    #ifdef SCPACK
+      "const.pri %1!load.s.alt %2!sub!",
+      "load.s.pri %2!add.c -%1!",
+    #else
+      "\304\235\336sub!",
+      "\265\243\236 -\205",
+    #endif
+    3-2, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!load.alt %2!sub!",
+      "load.pri %2!add.c -%1!",
+    #else
+      "\304\217\336sub!",
+      "\353\243\236 -\205",
+    #endif
+    3-2, 2-2
+  },
+  /* With arrays indexed with constants that come from enumerations, it happens
+   * multiple add.c opcodes follow in sequence.
+   *    add.c %1                add.c %1+%2
+   *    add.c %2                -
+   */
+  {
+    #ifdef SCPACK
+      "add.c %1!add.c %2!",
+      "add.c %1+%2!",
+    #else
+      "\243\236\214\243\236\250",
+      "\243\236\267+%\220",
+    #endif
+    2-1, 2-1
+  },
+  /* Compare and jump in chained and non-chained relation expressions.
+   * The exchange operation may be removed on relation operators
+   * by selecting the inverse relational operator
+   *    xchg                    jsgeq  %1   also for sless, sgeq and sleq
+   *    sgrtr                   ;$exp       (occurs for non-chained comparisons)
+   *    jzer %1                 -
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    xchg                    sless       also for sless, sgeq and sleq
+   *    sgrtr                   ;$exp       (occurs for non-chained comparisons)
+   *    ;$exp                   -
+   */
+  {
+    #ifdef SCPACK
+      "xchg!sgrtr!jzer %1!;$exp!",
+      "jsgeq %1!;$exp!",
+    #else
+      "\274\333rt\227\331\316",
+      "j\333\302\316",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sless!jzer %1!;$exp!",
+      "jsleq %1!;$exp!",
+    #else
+      "\274\334ess!\331\316",
+      "j\334\302\316",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sgeq!jzer %1!;$exp!",
+      "jsgrtr %1!;$exp!",
+    #else
+      "\274\333\322\331\316",
+      "j\333rtr\316",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "xchg!sleq!jzer %1!;$exp!",
+      "jsless %1!;$exp!",
+    #else
+      "\274\334\322\331\316",
+      "j\334ess\316",
+    #endif
+    3-1, 1-1
+  },
+  /* Standard compare and jump
+   *    eq                      jneq %1
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    eq                      jeq %1
+   *    jnz %1                  -
+   *    --------------------------------------
+   *    neq                     jeq %1
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    neq                     jneq %1
+   *    jnz %1                  -
+   * An similarly for other relations
+   *    sless                   jsgeq %1
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    sless                   jsless %1
+   *    jnz %1                  -
+   *    --------------------------------------
+   *    sleq                    jsgrtr %1
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    sleq                    jsleq %1
+   *    jnz %1                  -
+   *    --------------------------------------
+   *    sgrtr                   jsleq %1
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    sgrtr                   jsgrtr %1
+   *    jnz %1                  -
+   *    --------------------------------------
+   *    sgeq                    jsless %1
+   *    jzer %1                 -
+   *    --------------------------------------
+   *    sgeq                    jsgeq %1
+   *    jnz %1                  -
+   * We can relax the optimizations for the unsigned comparisons,
+   * because the Pawn compiler currently only generates signed
+   * comparisons.
+   */
+  {
+    #ifdef SCPACK
+      "eq!jzer %1!",
+      "jneq %1!",
+    #else
+      "\322\352",
+      "jn\302\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "eq!jnz %1!",
+      "jeq %1!",
+    #else
+      "\322jnz\214",
+      "j\302\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "neq!jzer %1!",
+      "jeq %1!",
+    #else
+      "n\322\352",
+      "j\302\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "neq!jnz %1!",
+      "jneq %1!",
+    #else
+      "n\322jnz\214",
+      "jn\302\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sless!jzer %1!",
+      "jsgeq %1!",
+    #else
+      "\334ess!\352",
+      "j\333\302\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sless!jnz %1!",
+      "jsless %1!",
+    #else
+      "\334ess!jnz\214",
+      "j\334ess\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sleq!jzer %1!",
+      "jsgrtr %1!",
+    #else
+      "\334\322\352",
+      "j\333rtr\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sleq!jnz %1!",
+      "jsleq %1!",
+    #else
+      "\334\322jnz\214",
+      "j\334\302\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sgrtr!jzer %1!",
+      "jsleq %1!",
+    #else
+      "\333rt\227\352",
+      "j\334\302\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sgrtr!jnz %1!",
+      "jsgrtr %1!",
+    #else
+      "\333rt\227jnz\214",
+      "j\333rtr\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sgeq!jzer %1!",
+      "jsless %1!",
+    #else
+      "\333\322\352",
+      "j\334ess\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "sgeq!jnz %1!",
+      "jsgeq %1!",
+    #else
+      "\333\322jnz\214",
+      "j\333\302\214",
+    #endif
+    2-1, 1-1
+  },
+  /* select more appropriate INC and DEC opcodes
+   *    addr.pri %1             inc.s %1
+   *    inc.i                   -
+   *    --------------------------------------
+   *    const.pri %1            inc %1
+   *    inc.i                   -
+   * and the same for DEC
+   */
+  {
+    #ifdef SCPACK
+      "addr.pri %1!inc.i!",
+      "inc.s %1!",
+    #else
+      "\324\312\306",
+      "\312\360",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!inc.i!",
+      "inc %1!",
+    #else
+      "\304\312\306",
+      "\312\214",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %1!dec.i!",
+      "dec.s %1!",
+    #else
+      "\324\314\306",
+      "\314\360",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!dec.i!",
+      "dec %1!",
+    #else
+      "\304\314\306",
+      "\314\214",
+    #endif
+    2-1, 1-1
+  },
+  /* remove redundant PUSH/POP around an increment, if these
+   * are (still) present
+   *    push.pri                inc.s %1
+   *    inc.s %1                -
+   *    pop.pri                 -
+   *    --------------------------------------
+   *    push.pri                inc %1
+   *    inc %1                  -
+   *    pop.pri                 -
+   * and the same for DEC
+   */
+  {
+    #ifdef SCPACK
+      "push.pri %1!inc.s %1!pop.pri!",
+      "inc.s %1!",
+    #else
+      "\212\226\312\360\364",
+      "\312\360",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri %1!inc %1!pop.pri!",
+      "inc %1!",
+    #else
+      "\212\226\312\214\364",
+      "\312\214",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri %1!dec.s %1!pop.pri!",
+      "dec.s %1!",
+    #else
+      "\212\226\314\360\364",
+      "\314\360",
+    #endif
+    3-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "push.pri %1!dec %1!pop.pri!",
+      "dec %1!",
+    #else
+      "\212\226\314\214\364",
+      "\314\214",
+    #endif
+    3-1, 1-1
+  },
+  /* Incrementing and decrementing leaves a value in
+   * in PRI which may not be used (for example, as the
+   * third expression in a "for" loop).
+   *    inc %1                  inc %1  ; ++n
+   *    load.pri %1             ;$exp
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    load.pri %1             inc %1  ; n++, e.g. "for (n=0; n<10; n++)"
+   *    inc %1                  ;$exp
+   *    ;$exp                   -
+   * Plus the varieties for stack relative increments
+   * and decrements.
+   */
+  {
+    #ifdef SCPACK
+      "inc %1!load.pri %1!;$exp!",
+      "inc %1!;$exp!",
+    #else
+      "\312\214\326\260",
+      "\312\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!inc %1!;$exp!",
+      "inc %1!;$exp!",
+    #else
+      "\326\312\316",
+      "\312\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "inc.s %1!load.s.pri %1!;$exp!",
+      "inc.s %1!;$exp!",
+    #else
+      "\312\360\317\260",
+      "\312\213\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!inc.s %1!;$exp!",
+      "inc.s %1!;$exp!",
+    #else
+      "\317\312\213\316",
+      "\312\213\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "dec %1!load.pri %1!;$exp!",
+      "dec %1!;$exp!",
+    #else
+      "\314\214\326\260",
+      "\314\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "load.pri %1!dec %1!;$exp!",
+      "dec %1!;$exp!",
+    #else
+      "\326\314\316",
+      "\314\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "dec.s %1!load.s.pri %1!;$exp!",
+      "dec.s %1!;$exp!",
+    #else
+      "\314\360\317\260",
+      "\314\213\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!dec.s %1!;$exp!",
+      "dec.s %1!;$exp!",
+    #else
+      "\317\314\213\316",
+      "\314\213\316",
+    #endif
+    2-1, 2-1
+  },
+  /* Loading the constant zero has a special opcode.
+   * When storing zero in memory, the value of PRI must not be later on.
+   *    const.pri 0             zero %1
+   *    stor %1                 ;$exp
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    const.pri 0             zero.s %1
+   *    stor.s %1               ;$exp
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    zero.pri                zero %1
+   *    stor %1                 ;$exp
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    zero.pri                zero.s %1
+   *    stor.s %1               ;$exp
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    const.pri 0             zero.pri
+   *    --------------------------------------
+   *    const.alt 0             zero.alt
+   * The last two alternatives save more memory than they save
+   * time, but anyway...
+   */
+  {
+    #ifdef SCPACK
+      "const.pri 0!stor %1!;$exp!",
+      "zero %1!;$exp!",
+    #else
+      "\246\203\241\234or\316",
+      "\346\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "const.pri 0!stor.s %1!;$exp!",
+      "zero.s %1!;$exp!",
+    #else
+      "\246\203\241\234or\213\316",
+      "\346\213\316",
+    #endif
+    2-1, 2-1
+  },
+  {
+    #ifdef SCPACK
+      "zero.pri!stor %1!;$exp!",
+      "zero %1!;$exp!",
+    #else
+      "\346\240\234or\316",
+      "\346\316",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "zero.pri!stor.s %1!;$exp!",
+      "zero.s %1!;$exp!",
+    #else
+      "\346\240\234or\213\316",
+      "\346\213\316",
+    #endif
+    2-1, 1-1
+  },
+  {
+    #ifdef SCPACK
+      "const.pri +0!",
+      "zero.pri!",
+    #else
+      "\246\203+\241",
+      "\346\240",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "const.alt +0!",
+      "zero.alt!",
+    #else
+      "\246\223 +\241",
+      "\346\247",
+    #endif
+    1-1, 1-0
+  },
+  /* ----- */
+  /* Functions with many parameters with the same "type" have sequences like:
+   *    push.c %1               pushm.c 3 %1 %2 %3
+   *    ;$par                   ;$par
+   *    push.c %2               -
+   *    ;$par                   -
+   *    push.c %3               -
+   *    ;$par                   -
+   *    etc.                    etc.
+   *
+   * Similar sequences occur with PUSH, PUSH.s and PUSHADDR, plus
+   * PUSHR.c, PUSHR.s and PUSHR.adr
+   */
+  {
+    #ifdef SCPACK
+      "push.c %1!;$par!push.c %2!;$par!push.c %3!;$par!push.c %4!;$par!push.c %5!;$par!",
+      "pushm.c #5 %1 %2 %3 %4 %5!",
+    #else
+      "\361\214\303\236\250\303\236\270\303\236\325\303\236\206\320\233",
+      "\323\236\3105\374\311\206\320",
+    #endif
+    5-1, 5-6
+  },
+  {
+    #ifdef SCPACK
+      "push.c %1!;$par!push.c %2!;$par!push.c %3!;$par!push.c %4!;$par!",
+      "pushm.c #4 %1 %2 %3 %4!",
+    #else
+      "\361\214\303\236\250\303\236\270\303\236\325\233",
+      "\323\236\3104\374\325",
+    #endif
+    4-1, 4-5
+  },
+  {
+    #ifdef SCPACK
+      "push.c %1!;$par!push.c %2!;$par!push.c %3!;$par!",
+      "pushm.c #3 %1 %2 %3!",
+    #else
+      "\361\214\303\236\250\303\236\270\233",
+      "\323\236\3103\351\270",
+    #endif
+    3-1, 3-4
+  },
+  {
+    #ifdef SCPACK
+      "push.c %1!;$par!push.c %2!;$par!",
+      "pushm.c #2 %1 %2!",
+    #else
+      "\361\214\303\236\250\233",
+      "\323\236\3102\357",
+    #endif
+    2-1, 2-3
+  },
+  /* ----- */
+  {
+    #ifdef SCPACK
+      "push %1!;$par!push %2!;$par!push %3!;$par!push %4!;$par!push %5!;$par!",
+      "pushm #5 %1 %2 %3 %4 %5!",
+    #else
+      "\212\214\303\250\303\270\303\325\303\206\320\233",
+      "\323\3105\374\311\206\320",
+    #endif
+    5-1, 5-6
+  },
+  {
+    #ifdef SCPACK
+      "push %1!;$par!push %2!;$par!push %3!;$par!push %4!;$par!",
+      "pushm #4 %1 %2 %3 %4!",
+    #else
+      "\212\214\303\250\303\270\303\325\233",
+      "\323\3104\374\325",
+    #endif
+    4-1, 4-5
+  },
+  {
+    #ifdef SCPACK
+      "push %1!;$par!push %2!;$par!push %3!;$par!",
+      "pushm #3 %1 %2 %3!",
+    #else
+      "\212\214\303\250\303\270\233",
+      "\323\3103\351\270",
+    #endif
+    3-1, 3-4
+  },
+  {
+    #ifdef SCPACK
+      "push %1!;$par!push %2!;$par!",
+      "pushm #2 %1 %2!",
+    #else
+      "\212\214\303\250\233",
+      "\323\3102\357",
+    #endif
+    2-1, 2-3
+  },
+  /* ----- */
+  {
+    #ifdef SCPACK
+      "push.s %1!;$par!push.s %2!;$par!push.s %3!;$par!push.s %4!;$par!push.s %5!;$par!",
+      "pushm.s #4 %1 %2 %3 %4 %5!",
+    #else
+      "\212\360\303\213\250\303\213\270\303\213\325\303\213\206\320\233",
+      "\323\213\3104\374\311\206\320",
+    #endif
+    5-1, 5-6
+  },
+  {
+    #ifdef SCPACK
+      "push.s %1!;$par!push.s %2!;$par!push.s %3!;$par!push.s %4!;$par!",
+      "pushm.s #4 %1 %2 %3 %4!",
+    #else
+      "\212\360\303\213\250\303\213\270\303\213\325\233",
+      "\323\213\3104\374\325",
+    #endif
+    4-1, 4-5
+  },
+  {
+    #ifdef SCPACK
+      "push.s %1!;$par!push.s %2!;$par!push.s %3!;$par!",
+      "pushm.s #3 %1 %2 %3!",
+    #else
+      "\212\360\303\213\250\303\213\270\233",
+      "\323\213\3103\351\270",
+    #endif
+    3-1, 3-4
+  },
+  {
+    #ifdef SCPACK
+      "push.s %1!;$par!push.s %2!;$par!",
+      "pushm.s #2 %1 %2!",
+    #else
+      "\212\360\303\213\250\233",
+      "\323\213\3102\357",
+    #endif
+    2-1, 2-3
+  },
+  /* ----- */
+  {
+    #ifdef SCPACK
+      "push.adr %1!;$par!push.adr %2!;$par!push.adr %3!;$par!push.adr %4!;$par!push.adr %5!;$par!",
+      "pushm.adr #5 %1 %2 %3 %4 %5!",
+    #else
+      "\212\300\214\303\300\250\303\300\270\303\300\325\303\300\206\320\233",
+      "\323\300\3105\374\311\206\320",
+    #endif
+    5-1, 5-6
+  },
+  {
+    #ifdef SCPACK
+      "push.adr %1!;$par!push.adr %2!;$par!push.adr %3!;$par!push.adr %4!;$par!",
+      "pushm.adr #4 %1 %2 %3 %4!",
+    #else
+      "\212\300\214\303\300\250\303\300\270\303\300\325\233",
+      "\323\300\3104\374\325",
+    #endif
+    4-1, 4-5
+  },
+  {
+    #ifdef SCPACK
+      "push.adr %1!;$par!push.adr %2!;$par!push.adr %3!;$par!",
+      "pushm.adr #3 %1 %2 %3!",
+    #else
+      "\212\300\214\303\300\250\303\300\270\233",
+      "\323\300\3103\351\270",
+    #endif
+    3-1, 3-4
+  },
+  {
+    #ifdef SCPACK
+      "push.adr %1!;$par!push.adr %2!;$par!",
+      "pushm.adr #2 %1 %2!",
+    #else
+      "\212\300\214\303\300\250\233",
+      "\323\300\3102\357",
+    #endif
+    2-1, 2-3
+  },
+  /* ----- */
+  {
+    #ifdef SCPACK
+      "pushr.c %1!;$par!pushr.c %2!;$par!pushr.c %3!;$par!pushr.c %4!;$par!pushr.c %5!;$par!",
+      "pushrm.c #5 %1 %2 %3 %4 %5!",
+    #else
+      "\253\236\214\315\236\250\315\236\270\315\236\325\315\236\206\320\233",
+      "\362\236\3105\374\311\206\320",
+    #endif
+    5-1, 5-6
+  },
+  {
+    #ifdef SCPACK
+      "pushr.c %1!;$par!pushr.c %2!;$par!pushr.c %3!;$par!pushr.c %4!;$par!",
+      "pushrm.c #4 %1 %2 %3 %4!",
+    #else
+      "\253\236\214\315\236\250\315\236\270\315\236\325\233",
+      "\362\236\3104\374\325",
+    #endif
+    4-1, 4-5
+  },
+  {
+    #ifdef SCPACK
+      "pushr.c %1!;$par!pushr.c %2!;$par!pushr.c %3!;$par!",
+      "pushrm.c #3 %1 %2 %3!",
+    #else
+      "\253\236\214\315\236\250\315\236\270\233",
+      "\362\236\3103\351\270",
+    #endif
+    3-1, 3-4
+  },
+  {
+    #ifdef SCPACK
+      "pushr.c %1!;$par!pushr.c %2!;$par!",
+      "pushrm.c #2 %1 %2!",
+    #else
+      "\253\236\214\315\236\250\233",
+      "\362\236\3102\357",
+    #endif
+    2-1, 2-3
+  },
+  /* ----- */
+  {
+    #ifdef SCPACK
+      "pushr.s %1!;$par!pushr.s %2!;$par!pushr.s %3!;$par!pushr.s %4!;$par!pushr.s %5!;$par!",
+      "pushrm.s #5 %1 %2 %3 %4 %5!",
+    #else
+      "\253\360\315\213\250\315\213\270\315\213\325\315\213\206\320\233",
+      "\362\213\3105\374\311\206\320",
+    #endif
+    5-1, 5-6
+  },
+  {
+    #ifdef SCPACK
+      "pushr.s %1!;$par!pushr.s %2!;$par!pushr.s %3!;$par!pushr.s %4!;$par!",
+      "pushrm.s #4 %1 %2 %3 %4!",
+    #else
+      "\253\360\315\213\250\315\213\270\315\213\325\233",
+      "\362\213\3104\374\325",
+    #endif
+    4-1, 4-5
+  },
+  {
+    #ifdef SCPACK
+      "pushr.s %1!;$par!pushr.s %2!;$par!pushr.s %3!;$par!",
+      "pushrm.s #3 %1 %2 %3!",
+    #else
+      "\253\360\315\213\250\315\213\270\233",
+      "\362\213\3103\351\270",
+    #endif
+    3-1, 3-4
+  },
+  {
+    #ifdef SCPACK
+      "pushr.s %1!;$par!pushr.s %2!;$par!",
+      "pushrm.s #2 %1 %2!",
+    #else
+      "\253\360\315\213\250\233",
+      "\362\213\3102\357",
+    #endif
+    2-1, 2-3
+  },
+  /* ----- */
+  {
+    #ifdef SCPACK
+      "pushr.adr %1!;$par!pushr.adr %2!;$par!pushr.adr %3!;$par!pushr.adr %4!;$par!pushr.adr %5!;$par!",
+      "pushrm.adr #5 %1 %2 %3 %4 %5!",
+    #else
+      "\253\300\214\315\300\250\315\300\270\315\300\325\315\300\206\320\233",
+      "\362\300\3105\374\311\206\320",
+    #endif
+    5-1, 5-6
+  },
+  {
+    #ifdef SCPACK
+      "pushr.adr %1!;$par!pushr.adr %2!;$par!pushr.adr %3!;$par!pushr.adr %4!;$par!",
+      "pushrm.adr #4 %1 %2 %3 %4!",
+    #else
+      "\253\300\214\315\300\250\315\300\270\315\300\325\233",
+      "\362\300\3104\374\325",
+    #endif
+    4-1, 4-5
+  },
+  {
+    #ifdef SCPACK
+      "pushr.adr %1!;$par!pushr.adr %2!;$par!pushr.adr %3!;$par!",
+      "pushrm.adr #3 %1 %2 %3!",
+    #else
+      "\253\300\214\315\300\250\315\300\270\233",
+      "\362\300\3103\351\270",
+    #endif
+    3-1, 3-4
+  },
+  {
+    #ifdef SCPACK
+      "pushr.adr %1!;$par!pushr.adr %2!;$par!",
+      "pushrm.adr #2 %1 %2!",
+    #else
+      "\253\300\214\315\300\250\233",
+      "\362\300\3102\357",
+    #endif
+    2-1, 2-3
+  },
+  /* Loading two registers at a time
+   *    load.pri %1             load2 %1 %2
+   *    load.alt %2             -
+   *    --------------------------------------
+   *    load.alt %2             load2 %1 %2
+   *    load.pri %1             -
+   *    --------------------------------------
+   *    load.s.pri %1           load2.s %1 %2
+   *    load.s.alt %2           -
+   *    --------------------------------------
+   *    load.s.alt %2           load2.s %1 %2
+   *    load.s.pri %1           -
+   */
+  {
+    #ifdef SCPACK
+      "load.pri %1!load.alt %2!",
+      "load2 %1 %2!",
+    #else
+      "\326\217\336",
+      "\2172\357",
+    #endif
+    2-1, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.alt %2!load.pri %1!",
+      "load2 %1 %2!",
+    #else
+      "\217\336\326",
+      "\2172\357",
+    #endif
+    2-1, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %1!load.s.alt %2!",
+      "load2.s %1 %2!",
+    #else
+      "\317\235\336",
+      "\2172\213\357",
+    #endif
+    2-1, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "load.s.alt %2!load.s.pri %1!",
+      "load2.s %1 %2!",
+    #else
+      "\235\336\317",
+      "\2172\213\357",
+    #endif
+    2-1, 2-2
+  },
+  /* Loading two registers and then pushing them occurs with user operators
+   *    load2 %1 %2            pushm 2 %1 %2
+   *    push.pri                -
+   *    push.alt                -
+   *    --------------------------------------
+   *    load2.s %1 %2          pushm.s 2 %1 %2
+   *    push.pri                -
+   *    push.alt                -
+   */
+  {
+    #ifdef SCPACK
+      "load2 %1 %2!push.pri!push.alt!",
+      "pushm #2 %1 %2!",
+    #else
+      "\2172\357\262\212\247",
+      "\323\3102\357",
+    #endif
+    3-1, 2-3
+  },
+  {
+    #ifdef SCPACK
+      "load2.s %1 %2!push.pri!push.alt!",
+      "pushm.s #2 %1 %2!",
+    #else
+      "\2172\213\357\262\212\247",
+      "\323\213\3102\357",
+    #endif
+    3-1, 2-3
+  },
+  /* Load a constant in a variable
+   *    const.pri %1            const %2 %1
+   *    stor %2                 ;$exp
+   *    ;$exp                   -
+   *    --------------------------------------
+   *    const.pri %1            const.s %2 %1
+   *    stor.s %2               ;$exp
+   *    ;$exp                   -
+   */
+  {
+    #ifdef SCPACK
+      "const.pri %1!stor %2!;$exp!",
+      "const %2 %1!;$exp!",
+    #else
+      "\304\234or\250\260",
+      "\246\330\316",
+    #endif
+    2-1, 2-2
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %1!stor.s %2!;$exp!",
+      "const.s %2 %1!;$exp!",
+    #else
+      "\304\234or\213\250\260",
+      "\246\213\330\316",
+    #endif
+    2-1, 2-2
+  },
+
+
+  /* ------------------ */
+  /* Packed opcodes     */
+  /* ------------------ */
+
+  /* separator, so optimizer can stop before generating macro opcodes */
+  { separator_full, "", 0 },
+
+  /* If %0 is in the range cell_min .. cell_max, do conversions like:
+   *    add.c %0                add.p.c %0
+   *
+   * Rules in this section may only use %0 (a special symbol which matches
+   * a numeric cell in a restricted range and replaces it with a shorter
+   * representation of the same value).
+   */
+
+  {
+    #ifdef SCPACK
+      "load.pri %0!",
+      "load.p.pri %0!",
+    #else
+      "\217\365",
+      "\217\224\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "load.alt %0!",
+      "load.p.alt %0!",
+    #else
+      "\217\370",
+      "\217\224\370",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "load.s.pri %0!",
+      "load.p.s.pri %0!",
+    #else
+      "\235\365",
+      "\217\224\213\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "load.s.alt %0!",
+      "load.p.s.alt %0!",
+    #else
+      "\235\370",
+      "\217\224\213\370",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "lref.s.pri %0!",
+      "lref.p.s.pri %0!",
+    #else
+      "\356\213\365",
+      "\356\224\213\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "lref.s.alt %0!",
+      "lref.p.s.alt %0!",
+    #else
+      "\356\213\370",
+      "\356\224\213\370",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "lodb.i %0!",
+      "lodb.p.i %0!",
+    #else
+      "\215db.\200%\241",
+      "\215db\224.\200%\241",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "const.pri %0!",
+      "const.p.pri %0!",
+    #else
+      "\246\365",
+      "\246\224\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "const.alt %0!",
+      "const.p.alt %0!",
+    #else
+      "\246\370",
+      "\246\224\370",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "addr.pri %0!",
+      "addr.p.pri %0!",
+    #else
+      "\275\365",
+      "\275\224\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "addr.alt %0!",
+      "addr.p.alt %0!",
+    #else
+      "\275\370",
+      "\275\224\370",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "stor %0!",
+      "stor.p %0!",
+    #else
+      "\234or\255",
+      "\234or\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "stor.s %0!",
+      "stor.p.s %0!",
+    #else
+      "\234or\367",
+      "\234or\224\367",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "sref.s %0!",
+      "sref.p.s %0!",
+    #else
+      "s\345\367",
+      "s\345\224\367",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "strb.i %0!",
+      "strb.p.i %0!",
+    #else
+      "\234rb.\200%\241",
+      "\234rb\224.\200%\241",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "lidx.b %0!",
+      "lidx.p.b %0!",
+    #else
+      "l\335.b\255",
+      "l\335\224.b\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "idxaddr.b %0!",
+      "idxaddr.p.b %0!",
+    #else
+      "\335\275.b\255",
+      "\335\275\224.b\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "align.pri %0!",
+      "align.p.pri %0!",
+    #else
+      "\221ign\365",
+      "\221ign\224\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "push.c %0!",
+      "push.p.c %0!",
+    #else
+      "\361\255",
+      "\212\224\236\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "push %0!",
+      "push.p %0!",
+    #else
+      "\212\255",
+      "\212\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "push.s %0!",
+      "push.p.s %0!",
+    #else
+      "\212\367",
+      "\212\224\367",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "push.adr %0!",
+      "push.p.adr %0!",
+    #else
+      "\212\300\255",
+      "\212\224\300\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushr.c %0!",
+      "pushr.p.c %0!",
+    #else
+      "\253\236\255",
+      "\253\224\236\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushr.s %0!",
+      "pushr.p.s %0!",
+    #else
+      "\253\367",
+      "\253\224\367",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushr.adr %0!",
+      "pushr.p.adr %0!",
+    #else
+      "\253\300\255",
+      "\253\224\300\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushm.c %0 %1~%2~%3~%4~%5!",
+      "pushm.p.c %0 %1~%2~%3~%4~%5!",
+    #else
+      "\323\236\375\371\3764\266\320",
+      "\323\224\236\375\371\3764\266\320",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushm %0 %1~%2~%3~%4~%5!",
+      "pushm.p %0 %1~%2~%3~%4~%5!",
+    #else
+      "\323\375\371\3764\266\320",
+      "\323\224\375\371\3764\266\320",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushm.s %0 %1~%2~%3~%4~%5!",
+      "pushm.p.s %0 %1~%2~%3~%4~%5!",
+    #else
+      "\323\213\375\371\3764\266\320",
+      "\323\224\213\375\371\3764\266\320",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushm.adr %0 %1~%2~%3~%4~%5!",
+      "pushm.p.adr %0 %1~%2~%3~%4~%5!",
+    #else
+      "\323\300\375\371\3764\266\320",
+      "\323\224\300\375\371\3764\266\320",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushrm.c %0 %1~%2~%3~%4~%5!",
+      "pushrm.p.c %0 %1~%2~%3~%4~%5!",
+    #else
+      "\362\236\375\371\3764\266\320",
+      "\362\224\236\375\371\3764\266\320",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushrm.s %0 %1~%2~%3~%4~%5!",
+      "pushrm.p.s %0 %1~%2~%3~%4~%5!",
+    #else
+      "\362\213\375\371\3764\266\320",
+      "\362\224\213\375\371\3764\266\320",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "pushrm.adr %0 %1~%2~%3~%4~%5!",
+      "pushrm.p.adr %0 %1~%2~%3~%4~%5!",
+    #else
+      "\362\300\375\371\3764\266\320",
+      "\362\224\300\375\371\3764\266\320",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "stack %0!",
+      "stack.p %0!",
+    #else
+      "\234ack\255",
+      "\234ack\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "heap %0!",
+      "heap.p %0!",
+    #else
+      "heap\255",
+      "heap\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "shl.c.pri %0!",
+      "shl.p.c.pri %0!",
+    #else
+      "\341\365",
+      "\210l\224\236\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "shl.c.alt %0!",
+      "shl.p.c.alt %0!",
+    #else
+      "\341\370",
+      "\210l\224\236\370",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "add.c %0!",
+      "add.p.c %0!",
+    #else
+      "\243\236\255",
+      "\243\224\236\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "smul.c %0!",
+      "smul.p.c %0!",
+    #else
+      "smu\327\255",
+      "smul\224\236\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "zero %0!",
+      "zero.p %0!",
+    #else
+      "\346\255",
+      "\346\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "zero.s %0!",
+      "zero.p.s %0!",
+    #else
+      "\346\367",
+      "\346\224\367",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "eq.c.pri %0!",
+      "eq.p.c.pri %0!",
+    #else
+      "\302\236\365",
+      "\302\224\236\365",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "eq.c.alt %0!",
+      "eq.p.c.alt %0!",
+    #else
+      "\302\236\370",
+      "\302\224\236\370",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "inc %0!",
+      "inc.p %0!",
+    #else
+      "\312\255",
+      "\312\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "inc.s %0!",
+      "inc.p.s %0!",
+    #else
+      "\312\367",
+      "\312\224\367",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "dec %0!",
+      "dec.p %0!",
+    #else
+      "\314\255",
+      "\314\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "dec.s %0!",
+      "dec.p.s %0!",
+    #else
+      "\314\367",
+      "\314\224\367",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "movs %0!",
+      "movs.p %0!",
+    #else
+      "movs\255",
+      "movs\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "cmps %0!",
+      "cmps.p %0!",
+    #else
+      "cmps\255",
+      "cmps\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "fill %0!",
+      "fill.p %0!",
+    #else
+      "fill\255",
+      "fill\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "halt %0!",
+      "halt.p %0!",
+    #else
+      "h\222\255",
+      "h\222\224\255",
+    #endif
+    1-1, 1-0
+  },
+  {
+    #ifdef SCPACK
+      "bounds %0!",
+      "bounds.p %0!",
+    #else
+      "\347\255",
+      "\347\224\255",
+    #endif
+    1-1, 1-0
+  },
+
+  /* ----- */
+  { NULL, NULL, 0 }
+};

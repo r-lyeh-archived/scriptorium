@@ -1,0 +1,3 @@
+R4RS 6.6  (char? object)  ==>  boolean
+
+Returns #T if OBJECT is a character, otherwise returns #F.

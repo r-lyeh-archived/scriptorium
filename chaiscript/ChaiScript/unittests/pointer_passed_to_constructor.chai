@@ -1,0 +1,8 @@
+load_module("test_module")
+
+auto i = 1;
+auto t0 = TestBaseType(i);
+
+auto t1 = TestBaseType(get_new_int())
+
+

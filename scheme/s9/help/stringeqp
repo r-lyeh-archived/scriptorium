@@ -1,0 +1,8 @@
+R4RS 6.7  (string=? string1 string2)     ==>  boolean
+          (string-ci=? string1 string2)  ==>  boolean
+
+Returns #T if the two strings are the same length and contain the
+same characters in the same positions, otherwise returns #F.
+STRING-CI=? treats upper and lower case letters as though they were
+the same character, but STRING=? treats upper and lower case as
+distinct characters.

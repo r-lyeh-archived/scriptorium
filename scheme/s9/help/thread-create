@@ -1,0 +1,26 @@
+S9 LIB  (thread-create procedure^0)  ==>  unspecific
+        (thread-yield)               ==>  unspecific
+        (thread-exit)                ==>  unspecific
+        (thread-start)               ==>  unspecific
+
+        (load-from-library "threads.scm")
+
+Run cooperative threads. THREAD-CREATE adds a new procedure to be run
+as a thread. THREAD-YIELD is used in a thread to pass control to another
+thread. A thread that does no longer have any work to do should exit
+by calling THREAD-EXIT. If it simply exits without announcing this,
+the scheduler will exit, too. THREAD-START starts all threads created
+earlier with THREAD-CREATE. When THREAD-EXIT is called by the last
+thread in the queue, the scheduler will also exit.
+
+(define (p n x)
+  (lambda ()
+    (do ((n n (- n 1)))
+        ((negative? n)
+          (thread-exit))
+      (display x)
+      (thread-yield))))
+
+(thread-create (p 100 "A"))
+(thread-create (p 200 "B"))
+(thread-start)

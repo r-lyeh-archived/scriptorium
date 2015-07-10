@@ -1,0 +1,15 @@
+S9 LIB  (queens n)  ==>  list
+
+Solve the N-Queens puzzle using AMK. All solutions for the
+given board size will be returned, where the offset in each
+list is an X position on the board and the value at that
+offset is the corresponding Y position. E.g., the board
+(2 0 3 1) would look like this:
+
+. . & . 3
+& . . . 2
+. . . & 1
+. & . . 0
+0 1 2 3
+
+(queens 4)  ==>  ((2 0 3 1) (1 3 0 2))

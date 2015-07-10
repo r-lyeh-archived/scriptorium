@@ -1,0 +1,14 @@
+I: correct-vs-short.qc
+D: correct-logic vs short-logic without perl-logic
+T: -execute
+C: -std=fteqcc -fcorrect-logic
+M: X               & | B
+M: 0 0 0, 0 0 0 :: 0 0 0
+M: 0 0 0, 5 0 0 :: 0 2 1
+M: 5 0 0, 0 0 0 :: 0 2 1
+M: 5 0 0, 5 0 0 :: 2 2 2
+M: Y               & | B
+M: 0 0 0, 0 0 0 :: 0 0 0
+M: 0 0 0, 0 5 0 :: 0 2 1
+M: 0 5 0, 0 0 0 :: 0 2 1
+M: 0 5 0, 0 5 0 :: 2 2 2

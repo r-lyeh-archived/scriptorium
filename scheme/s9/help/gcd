@@ -1,0 +1,10 @@
+R4RS 6.5.5  (gcd integer ...)  ==>  integer
+            (lcm integer ...)  ==>  integer
+
+These procedures return the greatest common divisor or least common
+multiple of their arguments. The result is always non-negative.
+
+(gcd 32 -36)  ==>  4
+(gcd)         ==>  0
+(lcm 32 -36)  ==>  288
+(lcm)         ==>  1

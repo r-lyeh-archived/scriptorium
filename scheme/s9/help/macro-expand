@@ -1,0 +1,37 @@
+S9fES  (macro-expand object)    ==>  object
+       (macro-expand-1 object)  ==>  object
+
+If OBJECT represents an expression that applies a macro, return the
+expanded form of the macro application, else return OBJECT unaltered.
+
+(define-syntax (while p . body)
+  `(let loop ()
+     (if ,p
+         (begin ,@body (loop)))))
+
+(macro-expand-1 '(while (< x 10)
+                      (display "hello!")
+                      (newline)
+                      (set! x (+ x 1))))
+  ==>  (let loop ()
+         (if (< x 10)
+             (begin (display "hello!")
+                    (newline)
+                    (set! x (+ x 1))
+                    (loop))))
+
+(macro-expand '(while (< x 10)
+                      (display "hello!")
+                      (newline)
+                      (set! x (+ x 1))))
+  ==>  (((lambda (loop)
+           ((lambda (g57)
+              (set! loop g57)
+              loop)
+            (lambda ()
+              (if (< x 10)
+                  (begin (display "hi")
+                         (newline)
+                         (set! x (+ 1 x))
+                         (loop))))))
+        #f))

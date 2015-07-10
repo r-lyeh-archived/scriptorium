@@ -1,0 +1,6 @@
+S9 LIB  (sort procedure^2 list)  ==>  list
+
+Sort lists. PROCEDURE^2 is a binary predicate that describes the
+desired order. The original list is not changed.
+
+(sort <= '(5 3 7 9 1))  ==>  (1 3 5 7 9)

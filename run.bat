@@ -77,6 +77,10 @@
 @bench neko\neko tests\fib.n
 
 @echo.
+@echo os/objectscript
+@bench os\os.exe tests\fib.os
+
+@echo.
 @echo pawn
 @pawn\pawn\bin\pawncc tests\fib.p -d0 -O3 -v2 > nul
 @bench pawn\pawn fib.amx

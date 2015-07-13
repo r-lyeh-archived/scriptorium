@@ -7,7 +7,7 @@ scriptorium
 - no fancy stats/charts yet (come back soon)
 - benchmarking latest versions (at the time of writing, Jul 2015)
 
-### languages evaluated (29)
+### languages evaluated (30)
 - angelscript
 - angelscript (angelscript-jit)
 - c (c4)
@@ -26,6 +26,7 @@ scriptorium
 - lua (lua)
 - lua (lua-jit)
 - neko (nekovm)
+- os (objectscript)
 - pawn (pawn)
 - pawn (pawn-asm)
 - psl
@@ -167,6 +168,10 @@ elapsed: 0.11200000
 neko/nekovm
 5702887
 1.13424 s.
+
+os/objectscript
+5702887
+3.03817 s.
 
 pawn
 tests\fib.p(28) : warning 237: recursive function "fibR"

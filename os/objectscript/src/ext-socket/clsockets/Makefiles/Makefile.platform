@@ -1,0 +1,31 @@
+###############################################################################
+# DETERMINE CURRENT PLATFORM, AND CONFIGURE MAKEFILE SETTINGS
+#
+# ***** IMPORTANT *****
+# Neet to download tools from the following areas for tools to work on Windows
+#   http://www.interopsystems.com/tools/Win32Tools.htm
+#
+#   Tools need are UnixUtils Connection for Win32 and gmake for Win32
+#
+# The following macro names CANNOT be changed or makefiles will cease to work:
+#
+#   EXE CFLAGS LD_FLAGS BIN PLATFORM
+#
+###############################################################################
+
+ifeq ($(BUILD),Release)
+    SUFFIX = 
+else
+ifeq ($(BUILD),Profile)
+    SUFFIX = profile
+else
+    SUFFIX = debug
+endif
+endif
+
+###############################################################################
+# Get the current platform.  Also convert aliases and alternate OS's to
+# standard platforms: Windows_NT, HP-UX, SunOs
+###############################################################################
+PLATFORM := $(shell uname)
+

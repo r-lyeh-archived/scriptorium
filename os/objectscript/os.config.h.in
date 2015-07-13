@@ -1,0 +1,7 @@
+#ifndef __OS_CONFIG_H__
+#define __OS_CONFIG_H__
+
+#define SOCI_ODBC_FOUND @SOCI_odbc_FOUND@
+#define SOCI_MYSQL_FOUND @SOCI_mysql_FOUND@
+
+#endif

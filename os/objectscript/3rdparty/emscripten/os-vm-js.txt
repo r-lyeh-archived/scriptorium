@@ -1,0 +1,2 @@
+OS_eval = Module.cwrap('OS_eval', null, ['string']);
+OS_eval("for(var i=0; i < 3; i++){ var a = LangTokenizer.parseText('print 108'); print(a, \"\\n\", a[0].str, a[0].type, a[1].str, a[1].type, \"\\n\", a[0].str, a[0].type, a[1].str, a[1].type, \"\\n\", gc.allocatedBytes, gc.usedBytes, gc.numObjects) }")

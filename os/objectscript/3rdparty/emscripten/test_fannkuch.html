@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<header>
+<title>test_fannkuch</title>
+<script src="os-vm-js.js"></script>
+<script src="os.js" type="text/javascript"></script>
+<script src="js.os" type="text/objectscript"></script>
+<script src="test.os" type="text/objectscript"></script>
+<script src="test_fannkuch.os" type="text/objectscript"></script>
+<script src="test_fannkuch.js" type="text/javascript"></script>
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+</header>
+<body>
+<input id="run_value" type="text" value="5" size="2" />
+<button id="run">Run</button>
+<div>Result...</div>
+<script>
+$(function(){
+	OS_eval = Module.cwrap('OS_eval', null, ['string']);
+	OS_eval("print 'OS version: '..OS_VERSION");
+	
+	OS_evalFakeFile = Module.cwrap('OS_evalFakeFile', null, ['string', 'string']);
+	
+	function getTimeSec(){
+		var d = new Date();
+		return (d.getTime() + d.getMilliseconds() / 1000.0) / 1000.0;
+	}
+	
+	var executeScripts = function(){
+		$('script[type="text/objectscript"]').each(function(){
+			// console.log($(this).attr("src"));
+			var runScript = function(src, text){
+				var time = getTimeSec();
+				console.log("OS: "+src+" [begin]");
+				OS_evalFakeFile(src, text);
+				console.log("OS: "+src+" [end] run time: "+(getTimeSec() - time));
+			};
+			var text = $(this).html();
+			if(text == ""){
+				var src = $(this).attr("src");
+				$.ajax({
+					url: src, 
+					async: false,
+					success: function(text){
+						runScript(src, text);
+					}
+				});
+			}else{
+				runScript(document.location, text);
+			}
+		});
+	};
+	executeScripts();
+	
+	$("#run").click(function(){
+		var time = getTimeSec(), val = $("#run_value").val();
+		console.log("[OS] fannkuch("+val+") [begin]");
+		OS_eval("var sum, flips = fannkuch("+val+"); print \"sum: ${sum}, flips: ${flips}\"");
+		console.log("[OS] fannkuch("+val+") [end] run time: "+(getTimeSec() - time));
+		
+		var time = getTimeSec(), val = $("#run_value").val();
+		console.log("[JS] fannkuch("+val+") [begin]");
+		var r = fannkuch(val);
+		var sum = r[0], flips = r[1];
+		console.log("sum: "+sum+", flips: "+flips);
+		console.log("[JS] fannkuch("+val+") [end] run time: "+(getTimeSec() - time));
+		return false;
+	});
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+##############################################################################
+# THIS IS A SHARED MAKEFILE
+#
+# This Makefile is meant to be included by all other tool Makefiles.  It
+# defines the basic object file rules based on some defined interface
+# variables.
+##############################################################################
+
+##############################################################################
+# The following is a file used to determine if the OBJ directory has been
+# created.  Each *.obj file should be dependant on it.
+#
+# Notice that we are actually dependent on a file, and not just the directory.
+# If all the object files were dependent on the directory, then each of them
+# would look out of date whenever one of the other files was created and
+# the directory timestamp was updated.  By doing this, we are essentially
+# creating an existance test, rather than a time dependence.  In make, though,
+# the time dependence is the only supported comparison, so we use this hack.
+##############################################################################
+
+##############################################################################
+# MASTER TARGET
+#  - should be able to use the same rule for all platforms
+##############################################################################
+
+$(TARGET): $(OBJ_DIR) $(OUT_DIR) $(OBJ_FILES)
+	$(BUILD_TARGET)
+
+
+##############################################################################
+# BASIC OBJECT FILE RULE
+#
+# This rule allows us to make either name.obj or OBJ/name.obj (.o on Unix)
+##############################################################################
+.cpp.o: %.cpp 
+	$(CPP) $(CFLAGS) -c $< -o $(OBJ_DIR)/$*.o
+
+.c.o: %.c
+	$(CPP) $(CFLAGS) -c $< -o $(OBJ_DIR)/$*.o
+
+$(OBJ_DIR)/%.o: %.cpp 
+	$(CPP) $(CFLAGS) -c $< -o $(OBJ_DIR)/$*.o
+
+$(OBJ_DIR)/%.o: %.c 
+	$(CC) $(CFLAGS) -c $< -o $(OBJ_DIR)/$*.o
+
+.PRECIOUS: %.h %.cpp
+
+love:
+	@echo not war
+
+$(BIN_DIR): 
+	if test ! -d $(BIN_DIR); then mkdir -p $(BIN_DIR); fi;
+
+$(LIB_DIR):
+	if test ! -d $(LIB_DIR); then mkdir -p $(LIB_DIR); fi;
+
+$(OBJ_DIR): 
+	if test ! -d $(OBJ_DIR); then mkdir -p $(OBJ_DIR); fi;
+
+$(TARG_DEPENDS):
+	if test ! -d $(TARG_DEPENDS); then touch $(TARG_DEPENDS); fi;
+
+$(OBJ_FILES): Makefile ./Makefiles/Makefile.basic ./Makefiles/Makefile.platform $(TARG_DEPENDS) 
+
+
+##############################################################################
+# SUPPORT RULES
+##############################################################################
+clean:
+	rm -f $(OBJ_FILES) *~ 
+	rm -f $(TARGET)
+	rm -rf $(OBJ_DIR)
+	rm -rf $(LIB_DIR)
+	rm -rf $(BIN_DIR)
+
+cleanall:
+	rm -rf bin bindebug binprofile; rm -rf lib libdebug libprofile; rm -rf obj objdebug objprofile; 
+
+prep::
+
+dep:
+	rm -f $(TARG_DEPENDS) ;\
+	rm -f *.d ;\
+	OB='$$(OBJ_DIR)'; \
+	for i in $(TARG_SOURCES); do \
+	    $(CPP) $(CFLAGS) -E -MT"$$OB/`echo $$i | sed 's,\..*,.o,'`" \
+				-MMD $$i > /dev/null; \
+	done ;\
+	cat *.d > $(TARG_DEPENDS);\
+	rm *.d
+
+filelist:
+	@echo $(TARG_SOURCES)
+
+cfilelist:
+	@echo $(filter-out %.h, $(TARG_SOURCES))
+
+install_target:
+	@echo "Copying file $(TARGET) to $(TARG_INSTALL)"
+	cp $(TARGET) $(TARG_INSTALL)
+
+branch:
+	svn copy $(TARG_REPOS_TRUNK) $(TARG_REPOS_BRANCH)/Branch_$(TARG_NAME)_$(BUILD_MAJOR)_$(BUILD_MINOR)_$(BUILD_VERSION) -m "Creation of branch Release_$(TARG_NAME)_$(BUILD_MAJOR)_$(BUILD_MINOR)_$(BUILD_VERSION)"
+
+tag:
+	svn copy $(TARG_REPOS_TRUNK) $(TARG_REPOS_TAGS)/Release_$(TARG_NAME)_$(BUILD_MAJOR)_$(BUILD_MINOR)_$(BUILD_VERSION) -m "Creation of tag Release_$(TARG_NAME)_$(BUILD_MAJOR)_$(BUILD_MINOR)_$(BUILD_VERSION)"
+
+info:
+	@echo ------------------------------;\
+	echo PLATFORM     = $(PLATFORM); \
+	echo TARGET TYPE  = $(TARG_TYPE); \
+	echo ------------------------------;\
+	echo BUILD_DATE     = $(BUILD_DATE) ;\
+	echo BUILD_MAJOR    = $(BUILD_MAJOR) ;\
+	echo BUILD_MINOR    = $(BUILD_MINOR) ;\
+	echo ------------------------------;\
+	echo _AR          = $(_AR); \
+	echo _CC          = $(_CC); \
+	echo _CPP         = $(_CPP); \
+	echo _CPFLAGS     = $(_CPFLAGS); \
+	echo _LDFLAGS     = $(_LDFLAGS); \
+	echo ------------------------------;\
+	echo AR           = $(AR); \
+	echo CC           = $(CC); \
+	echo CPP          = $(CPP); \
+	echo CFLAGS       = $(CFLAGS); \
+	echo LD_FLAGS     = $(LD_FLAGS); \
+	echo TARG_OPTIONS = $(TARG_OPTIONS); \
+	echo ------------------------------;\
+	echo OBJ_DIR      = $(OBJ_DIR); \
+	echo BIN_DIR      = $(BIN_DIR); \
+	echo LIB_DIR      = $(LIB_DIR);\
+	echo TARG_DIR     = $(TARG_DIR); \
+	echo ------------------------------;\
+	echo OBJ_FILES    = $(OBJ_FILES); \
+	echo TARGET       = $(TARGET); \
+	echo TARGET_SO    = $(TARGET_SO); \
+	echo TARGET_REAL_NAME = $(TARGET_REAL_NAME);   \
+	echo TARGET_SO_NAME   = $(TARGET_SO_NAME);     \
+	echo TARGET_LINKER_NAME = $(TARGET_LINKER_NAME); \
+	echo ------------------------------;\
+	echo BUILD_TARGET = $(BUILD_TARGET)
+	
+ include $(TARG_DEPENDS)

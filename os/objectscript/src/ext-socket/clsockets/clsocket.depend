@@ -1,0 +1,6 @@
+$(OBJ_DIR)/ActiveSocket.o: ActiveSocket.cpp ActiveSocket.h SimpleSocket.h \
+  Host.h StatTimer.h
+$(OBJ_DIR)/PassiveSocket.o: PassiveSocket.cpp PassiveSocket.h \
+  ActiveSocket.h SimpleSocket.h Host.h StatTimer.h
+$(OBJ_DIR)/SimpleSocket.o: SimpleSocket.cpp SimpleSocket.h Host.h \
+  StatTimer.h

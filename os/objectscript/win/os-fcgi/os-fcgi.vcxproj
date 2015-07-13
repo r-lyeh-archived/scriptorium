@@ -1,0 +1,545 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0517F1F5-B6EA-4F04-9C90-F77A0E16532F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>osfcgi</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugPrice|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugPrice|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>../../src;../../3rdparty/soci/include;../../3rdparty/mysql/include;../../3rdparty/fcgi-2.4.1/include;../../3rdparty/libcurl-7.19.3-win32-ssl-msvc/include;../../3rdparty/pcrelib;../../3rdparty/libiconv-1.14/lib;../../3rdparty/libiconv-1.14/include;../../3rdparty/libiconv-1.14/libcharset/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../../3rdparty/mysql/lib;../../3rdparty/soci/lib/Debug;../../3rdparty/libcurl-7.19.3-win32-ssl-msvc;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)$(ProjectName)\bin-$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\..\3rdparty\fcgi-2.4.1\include;..\..\3rdparty\libcurl-7.19.3-win32-ssl-msvc\include;..\..\3rdparty\pcrelib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\3rdparty\libcurl-7.19.3-win32-ssl-msvc;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSdkDir)lib\x64;</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugPrice|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\..\3rdparty\fcgi-2.4.1\include;..\..\3rdparty\libcurl-7.19.3-win32-ssl-msvc\include;..\..\3rdparty\pcrelib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\3rdparty\libcurl-7.19.3-win32-ssl-msvc;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSdkDir)lib\x64;</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>../../src;../../3rdparty/soci/include;../../3rdparty/mysql/include;../../3rdparty/fcgi-2.4.1/include;../../3rdparty/libcurl-7.19.3-win32-ssl-msvc/include;../../3rdparty/pcrelib;../../3rdparty/libiconv-1.14/lib;../../3rdparty/libiconv-1.14/include;../../3rdparty/libiconv-1.14/libcharset/include;$(IncludePath)</IncludePath>
+    <LibraryPath>../../3rdparty/mysql/lib;../../3rdparty/soci/lib/Release;../../3rdparty/libcurl-7.19.3-win32-ssl-msvc;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)$(ProjectName)\bin-$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\3rdparty\fcgi-2.4.1\include;..\..\3rdparty\libcurl-7.19.3-win32-ssl-msvc\include;..\..\3rdparty\pcrelib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\3rdparty\libcurl-7.19.3-win32-ssl-msvc;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSdkDir)lib\x64;</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;SUPPORT_UTF;_ITERATOR_DEBUG_LEVEL=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libmysql.lib;mysqlclient.lib;libsoci_core_3_2.lib;libsoci_mysql_3_2.lib;libsoci_odbc_3_2.lib;libcurl_imp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copydll.cmd $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libcurl_imp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copydll.cmd $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugPrice|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libcurl_imp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copydll.cmd $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libmysql.lib;mysqlclient.lib;libsoci_core_3_2.lib;libsoci_mysql_3_2.lib;libsoci_odbc_3_2.lib;libcurl_imp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copydll.cmd $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libcurl_imp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copydll.cmd $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fastcgi.h" />
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fcgiapp.h" />
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fcgimisc.h" />
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fcgio.h" />
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fcgios.h" />
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fcgi_config.h" />
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fcgi_config_x86.h" />
+    <ClInclude Include="..\..\3rdparty\fcgi-2.4.1\include\fcgi_stdio.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_aix.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_aix_sysaix.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_dos.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_extra.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_osf1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_osf1_sysosf1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_sysaix.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_syshpux.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_sysosf1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\aliases_syssolaris.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\armscii_8.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ascii.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\atarist.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\big5.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\big5hkscs1999.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\big5hkscs2001.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\big5hkscs2004.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\big5hkscs2008.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\big5_2003.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\c99.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_aix.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_aix_sysaix.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_dos.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_extra.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_local.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_local_sysaix.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_local_syshpux.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_local_sysosf1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_local_syssolaris.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_osf1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_osf1_sysosf1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_sysaix.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_syshpux.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_sysosf1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\canonical_syssolaris.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ces_big5.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ces_gbk.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cjk_variants.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_15.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_3.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_4.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_4a.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_4b.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_5.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_6.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_7.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cns11643_inv.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\converters.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1046.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1124.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1125.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1129.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1131.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1133.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1161.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1162.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1163.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1250.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1251.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1252.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1253.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1254.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1255.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1256.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1257.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp1258.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp437.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp737.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp775.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp850.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp852.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp853.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp855.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp856.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp857.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp858.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp860.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp861.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp862.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp863.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp864.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp865.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp866.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp869.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp874.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp922.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp932.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp932ext.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp936.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp936ext.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp943.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp949.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp950.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\cp950ext.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\dec_hanyu.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\dec_kanji.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\euc_cn.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\euc_jisx0213.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\euc_jp.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\euc_kr.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\euc_tw.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\flags.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\flushwc.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gb12345.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gb12345ext.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gb18030.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gb18030ext.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gb18030uni.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gb2312.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gbk.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gbkext1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gbkext2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\gbkext_inv.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\georgian_academy.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\georgian_ps.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\hkscs1999.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\hkscs2001.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\hkscs2004.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\hkscs2008.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\hp_roman8.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\hz.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iconv_open1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iconv_open2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso2022_cn.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso2022_cnext.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso2022_jp.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso2022_jp1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso2022_jp2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso2022_jp3.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso2022_kr.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso646_cn.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso646_jp.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_10.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_11.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_13.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_14.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_15.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_16.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_3.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_4.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_5.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_6.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_7.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_8.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\iso8859_9.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\isoir165.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\isoir165ext.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\java.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\jisx0201.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\jisx0208.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\jisx0212.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\jisx0213.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\johab.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\johab_hangul.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\koi8_r.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\koi8_ru.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\koi8_t.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\koi8_u.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ksc5601.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\loops.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\loop_unicode.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\loop_wchar.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_arabic.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_centraleurope.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_croatian.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_cyrillic.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_greek.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_hebrew.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_iceland.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_roman.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_romania.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_thai.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_turkish.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mac_ukraine.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\mulelao.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\nextstep.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\pt154.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\relocatable.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\riscos1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\rk1048.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\shift_jisx0213.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\sjis.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\tcvn.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\tds565.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\tis620.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\translit.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs2be.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs2internal.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs2le.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs2swapped.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs4.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs4be.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs4internal.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs4le.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\ucs4swapped.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\uhc_1.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\uhc_2.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf16.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf16be.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf16le.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf32.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf32be.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf32le.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf7.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\utf8.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\vietcomb.h" />
+    <ClInclude Include="..\..\3rdparty\libiconv-1.14\lib\viscii.h" />
+    <ClInclude Include="..\..\3rdparty\MPFDParser-1.0\Exception.h" />
+    <ClInclude Include="..\..\3rdparty\MPFDParser-1.0\Field.h" />
+    <ClInclude Include="..\..\3rdparty\MPFDParser-1.0\Parser.h" />
+    <ClInclude Include="..\..\3rdparty\pcrelib\config.h" />
+    <ClInclude Include="..\..\3rdparty\pcrelib\pcre.h" />
+    <ClInclude Include="..\..\3rdparty\pcrelib\pcreposix.h" />
+    <ClInclude Include="..\..\3rdparty\pcrelib\pcre_internal.h" />
+    <ClInclude Include="..\..\3rdparty\pcrelib\ucp.h" />
+    <ClInclude Include="..\..\src\ext-base64\cdecode.h" />
+    <ClInclude Include="..\..\src\ext-base64\cencode.h" />
+    <ClInclude Include="..\..\src\ext-base64\os-base64.h" />
+    <ClInclude Include="..\..\src\ext-curl\os-curl.h" />
+    <ClInclude Include="..\..\src\ext-datetime\os-datetime.h" />
+    <ClInclude Include="..\..\src\ext-filesystem\os-filesystem.h" />
+    <ClInclude Include="..\..\src\ext-hashlib\crc32\os-crc32.h" />
+    <ClInclude Include="..\..\src\ext-hashlib\md5\md5.h" />
+    <ClInclude Include="..\..\src\ext-hashlib\os-hashlib.h" />
+    <ClInclude Include="..\..\src\ext-hashlib\sha\sha-private.h" />
+    <ClInclude Include="..\..\src\ext-hashlib\sha\sha.h" />
+    <ClInclude Include="..\..\src\ext-iconv\os-iconv.h" />
+    <ClInclude Include="..\..\src\ext-json\os-json.h" />
+    <ClInclude Include="..\..\src\ext-odbo\os-odbo.h" />
+    <ClInclude Include="..\..\src\ext-process\os-process.h" />
+    <ClInclude Include="..\..\src\ext-regexp\os-regexp.h" />
+    <ClInclude Include="..\..\src\ext-sqlite3\os-sqlite3.h" />
+    <ClInclude Include="..\..\src\ext-sqlite3\sqlite3.h" />
+    <ClInclude Include="..\..\src\ext-url\os-url.h" />
+    <ClInclude Include="..\..\src\ext-zlib\os-zlib.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\crc32.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\deflate.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\gzguts.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\inffast.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\inffixed.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\inflate.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\inftrees.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\trees.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\zconf.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\zlib.h" />
+    <ClInclude Include="..\..\src\ext-zlib\zlib\zutil.h" />
+    <ClInclude Include="..\..\src\objectscript.h" />
+    <ClInclude Include="..\..\src\os-heap.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\3rdparty\fcgi-2.4.1\libfcgi\fcgiapp.c" />
+    <ClCompile Include="..\..\3rdparty\fcgi-2.4.1\libfcgi\fcgi_stdio.c" />
+    <ClCompile Include="..\..\3rdparty\fcgi-2.4.1\libfcgi\os_win32.c" />
+    <ClCompile Include="..\..\3rdparty\libiconv-1.14\libcharset\lib\localcharset.c" />
+    <ClCompile Include="..\..\3rdparty\libiconv-1.14\lib\iconv.c" />
+    <ClCompile Include="..\..\3rdparty\MPFDParser-1.0\Exception.cpp" />
+    <ClCompile Include="..\..\3rdparty\MPFDParser-1.0\Field.cpp" />
+    <ClCompile Include="..\..\3rdparty\MPFDParser-1.0\Parser.cpp" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcreposix.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_chartables.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_compile.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_config.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_exec.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_fullinfo.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_get.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_globals.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_info.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_maketables.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_newline.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_ord2utf8.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_refcount.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_study.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_tables.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_try_flipped.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_ucd.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_valid_utf8.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_version.c" />
+    <ClCompile Include="..\..\3rdparty\pcrelib\pcre_xclass.c" />
+    <ClCompile Include="..\..\os-fcgi.cpp" />
+    <ClCompile Include="..\..\src\ext-base64\cdecode.cpp" />
+    <ClCompile Include="..\..\src\ext-base64\cencode.cpp" />
+    <ClCompile Include="..\..\src\ext-base64\os-base64.cpp" />
+    <ClCompile Include="..\..\src\ext-curl\os-curl.cpp" />
+    <ClCompile Include="..\..\src\ext-datetime\os-datetime.cpp">
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ShowIncludes>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ext-filesystem\os-filesystem.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\crc32\os-crc32.c" />
+    <ClCompile Include="..\..\src\ext-hashlib\des\des.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\md5\md5.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\os-hashlib.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\sha\hmac.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\sha\sha1.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\sha\sha224-256.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\sha\sha384-512.cpp" />
+    <ClCompile Include="..\..\src\ext-hashlib\sha\usha.cpp" />
+    <ClCompile Include="..\..\src\ext-iconv\os-iconv.cpp" />
+    <ClCompile Include="..\..\src\ext-json\os-json.cpp" />
+    <ClCompile Include="..\..\src\ext-odbo\os-odbo.cpp" />
+    <ClCompile Include="..\..\src\ext-process\os-process.cpp" />
+    <ClCompile Include="..\..\src\ext-regexp\os-regexp.cpp" />
+    <ClCompile Include="..\..\src\ext-sqlite3\os-sqlite3.cpp" />
+    <ClCompile Include="..\..\src\ext-sqlite3\sqlite3.c" />
+    <ClCompile Include="..\..\src\ext-url\os-url.cpp" />
+    <ClCompile Include="..\..\src\ext-zlib\os-zlib.cpp" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\adler32.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\compress.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\crc32.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\deflate.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\gzclose.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\gzlib.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\gzread.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\gzwrite.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\infback.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\inffast.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\inflate.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\inftrees.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\trees.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\uncompr.c" />
+    <ClCompile Include="..\..\src\ext-zlib\zlib\zutil.c" />
+    <ClCompile Include="..\..\src\objectscript.cpp">
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">All</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NoListing</AssemblerOutput>
+    </ClCompile>
+    <ClCompile Include="..\..\src\os-heap.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

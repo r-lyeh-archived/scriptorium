@@ -1,0 +1,23 @@
+﻿Построение начато 23.10.2013 22:26:48.
+     1>Проект "C:\Sources\os-fcgi\os\ext-socket\clsockets\WindowsBuild\clsocket.vcxproj" в узле 2 (целевые объекты build).
+     1>InitializeBuildStatus:
+         Создание "Debug\clsocket.unsuccessfulbuild", так как было задано "AlwaysCreate".
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _CRT_SECURE_NO_WARNINGS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\ActiveSocket.cpp ..\PassiveSocket.cpp ..\SimpleSocket.cpp
+         SimpleSocket.cpp
+         PassiveSocket.cpp
+         ActiveSocket.cpp
+         Создание кода...
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"C:\Sources\os-fcgi\os\ext-socket\clsockets\WindowsBuild\Debug\clsocket.lib" /NOLOGO Debug\ActiveSocket.obj
+         Debug\PassiveSocket.obj
+         Debug\SimpleSocket.obj
+         clsocket.vcxproj -> C:\Sources\os-fcgi\os\ext-socket\clsockets\WindowsBuild\Debug\clsocket.lib
+       FinalizeBuildStatus:
+         Файл "Debug\clsocket.unsuccessfulbuild" удаляется.
+         Обращение к "Debug\clsocket.lastbuildstate".
+     1>Построение проекта "C:\Sources\os-fcgi\os\ext-socket\clsockets\WindowsBuild\clsocket.vcxproj" завершено (целевые объекты build).
+
+Построение успешно завершено.
+
+Затраченное время: 00:00:05.46

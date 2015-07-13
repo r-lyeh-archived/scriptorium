@@ -1,0 +1,56 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          os-fcgi
+# Description: Starts ObjectScript FastCGI Process Manager Daemon
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+NAME=os-fcgi
+DAEMON="$(which $NAME)"
+DESC="ObjectScript FastCGI Process Manager"
+USER=www-data
+GROUP=www-data
+PIDFILE=/var/run/$NAME.pid
+
+test -x $DAEMON || exit 0
+
+set -e
+
+. /lib/lsb/init-functions
+
+case "$1" in
+	start)
+		echo -n "Starting $DESC: "
+		start-stop-daemon --start --quiet --pidfile $PIDFILE \
+			--exec $DAEMON --chuid=$USER:$GROUP || true
+		echo "$NAME."
+		;;
+
+	stop)
+		echo -n "Stopping $DESC: "
+		start-stop-daemon --stop --quiet --exec $DAEMON || true
+		echo "$NAME."
+		rm -f /var/run/$NAME.pid
+		;;
+
+	restart)
+		echo -n "Restarting $DESC: "
+		start-stop-daemon --stop --quiet --exec $DAEMON || true
+		sleep 1
+		start-stop-daemon --start --quiet --pidfile $PIDFILE \
+			--exec $DAEMON --chuid=$USER:$GROUP || true
+		echo "$NAME."
+		;;
+
+	status)
+		status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+		;;
+	*)
+
+		echo "Usage: $NAME {start|stop|restart|status}" >&2
+		exit 1
+		;;
+esac
+
+exit 0

@@ -1,0 +1,367 @@
+
+
+@[test(code_01)]
+invar class Immutable
+{
+    var index = 123 
+    var items : list<int>
+
+    routine Immutable(){
+    }
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid storage type/combination}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+invar class Immutable
+{
+    invar index = 123 
+    invar items : list<int>
+
+    routine Immutable( wrong_param: list<int> ){
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Expecting primitive or immutable parameter types}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+var global = 123
+
+invar class Immutable
+{
+    invar items : list<int>
+
+    routine Immutable(){
+        items = { global }
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+var global = { 1, 2, 3 }
+
+invar class Immutable
+{
+    invar items : list<int>
+
+    routine Immutable(){
+        items = global
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+# {{Invalid constructor definition for invar class}}.*
+# {{Invalid operation that might return external nonprimitive and mutable types}}
+
+
+
+
+
+@[test(code_01)]
+var global = { 1, 2, 3 }
+
+invar class Immutable
+{
+    invar items : list<int>
+
+    routine Immutable(){
+        items = Method()
+    }   
+
+    routine Method(){
+        return global
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+# {{Invalid constructor definition for invar class}}.*
+# {{Invalid operation that might return external nonprimitive and mutable types}}
+
+
+
+
+@[test(code_01)]
+invar class Immutable
+{
+    invar items : Immutable|none = none
+
+    routine Immutable( dep = 10 ){
+        if( dep ) items = Immutable( dep-1 )
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class Immutable
+{
+    invar index = 123 
+
+    routine Immutable( i: int ){
+		index = i
+    }
+}
+im = Immutable( 12 )
+im.index = 456
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Constant or invariable cannot be modified}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class K
+{
+    invar index = {}
+}
+
+a = { 1, 2, 3 } 
+
+k = K.{ a } 
+@[test(code_01)]
+@[test(code_01)]
+{{At line}}.*{{Types not matching}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class Immutable
+{
+    invar index = 123 
+    invar items : list<int>
+
+    routine Immutable(){
+        items = items
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+invar class K
+{
+    invar index: list<any> = { { } } 
+
+    routine M(){
+        return index[0]
+    }   
+}
+invar k = K() 
+s = k.M()
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class K
+{
+    invar index: list<any> = { { } } 
+
+    routine M(){
+        return index[0]
+    }   
+}
+k = K() 
+s = k.M()
+s.append( 123 );
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::Param]] --- Invalid parameter(s)}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Base
+{
+	invar value = 123
+}
+invar class Derived : Base
+{
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid parent class}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Base
+{
+	invar value = 123
+}
+invar class Derived ( Base )
+{
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid parent class}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class Base
+{
+	invar value = 123
+	routine Base(){ value = 456 }
+}
+invar class Derived : Base
+{
+	invar name = 'abc'
+	routine Derived() : Base() { name = 'def' }
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class Base
+{
+	invar value = 123
+	routine Base(){ value = 456 }
+}
+invar class Derived ( Base )
+{
+	invar name = 'abc'
+	routine Derived() : Base() { name = 'def' }
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class Base
+{
+	invar value = 123
+}
+invar class Derived ( Base )
+{
+	invar name = 'abc'
+	routine Derived() : Base() { name = 'def' }
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class K { }
+invar k = K()
+var m = k  # Allowed, because k is immutable regardless "var" or "invar" declaration;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+invar class K { }
+routine T()
+{
+	invar k = K()
+	var m = k  # Allowed, because k is immutable regardless "var" or "invar" declaration;
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+invar class K { }
+invar k = K()
+var m: tuple<int,K> = ( 123, k )
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class K { }
+invar k = K()
+var m: tuple<int,K> = ( 123, K() )
+m[1] = k
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class K { }
+invar k = K()
+var m: tuple<id:int,obj:K> = ( 123, K() )
+m.obj = k
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+
+
+@[test(code_01)]
+invar class K { }
+routine T( k: K ) { }
+invar k = K()
+T( k )  # Allowed, because k is immutable regardless "var" or "invar" declaration;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]

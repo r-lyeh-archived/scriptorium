@@ -1,0 +1,342 @@
+
+#{
+Author: Limin Fu
+Email: phoolimin@gmail.com
+Date: 2007-01-22
+License: GPL
+#}
+
+load aux;
+load string.tokenize
+load sdml_parser;
+
+
+class CodeHL
+{
+	routine Highlight( source : string, name='' )=>string{ return '+++'; }
+	static routine StartCode( name="" );
+	static routine FinishCode( name="" );
+}
+static routine CodeHL::StartCode( name="" )
+{
+	const begin = '\\begin{Verbatim}[fontsize=\\footnotesize,fontfamily=courier,fontseries=b,
+tabsize=4,showtabs=true,commandchars=\\\\\\{\\}]\n';
+	return begin;
+}
+static routine CodeHL::FinishCode( name="" )
+{
+	return '\n\\end{Verbatim}';
+}
+
+class DaoCodeHL : CodeHL
+{
+
+	const Library = { "io"=>1, "std"=>1, "mt"=>1,
+		"math"=>1, "meta"=>1, "net"=>1 };
+
+	const HilitMap = {
+		"class" => "\\STRUCT{",
+		"routine" => "\\STRUCT{",
+		"function" => "\\STRUCT{",
+		"syntax" => "\\STRUCT{",
+		"as" => "\\STRUCT{",
+		"self" => "\\CONST{",
+		"none" => "\\CONST{",
+		"any" => "\\CONST{",
+		"var" => "\\STORAGE{",
+		"const" => "\\STORAGE{",
+		"var" => "\\STORAGE{",
+		"public"    => "\\ACCESS{",
+		"protected" => "\\ACCESS{",
+		"private"   => "\\ACCESS{",
+		"any" => "\\TYPE{",
+		"enum" => "\\TYPE{",
+		"int" => "\\TYPE{",
+		"long" => "\\TYPE{",
+		"float" => "\\TYPE{",
+		"double" => "\\TYPE{",
+		"string" => "\\TYPE{",
+		"complex" => "\\TYPE{",
+		"list" => "\\TYPE{",
+		"map" => "\\TYPE{",
+		"tuple" => "\\TYPE{",
+		"array" => "\\TYPE{",
+		"stream" => "\\TYPE{",
+		"do"      => "\\STMTKEY{",
+		"if"      => "\\STMTKEY{",
+		"else"    => "\\STMTKEY{",
+		"while"   => "\\STMTKEY{",
+		"for"     => "\\STMTKEY{",
+		"in"      => "\\STMTKEY{",
+		"switch"  => "\\STMTKEY{",
+		"case"    => "\\STMTKEY{",
+		"default" => "\\STMTKEY{",
+		"skip"    => "\\STMTKEY{",
+		"break"  => "\\STMTKEY{",
+		"return"  => "\\STMTKEY{",
+		"load"    => "\\STMTKEY{",
+		"raise"    => "\\STMTKEY{",
+		"try"    => "\\STMTKEY{",
+		"retry"    => "\\STMTKEY{",
+		"rescue"   => "\\STMTKEY{",
+		""=>""
+	};
+	const HilitMap3 = {
+		"::"  => "\\SPECIAL{",
+		":="  => "\\SPECIAL{",
+		"=>"  => "\\SPECIAL{",
+		"=~"  => "\\SPECIAL{",
+		"!~"  => "\\SPECIAL{",
+		"~~"  => "\\SPECIAL{",
+		"<@>" => "\\SPECIAL{",
+		"..." => "\\SPECIAL{",
+		""=>""
+	};
+
+	public
+
+	routine Highlight( source : string, name='' )=>string;
+
+}
+
+routine replace( tok : string )
+{
+	const chars = "#$&%_\\{}";
+	output = "";
+	for( i = 0 : tok.size()-1 ){
+		ch = tok[i:i];
+		if( ch == '\\' ){
+			output += '\\textbackslash';
+#		}else if( ch == '\n' ){
+#			output += '\\newline\n\n';
+		}else if( chars.find( ch ) >=0 ){
+			output += "\\" + ch;
+		}else{
+			output += ch;
+		}
+	}
+	return output;
+}
+routine DaoCodeHL::Highlight( source : string, name='' ) => string
+{
+	tokens = std.tokenize( source );
+	output = StartCode( name );
+
+	size = tokens.size();
+	i = 0;
+	k = 0;
+	while( i < size ){
+		tok = tokens[i];
+		if( tok[0:0] == "#" && tok[1:1] != "{" ){
+			output += "\\COMMENT{" + replace( tok ) + "}\n";
+		}else if( tok[0:0] == "\"" || tok[0:0] == "\'" ){
+			output += "\\STRING{" + replace( tok ) + "}";
+		}else if( tok[0:0] == "@" ){
+			output += "\\TYPE{" + replace( tok ) + "}";
+		}else if( tok[0:0] == "$" ){
+			output += "\\CONST{" + replace( tok ) + "}";
+		}else if( tok == "[" || tok == "]" || tok == "(" || tok == ")" ){
+			output += tok; 
+		}else if( HilitMap.find( tok ) != none ){
+			output += HilitMap[tok] + replace( tok ) + "}";
+		}else if( HilitMap3.find( tok ) != none ){
+			output += HilitMap3[tok] + replace( tok ) + "}";
+		}else if( Library.find( tok ) != none ){
+			output += "\\METHOD{" + replace( tok );
+			if( i+1<size ){
+				if( tokens[i] == "." ){
+					output += replace( tokens[i] + tokens[i+1] );
+					i += 2;
+				}
+			}
+			output += "}";
+		}else if( tok.match( '^[%d%C_]+$' ) != none ){
+			output += "\\NUMBER{" + replace( tok ) + "}";
+		}else if( tok.match( '^%d* %.%d+$' ) != none ){
+			output += "\\NUMBER{" + replace( tok ) + "}";
+		}else if( tok[0:1] == "#{" ){
+			tok = replace( tok );
+			tok = tok.replace( '\n', '}\n\\COMMENT{' );
+			output += "\\COMMENT{" + tok + "}";
+		}else if( tok == "\n" ){
+			output += tok;
+		}else{
+			output += replace( tok );
+		}
+		i += 1;
+	}
+	output += FinishCode( name );
+	return output;
+}
+
+code = "class Foo{
+	private
+	var index : number = 1;
+	var index2 : list<number> = 1;
+}
+# comments
+
+if( a == 123 ){
+	io.writeln( \"hello world!\" );
+}else if( b ){
+	c = [ 1, 2, 3 ]
+}
+"
+
+class CppCodeHL : CodeHL
+{
+	const HilitMap = {
+		"const"  => "\\STORAGE{",
+		"extern" => "\\STORAGE{",
+		"static"     => "\\STORAGE{",
+		"virtual"     => "\\STORAGE{",
+		"class"   => "\\STUCT{",
+		"struct" => "\\STUCT{",
+		"enum"     => "\\STUCT{",
+		"public"    => "\\ACCESS{",
+		"protected" => "\\ACCESS{",
+		"private"   => "\\ACCESS{",
+		"this"   => "\\ACCESS{",
+		"self"   => "\\ACCESS{",
+		"do"      => "\\STMTKEY{",
+		"if"      => "\\STMTKEY{",
+		"else"    => "\\STMTKEY{",
+		"while"   => "\\STMTKEY{",
+		"for"     => "\\STMTKEY{",
+		"switch"  => "\\STMTKEY{",
+		"case"    => "\\STMTKEY{",
+		"default" => "\\STMTKEY{",
+		"continue"  => "\\STMTKEY{",
+		"break"  => "\\STMTKEY{",
+		"return"  => "\\STMTKEY{",
+		"signed"   => "\\TYPE{",
+		"unsigned"  => "\\TYPE{",
+		"char"   => "\\TYPE{",
+		"bool"     => "\\TYPE{",
+		"int"     => "\\TYPE{",
+		"short"   => "\\TYPE{",
+		"float" => "\\TYPE{",
+		"double" => "\\TYPE{",
+		"void" => "\\TYPE{",
+		"sizeof"    => "\\METHOD{",
+		"typedef"    => "\\STMTKEY{",
+		"typeid"   => "\\METHOD{"
+	};
+
+	routine Highlight( source : string, name='' )=>string;
+}
+
+routine CppCodeHL::Highlight( source : string, name='' )=> string
+{
+	tokens = tokenize( source, "#!%^&*()-=+|/{}[];:,.~<>? \t\n\r", "\'\"", 1 );
+	output = StartCode( name );
+	size = tokens.size();
+	i = 0;
+	k = 0;
+	while( i < size ){
+		tok = tokens[i];
+#{
+		if( Replace.has( tok ) ){
+			output += Replace[tok];
+		}el
+#}
+		if( HilitMap.find( tok ) != none ){
+			output += HilitMap[tok] + tok + "}";
+		}else if( tok[0:0] == "\"" || tok[0:0] == "\'" ){
+			output += "\\STRING{" + replace( tok ) + "}";
+		}else if( tok.match( '^[%d%C_]+$' ) != none ){
+			output += "\\NUMBER{" + replace(tok) + "}";
+		}else if( tok.match( '^%d* %.%d+$' ) != none ){
+			output += "\\NUMBER{" + replace( tok ) + "}";
+		}else if( tok == "#" ){
+			output += "\\SPECIAL{\\#" + tokens[i+1] + "}";
+			i += 1;
+		}else if( tok == "/" && i+1<size && tokens[i+1]=="/" ){
+			output += "\\COMMENT{//";
+			i += 2;
+			tok = tokens[i]
+			tmp = "";
+			while( tok != "\n" ){
+				tmp += tok;
+				i += 1;
+				if( i >= size ) break;
+				tok = tokens[i];
+			}
+			output += replace( tmp ) + "}";
+		}else if( tok == "/" && i+1<size && tokens[i+1]=="*" ){
+			output += "\\COMMENT{/*";
+			i += 2;
+			tmp = "";
+			while( i < size ){
+				if( tokens[i] == "*" && i+1<size && tokens[i+1]=="/" ) break;
+				tmp += tokens[i];
+				i += 1;
+			}
+			tmp += "*/";
+			tok = replace( tmp );
+			tok = tok.replace( '\n', '}\n\\COMMENT{' );
+			output += "\\COMMENT{" + tok + "}";
+			i += 1;
+		}else{
+			output += replace( tok );
+		}
+		i += 1;
+	}
+	output += FinishCode( name );
+	return output;
+}
+
+
+class BnfCodeHL : CodeHL
+{
+
+	const HilitMap = {
+		"("   => "\\SPECIAL{",
+		")"   => "\\SPECIAL{",
+		"["   => "\\SPECIAL{",
+		"]"   => "\\SPECIAL{",
+		"::="  => "\\SPECIAL{",
+		"|"  => "\\SPECIAL{",
+		"&"  => "\\SPECIAL{",
+		"+"  => "\\SPECIAL{",
+		"*"  => "\\SPECIAL{"
+	};
+
+	routine Highlight( source : string, name = '' )=>string;
+}
+
+routine BnfCodeHL::Highlight( source : string, name = '' ) => string
+{
+	tokens = tokenize( source, "|+*(){}[] \t\n\r", "\'\"", 1 );
+	output = StartCode( name );
+
+	size = tokens.size();
+	i = 0;
+	k = 0;
+	while( i < size ){
+		tok = tokens[i];
+		if( tok[0:0] == "#" && tok[1:1] != "{" ){
+			output += "\\COMMENT{" + replace( tok ) + "}";
+		}else if( tok[0:0] == "\"" || tok[0:0] == "\'" ){
+			output += "\\STRING{" + replace( tok ) + "}";
+		}else if( HilitMap.find( tok ) != none ){
+			output += HilitMap[tok] + replace( tok ) + "}";
+		# }else if( tok =~/^(\d|\C|_)+$/ ){
+		}else if( tok.match( '^[%d%C_]+$' ) != none ){
+			output += "\\NUMBER{" + replace( tok ) + "}";
+		}else if( tok.match( '^%d* %.%d+$' ) != none ){
+			output += "\\NUMBER{" + replace( tok ) + "}";
+		}else if( tok[0:1] == "#{" ){
+			tok = replace( tok );
+			tok = tok.replace( '\n', '}\n\\COMMENT{' );
+			output += "\\COMMENT{" + tok + "}";
+		}else{
+			output += replace( tok );
+		}
+		i += 1;
+	}
+	output += FinishCode( name );
+	return output;
+}
+
+#io.writeln( CppCodeHL.Highlight( code, "test" ) );

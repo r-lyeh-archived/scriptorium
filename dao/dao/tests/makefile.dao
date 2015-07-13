@@ -1,0 +1,79 @@
+
+daotests = DaoMake::Project( "DaoTests" ) 
+
+daovm = DaoMake::FindPackage( "Dao", $REQUIRED )
+
+if( daovm == none ) return
+
+daotests.UseSharedLibrary( daovm )
+
+chartype_objs = daotests.AddObjects( { "dao_CharType.c" } )
+chartype_dll  = daotests.AddSharedLibrary( "dao_CharType", chartype_objs )
+
+chartype_dll.EnableDynamicLinking()
+
+
+usertype_objs = daotests.AddObjects( { "dao_UserType.c" } )
+usertype_dll  = daotests.AddSharedLibrary( "dao_UserType", usertype_objs )
+
+usertype_dll.EnableDynamicLinking()
+
+
+daotests.AddTest( "Example", "examples.dao" )
+
+daotests.AddTest( "Lexer",  "test_lexer.dao" )
+daotests.AddTest( "Parser", "test_parser.dao" )
+
+daotests.AddTest( "Numbers", "test_numbers.dao" )
+daotests.AddTest( "Strings", "test_strings.dao" )
+
+test_enum = daotests.AddTest( "EnumSymbol", "test_enum_symbol_def.dao" )
+test_enum.AddTest( "test_enum_symbol_type.dao" )
+
+daotests.AddTest( "Arrays", "test_arrays.dao" )
+
+daotests.AddTest( "Tuples", "test_tuples.dao" )
+
+daotests.AddTest( "Maps", "test_maps.dao" )
+
+test_decl = daotests.AddTest( "Declarations", "test_invar.dao" )
+
+test_operator = daotests.AddTest( "Operators", "test_operators.dao" )
+
+test_control = daotests.AddTest( "Controls", "test_if_else.dao" )
+test_control.AddTest( "test_for.dao" )
+test_control.AddTest( "test_while.dao" )
+test_control.AddTest( "test_switch.dao" )
+
+test_routine = daotests.AddTest( "Routine", "test_routine.dao" )
+test_routine.AddTest( "test_anonymous_routine.dao" )
+test_routine.AddTest( "test_code_section.dao" )
+test_routine.AddTest( "test_decorator.dao" )
+
+test_class = daotests.AddTest( "Class", "test_class.dao" )
+test_class.AddTest( "test_class_inheritance.dao" )
+test_class.AddTest( "test_class_static_fields.dao" )
+test_class.AddTest( "test_class_operator.dao" )
+test_class.AddTest( "test_class_mixin.dao" )
+test_class.AddTest( "test_invar_class.dao" )
+
+test_interface = daotests.AddTest( "Interface", "test_interface.dao" )
+test_interface.AddTest( "test_concrete_interface.dao" )
+
+test_regex = daotests.AddTest( "Regex", "test_regex_char_class.dao" )
+test_regex.AddDependency( chartype_dll )
+
+daotests.AddTest( "ErrorHandling", "test_error_handling.dao" )
+
+misc = daotests.AddTest( "Misc", "test_misc.dao" )
+misc.AddTest( "test_type.dao" );
+misc.AddTest( "test_tasklet.dao" );
+
+daovm_defs = daovm.MakeDefinitions()
+if( daovm_defs.find( "-DDAO_WITH_THREAD" ) >= 0 ) misc.AddTest( "test_multi_threading.dao" );
+
+libdao_dll = daovm.FindTarget( "dao", $shared );
+daotests.GetTargets( $test ).iterate { [test]
+	test.AddDependency( libdao_dll )
+}
+

@@ -1,134 +1,146 @@
 @echo off
 
+if exist bench.csv (
+del bench.csv
+)
+
+if exist BENCH.md (
+del BENCH.md
+)
+
 @echo.
 @echo as/angelscript
-@bench angelscript\as.exe tests\fib.as
+@bench 5 angelscript\as tests\fib.as
 
 @echo.
 @echo as/angelscript-jit
-@bench angelscript\asjit.exe tests\fib.as
+@bench 5 angelscript\asjit tests\fib.as
 
 @echo.
 @echo c/c4
-@bench c\c4\c4 tests\fib.c
+@bench 5 c\c4\c4 tests\fib.c
 
 @echo.
 @echo c/tcc
-@bench c\tcc-0.9.26\win32\tcc tests\fib.c -run
+@bench 5 c\tcc-0.9.26\win32\tcc tests\fib.c -run
 
 @echo.
 @echo c/vc
 @cl tests\fib.c /Ox /Oy /MT /DNDEBUG /nologo > nul
-@bench fib.exe
+@bench 5 fib
 
 @echo.
 @echo chai/chaiscript
-@bench chaiscript\chai tests\fib.chai
+@bench 1 chaiscript\chai tests\fib.chai
+
+@echo.
+@echo dao/dao
+@bench 5 dao\dao tests\fib.dao
 
 @echo.
 @echo gm/gamemonkey
-@bench gamemonkey\bin\gme64.exe tests\fib.gm
+@bench 5 gamemonkey\bin\gme64 tests\fib.gm
 
 @echo.
 @echo js/42tiny-js
-@bench javascript\42tiny-js\42tinyjs.exe tests\fib.js
+@bench 1 javascript\42tiny-js\42tinyjs tests\fib.js
 
 @echo.
 @echo js/duktape
-@bench javascript\duktape\duktape.exe tests\fib.js
+@bench 5 javascript\duktape\duktape tests\fib.js
 
 @echo.
 @echo jtc/jtc
-@bench jtc\jtc tests\fib.jtc
+@bench 1 jtc\jtc tests\fib.jtc
 
 @echo.
 @echo jx9
-@bench jx9\jx9 tests\fib.jx9
+@bench 5 jx9\jx9 tests\fib.jx9
 
 @echo.
 @echo lily/lily
-@bench lily\lily tests\fib.lly
+@bench 5 lily\lily tests\fib.lly
 
 @echo.
 @echo lisp/lispy90
-@bench lisp\lispy90\lispy90 tests\fib.l
+@bench 1 lisp\lispy90\lispy90 tests\fib.l
 
 @echo.
 @echo lisp/minilisp
-@bench lisp\minilisp\minilisp < tests\fib.l
+@bench 1 lisp\minilisp\minilisp < tests\fib.l
 
 @echo.
 @echo lisp/paren
 @pushd lisp\paren\
-@..\..\bench paren-1.9.6 ..\..\tests\fib.pn
+@..\..\bench 5 paren-1.9.6 ..\..\tests\fib.pn
 @popd
 
 @echo.
 @echo lua/lua
-@bench lua tests\fib.lua
+@bench 5 lua tests\fib.lua
 
 @echo.
 @echo lua/luajit
-@bench lua\luajit-2.0\src\luajit.exe tests\fib.lua
+@bench 5 lua\luajit-2.0\src\luajit tests\fib.lua
 
 @echo.
 @echo neko/nekovm
 @neko\bin\nekoc tests\fib.neko
-@bench neko\neko tests\fib.n
+@bench 5 neko\neko tests\fib.n
 
 @echo.
 @echo os/objectscript
-@bench os\os.exe tests\fib.os
+@bench 5 os\os tests\fib.os
 
 @echo.
 @echo pawn
 @pawn\pawn\bin\pawncc tests\fib.p -d0 -O3 -v2 > nul
-@bench pawn\pawn fib.amx
+@bench 5 pawn\pawn fib.amx
 
 @echo.
 @echo pawn-asm
 @pawn\pawn\bin\pawncc tests\fib.p -d0 -O3 -v2 > nul
-@bench pawn\pawn-asm fib.amx
+@bench 5 pawn\pawn-asm fib.amx
 
 @echo.
 @echo psl/psl
-@bench psl\psl tests\fib.psl
+@bench 1 psl\psl tests\fib.psl
 
 @echo.
 @echo python/micropython
-@bench python\mpython tests\fib.py
+@bench 5 python\mpython tests\fib.py
 
 @echo.
 @echo quakec/gmqcc
 @pushd tests\quakec
 @..\..\quakec\gmqcc\gmqcc -O3 > nul
 @popd
-@bench quakec\gmqcc\qcvm tests\quakec\progs.dat
+@bench 5 quakec\gmqcc\qcvm tests\quakec\progs.dat
 
 @echo.
 @echo ruby/mruby
-@bench ruby\mruby tests\fib.rb
+@bench 5 ruby\mruby tests\fib.rb
 
 @echo.
 @echo scheme/s9
 @pushd scheme\s9
-@..\..\bench s9 ..\..\tests\fib.scm
+@..\..\bench 1 s9 ..\..\tests\fib.scm
 @popd
 
 @echo.
 @echo scheme/tinyscheme
 @pushd scheme\tinyscheme-1.41
-@..\..\bench scheme ..\..\tests\fib.scm
+@..\..\bench 1 scheme ..\..\tests\fib.scm
 @popd
 
 @echo.
 @echo squirrel/squirrel3
-@bench squirrel\sq3 tests\fib.nut
+@bench 5 squirrel\sq3 tests\fib.nut
 
 @echo.
 @echo tcl/picol
-@bench tcl\picol\picol tests\fib.tcl
+@bench 1 tcl\picol\picol tests\fib.tcl
 
 @echo.
 @echo wren
-@bench wren\wren tests\fib.wren
+@bench 5 wren\wren tests\fib.wren

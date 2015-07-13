@@ -1,0 +1,22 @@
+
+if( DaoMake::IsPlatform( "UNIX" ) ){
+	cflags = DaoMake::Shell( "sdl2-config --cflags" )
+	lflags = DaoMake::Shell( "sdl2-config --ldflags" )
+	libs = DaoMake::Shell( "sdl2-config --libs" )
+	stlibs = DaoMake::Shell( "sdl2-config --static-libs" )
+	if( stlibs == "" ) return;
+
+	archive = " /usr/local/lib/libSDL2.a "
+	if( DaoMake::IsPlatform( "IOS" ) ) archive = " /Users/min/Projects/dao/modules/DaoSDL/libSDL2-Simulator.a "
+
+	sdl = DaoMake::Project( "SDL" )
+	sdl_dll = sdl.AddSharedLibrary( "" )
+	sdl_lib = sdl.AddStaticLibrary( "" )
+	sdl.AddCompilingFlag( cflags.chop() )
+	sdl_dll.AddLinkingFlag( stlibs.chop() + " " + libs.chop() )
+	if( DaoMake::IsPlatform( "IOS" ) ){
+		sdl_lib.AddLinkingFlag( archive )
+	}else{
+		sdl_lib.AddLinkingFlag( archive )
+	}
+}

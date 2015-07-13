@@ -1,0 +1,50 @@
+
+io.writeln( "DaoMake: using Unix settings!" )
+
+DaoMake::Platforms["UNIX"]     = 1
+
+DaoMake::Settings["AR"]        = "ar rcs"
+
+DaoMake::Settings["EXE-SUFFIX"]      = ""
+DaoMake::Settings["DLL-SUFFIX"]      = ".so"
+DaoMake::Settings["LIB-SUFFIX"]      = ".a"
+DaoMake::Settings["DLL-PREFIX"]      = "lib"
+DaoMake::Settings["LIB-PREFIX"]      = "lib"
+DaoMake::Settings["EXE-FLAG"]        = ""
+DaoMake::Settings["DLL-FLAG"]        = "-shared"
+DaoMake::Settings["DLL-NAME"]        = "-Wl,-soname,"
+DaoMake::Settings["DYNAMIC-EXPORT"]  = "-Wl,-export-dynamic"
+DaoMake::Settings["DYNAMIC-IMPORT"]  = "-rdynamic"
+DaoMake::Settings["DLL-RPATH"]       = "-Wl,-rpath="
+DaoMake::Settings["DLL-RPATH-REL"]   = "-Wl,-rpath=\\$$ORIGIN/"
+
+DaoMake::Settings["RELEASE-CFLAG"]   = "-O2"
+DaoMake::Settings["RELEASE-LFLAG"]   = ""
+DaoMake::Settings["DEBUG-CFLAG"]     = "-ggdb -O0 -DDEBUG"
+DaoMake::Settings["DEBUG-LFLAG"]     = "-ggdb"
+DaoMake::Settings["PROFILE-CFLAG"]   = "-pg"
+DaoMake::Settings["PROFILE-LFLAG"]   = "-pg"
+
+DaoMake::Includes.append( "/usr/local/include;/usr/include;" )
+
+
+var x11_packages: list<tuple<name:string,header:string,lib:string>> = 
+{
+	("X11"        ,  "X.h",                    "-lX11"  ),
+	("Xrandr"     ,  "extensions/Xrandr.h",    "-lXrandr"  ),
+	("Xinerama"   ,  "extensions/Xinerama.h",  "-lXinerama"),
+	("XInput"     ,  "extensions/XInput.h",    "-lXi"      ),
+	("Xf86VidMode",  "extensions/xf86vm.h",    "-lXxf86vm" ),
+	("XKB"        ,  "extensions/XKB.h",       ""          ),
+	("Xcursor"    ,  "Xcursor/Xcursor.h",      "-lXcursor" ),
+}
+
+# DaoMake::Packages is for system packages that have standard header files
+# and header locations, and can be used with standard compiling and linking flags.
+# Packages intended for static linking (not the case for most system packages)
+# should not be included here.
+
+x11_packages.iterate { [tup]
+	path = "/usr/include/X11"
+	DaoMake::Packages[ tup.name ] = ( path, tup.header, "", tup.lib )
+}

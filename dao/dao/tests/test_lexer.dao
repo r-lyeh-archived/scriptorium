@@ -1,0 +1,348 @@
+
+#{
+DecDigit ::= '0' ... '9'
+HexDigit ::= DecDigit | 'a' ... 'f' | 'A' ... 'F'
+
+DecInteger ::= DecDigit +
+HexInteger ::= ('0x' | '0X') DecDigit +
+Integer    ::= DecInteger | HexInteger
+#}
+
+
+@[test(code_03)]
+	123
+@[test(code_03)]
+@[test(code_03)]
+	123
+@[test(code_03)]
+
+
+@[test(code_03)]
+	0xff
+@[test(code_03)]
+@[test(code_03)]
+	255
+@[test(code_03)]
+
+
+@[test(code_03)]
+	0XAA
+@[test(code_03)]
+@[test(code_03)]
+	170
+@[test(code_03)]
+
+
+@[test(code_03)]
+	12a
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	0x
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	0xh
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+
+#{
+DotDec ::= DecDigit * '.' DecDigit +
+DecDot ::= DecDigit + '.' DecDigit *
+
+DecSinglePrecision ::= DotDec | DecDot
+DecNumber ::= DecInteger | DecSinglePrecision
+
+SciSinglePrecision ::= DecNumber 'e' [ '+' | '-' ] DecInteger
+
+Float ::= DecSinglePrecision | SciSinglePrecision
+#}
+
+@[test(code_03)]
+	.5
+@[test(code_03)]
+@[test(code_03)]
+	0.5
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123.
+@[test(code_03)]
+@[test(code_03)]
+	123.0
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e1
+@[test(code_03)]
+@[test(code_03)]
+	1230.0
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e+1
+@[test(code_03)]
+@[test(code_03)]
+	1230.0
+@[test(code_03)]
+
+
+@[test(code_03)]
+	12.3e+1
+@[test(code_03)]
+@[test(code_03)]
+	123.0
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e-1
+@[test(code_03)]
+@[test(code_03)]
+	12.3
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writef( "%g", 123e-1 )
+@[test(code_03)]
+@[test(code_03)]
+	12.3
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writeln( std.about( 123e-1 ) )
+@[test(code_03)]
+@[test(code_03)]
+	float
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e+
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e-
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e+x
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123e+0x
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+
+#{
+SciDoublePrecision ::= DecNumber 'E' [ '+' | '-' ] DecInteger
+Double ::= (DecInteger | DecSinglePrecision) 'D' | SciDoublePrecision
+#}
+
+
+@[test(code_03)]
+	.5D
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123.D
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E1
+@[test(code_03)]
+@[test(code_03)]
+	1230.0
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E+1
+@[test(code_03)]
+@[test(code_03)]
+	1230.0
+@[test(code_03)]
+
+
+@[test(code_03)]
+	12.3E+1
+@[test(code_03)]
+@[test(code_03)]
+	123.0
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E-1
+@[test(code_03)]
+@[test(code_03)]
+	12.3
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writef( "%g", 123E-1 )
+@[test(code_03)]
+@[test(code_03)]
+	12.3
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writeln( std.about( 123E-1 ) )
+@[test(code_03)]
+@[test(code_03)]
+	float
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E+
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E-
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E+X
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	123E+0X
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+#{
+Complex ::= Float 'C'
+#}
+
+
+@[test(code_03)]
+	io.writeln( 0C )
+@[test(code_03)]
+@[test(code_03)]
+	0%.(0+) %+ 0%.(0+) C
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writeln( 123C )
+@[test(code_03)]
+@[test(code_03)]
+	0%.(0+) %+ 123%.(0+) C
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writeln( 12.3C )
+@[test(code_03)]
+@[test(code_03)]
+	0%.(0+) %+ 12%.3(0+) C
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writeln( 123e1C )
+@[test(code_03)]
+@[test(code_03)]
+	0%.(0+) %+ 1230%.(0+) C
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writeln( 123e-1C )
+@[test(code_03)]
+@[test(code_03)]
+	0%.(0+) %+ 12%.3(0+) C
+@[test(code_03)]
+
+
+
+# Incomplete string:
+@[test(code_03)]
+	"incomplete string
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+# Incomplete string:
+@[test(code_03)]
+	"incomplete string
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]

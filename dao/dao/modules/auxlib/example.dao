@@ -1,0 +1,60 @@
+load aux;
+
+list1 = { 1.3, 2.5, 3.6 }
+list2 = { (any)(name=>'dao',year=>2006), (123+456$, 'abc'), [1.2, 3.4; 5.6, 7.8] }
+
+s1 = aux.serialize( list1 );
+s2 = aux.serialize( list2 );
+
+io.writeln( s2 )
+io.writeln( s1, aux.deserialize( s1 ) )
+io.writeln( s2, aux.deserialize( s2 ) )
+
+map1 = { 'abc':123, 'def':{} }
+s3 = aux.serialize( map1 );
+io.writeln( s3, aux.deserialize( s3 ) )
+
+
+class Klass
+{
+	var index = 123;
+	var name = 'abc';
+
+	routine Klass( ){ index = 789; }
+	routine Klass( i : int, s : string ){ index = i; name = s; }
+	routine Klass( tup : tuple<int,string> ){index = tup[0]; name = tup[1]; }
+	routine serialize(){ return index, name }
+}
+object = Klass( 456, 'def' );
+io.writeln( object.serialize() );
+
+ss = aux.serialize( object );
+io.writeln( ss );
+object = (Klass)aux.deserialize( ss )
+io.writeln( object, object.index, object.name );
+
+ss = aux.serialize( { object } );
+io.writeln( ss );
+objects = aux.deserialize( ss )
+object = objects[0]
+io.writeln( objects, object.index, object.name );
+
+
+e = Exception( 'serialization test' );
+ss = aux.serialize( e );
+io.writeln( ss, std.about(ss) );
+e = aux.deserialize( ss )
+io.writeln( e, e.info );
+
+class MyException : Exception
+{
+	#use Exception;
+	routine MyException( info = '' ) : Exception( info ){}
+}
+
+e2 = MyException( 'serialization test2' );
+ss = aux.serialize( { e2 } );
+io.writeln( ss );
+
+e2 = aux.deserialize( ss )[0]
+io.writeln( e2, e2.info );

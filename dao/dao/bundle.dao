@@ -1,0 +1,50 @@
+
+# Building system for single executable deployment:
+#
+# Given example.dao, the following will compile it into bytecodes,
+# and bundle the bytecodes with Dao runtime and loaded modules 
+# into a single executable:
+#
+# make -f Makefile.daomake macosx OPTIONS="--option-BUNDLE-SCRIPT example"
+
+daovm_bundle = DaoMake::Option( "BUNDLE", "" )
+
+if( daovm_bundle == "" ) return;
+
+bundler = DaoMake::Project( "DaoBundler" )
+
+bundle_main   = bundler.AddObjects( { "kernel/daoMain.c" } )
+bundle_script = bundler.AddObjects( { std.path( $working ) / (daovm_bundle + ".dar.c") } )
+
+bundle_main.AddDefinition( "DAO_WITH_STATIC_MODULES" )
+bundle_script.AddIncludePath( "kernel" )
+
+bundle = bundler.AddExecutable( daovm_bundle, bundle_main, bundle_script )
+
+std.load( "FindDao.dao" )
+
+daovm = DaoMake::FindPackage( "Dao" )
+if( daovm != none ) bundle.UseStaticLibrary( daovm, "dao" )
+
+finders = io.read( daovm_bundle + ".dar.finders" )
+
+bundle_finders = finders.split( "\n" )
+
+# The path variable $(CMD_DIR) in the ".finders" file refers to the building directory,
+# which is the working directory for Dao to compile the program. And this script
+# should also be executed in the same directory.
+cmd_dir = std.path( $working )
+dao_dir = DaoMake::GetEnv( "DAO_DIR" )
+home_dir = DaoMake::GetEnv( "HOME" )
+for( finder in bundle_finders ){
+	finder = finder.replace( "$(CMD_DIR)/", cmd_dir )
+	finder = finder.replace( "$(DAO_DIR)/", dao_dir )
+	finder = finder.replace( "$(HOME)/", home_dir )
+	fields = finder.split( "\t" )
+	if( fields.size() < 3 ) skip;
+
+	if( DaoMake::IsFile( fields[1] ) ) std.load( fields[1] )
+	pro = DaoMake::FindPackage( fields[0] )
+	io.writeln( ">>>>> bundle:", pro, fields )
+	if( pro != none ) bundle.UseStaticLibrary( pro )
+}

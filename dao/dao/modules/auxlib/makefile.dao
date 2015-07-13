@@ -1,0 +1,22 @@
+
+project = DaoMake::Project( "DaoAux" ) 
+
+daovm = DaoMake::FindPackage( "Dao", $REQUIRED )
+
+if( daovm == none ) return
+
+project.UseImportLibrary( daovm, "dao" )
+project.AddIncludePath( "." ) # To be exported in FindDaoAux.dao
+project.SetTargetPath( "../../lib/dao/modules" )
+
+project_objs = project.AddObjects( { "dao_aux.c" }, { "dao_aux.h" } )
+project_dll  = project.AddSharedLibrary( "dao_aux", project_objs )
+project_lib  = project.AddStaticLibrary( "dao_aux", project_objs )
+
+
+auxinc = DaoMake::MakePath( DaoMake::Variables[ "INSTALL_INC" ], "modules/auxlib" )
+project.Install( auxinc, { "dao_aux.h" } );
+findpkg = project.GenerateFinder( $TRUE );
+project.Install( DaoMake::Variables[ "INSTALL_MOD" ], project_dll );
+project.Install( DaoMake::Variables[ "INSTALL_MOD" ], project_lib );
+project.Install( DaoMake::Variables[ "INSTALL_FINDER" ], findpkg );

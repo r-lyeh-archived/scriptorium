@@ -1,0 +1,11 @@
+
+list1 = { 1, 2, 3 }    # list<int>
+list2 = { 1.0, 2, 3 }  # list<float>
+list3 = { 1 : 5 }      # list<int>
+list4 = list{ 1 : 2 : 5 }  # list<int>
+
+io.writeln( list1 )
+io.writeln( list2 )
+io.writeln( list3 )
+io.writeln( list4 )
+io.writeln( "number of items:", %list4 )

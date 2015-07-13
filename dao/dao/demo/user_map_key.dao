@@ -1,0 +1,37 @@
+
+class UserKey
+{
+    var value = 0
+    routine ==( other: UserKey ){
+        return value == other.value;
+    }   
+    routine <( other: UserKey ){
+        return value < other.value;
+    }   
+	routine (int)( hashing = false ){
+		io.writeln( 'Calling UserKey::(int)(hashing=false)', value )
+        return value
+	}
+    routine (string)(){
+		io.writeln( 'Calling UserKey::(string)()', value )
+        return (string)value
+    }
+}
+
+var table = { UserKey.{0} -> 0 }
+var dt1 = UserKey.{ 123 }
+var dt2 = UserKey.{ 456 }
+var dt3 = UserKey.{ 123 }
+
+table[ dt1 ] = 1
+table[ dt2 ] = 1
+
+io.writeln( table.find( dt3 ) != none )  # true
+io.writeln( dt2 in table ); # true
+
+dt3.value += 100
+io.writeln( table.find( dt3 ) != none )
+
+
+dt1.value += 100
+io.writeln( table.find( UserKey.{123} ) != none )

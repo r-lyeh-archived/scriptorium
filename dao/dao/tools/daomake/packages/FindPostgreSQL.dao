@@ -1,0 +1,26 @@
+
+header_path = DaoMake::FindFile( "libpq-fe.h" )
+
+inc = ""
+lib = ""
+
+if( header_path == "" ){
+	if( DaoMake::IsPlatform( "MACOSX" ) ){
+		header_path = DaoMake::FindFile( "libpq-fe.h", "/usr/local/pgsql/include" )
+		inc = "/usr/local/pgsql/include"
+		lib = "/usr/local/pgsql/lib"
+	}else if( DaoMake::IsPlatform( "UNIX" ) ){
+		header_path = DaoMake::FindFile( "libpq-fe.h", "/usr/include/postgresql" )
+		inc = "/usr/include/postgresql"
+		lib = "/usr/lib"
+	}
+}
+
+if( header_path == "" ) return;
+
+mysql = DaoMake::Project( "PostgreSQL" )
+mysql.AddSharedLibrary( "pq" )
+mysql.AddIncludePath( header_path )
+
+if( inc != "" ) mysql.AddIncludePath( inc )
+if( lib != "" ) mysql.AddLinkingPath( lib )

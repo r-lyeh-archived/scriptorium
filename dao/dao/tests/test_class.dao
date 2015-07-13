@@ -1,0 +1,601 @@
+
+@[test(code_01)]
+class A
+{
+	type T = A
+
+	var index = 123
+}
+var x: A::T = A()
+io.writeln( x.index )
+@[test(code_01)]
+@[test(code_01)]
+123
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+class K
+{
+	var index = 123
+	invar routine M() { io.writeln( index ) }
+}
+k = K()
+k.M()
+@[test(code_01)]
+@[test(code_01)]
+123
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+class K
+{
+	var index = 123
+	routine K(){ index = 456 }
+	invar routine M() { io.writeln( index ) }
+}
+k = K()
+k.M()
+@[test(code_01)]
+@[test(code_01)]
+456
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+    routine K(){}
+
+    routine K( k: K ){
+        self = k;
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid operation on the type}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class K
+{
+    routine M( k: K ){
+        self = k;
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid operation on the type}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class K
+{
+    routine M( k: K ){
+        self.self = k;
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid operation on the type}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class K
+{
+	invar index = 123
+	routine M() { index = 456 }
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Constant or invariable cannot be modified}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+	var index = 123
+	invar routine M() { index = 456 }
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Constant or invariable cannot be modified}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+	var index = 123
+	routine F(){ index += 100 }
+	invar routine M() { F() }
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Calling non-invar method inside invar method}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+	var index = 123
+	routine F(){ index += 100 }
+}
+routine Test( invar k: K )
+{
+	k.F()
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+	var index = 123
+	routine F(){ index += 100 }
+}
+routine Test( k: K )
+{
+	k.F()
+}
+invar k = K()
+Test( k )
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+class Klass {
+	static a
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Variable declared without initialization}}
+@[test(code_01)]
+
+
+@[test(code_01)]
+class Klass {
+	static a = 1
+	var    b = ""
+	invar  c = ""
+}
+
+obj = Klass.{"1","3"}
+obj.a
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+class Klass {
+	static a = 1
+	var    b = ""
+	invar  c
+}
+
+obj = Klass.{"1","3"}
+obj.a
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Class instance field "c" not initialized!}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+	invar index = 123
+}
+k = K()
+k.index = 456
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Constant or invariable cannot be modified}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	routine Method( a: list<int> )
+}
+routine Klass::Method( a: list<int> )
+{
+	io.writeln( a )
+}
+k = Klass()
+k.Method( {1, 2, 3} )
+@[test(code_01)]
+@[test(code_01)]
+{ 1, 2, 3 }
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	static routine Method( a: list<int> )
+}
+static routine Klass::Method( a: list<int> )
+{
+	io.writeln( a )
+}
+k = Klass()
+k.Method( {1, 2, 3} )
+@[test(code_01)]
+@[test(code_01)]
+{ 1, 2, 3 }
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	static routine Method( a: list<int> )
+}
+static routine Klass::Method( a: list<int> )
+{
+	io.writeln( a )
+}
+k = Klass()
+Klass::Method( {1, 2, 3} )
+@[test(code_01)]
+@[test(code_01)]
+{ 1, 2, 3 }
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	routine Method( a: list<int> )
+}
+static routine Klass::Method( a: list<int> )
+{
+	io.writeln( a )
+}
+k = Klass()
+k.Method( {1, 2, 3} )
+@[test(code_01)]
+@[test(code_01)]
+{{At line 6 : Method signature not matching}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	static routine Method( a: list<int> )
+}
+routine Klass::Method( a: list<int> )
+{
+	io.writeln( a )
+}
+k = Klass()
+k.Method( {1, 2, 3} )
+@[test(code_01)]
+@[test(code_01)]
+{{At line 6 : Method signature not matching}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	private routine Method( a: list<int> )
+}
+routine Klass::Method( a: list<int> )
+{
+	io.writeln( a )
+}
+k = Klass()
+k.Method( {1, 2, 3} )
+@[test(code_01)]
+@[test(code_01)]
+{{At line 11 : Invalid operation on the type}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+    var items : list<int>
+
+    routine Klass( bl = 1 ){
+		if( bl ){
+			items = { 123 }
+		}else{
+			items = { 456 }
+		}
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+    var items : list<int>
+
+    routine Klass( bl = 1 ){
+		do {
+			items = { 123 }
+		} while( --bl > 0 )
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class Base
+{
+	invar index = 123
+}
+invar class Derived ( Base )
+{
+	invar values: list<int>
+	routine Derived() : Base() { values = {1,2,3} }
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+    var items : list<int>
+
+    routine Klass( bl = 1 ){
+		if( bl ){
+			self.items = { 123 }
+		}else{
+			self.items = { 456 }
+		}
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Test
+{
+	var a: any;
+	var b = 1;
+
+	routine Test() {
+
+		switch( b ){
+		default: a = {}
+		case 0 : a = 3;
+		case 1 : a = "a";
+		case 2 : a = 4
+		}
+	}
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+    var items : list<int>
+
+    routine Klass( bl = 1 ){
+		if( bl ){
+			items = { 123 }
+		}
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Class instance field "items" not initialized}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+    var items : list<int>
+
+    routine Klass( bl = 1 ){
+		for(i=1; i<0; ++i){
+			items = { 123 }
+		}
+    }   
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Class instance field "items" not initialized}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Test
+{
+	var a: any;
+	var b = 1;
+
+	routine Test() {
+
+		switch( b ){
+		case 0 : a = 3;
+		case 1 : a = "a";
+		case 2 : a = 4
+		}
+	}
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Class instance field "a" not initialized}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+invar class Base
+{
+	invar index = 123
+}
+invar class Derived ( Base )
+{
+	invar values: list<int>
+	routine Derived() : Base() {}
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Class instance field "values" not initialized}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	var index = 123;
+	var name = "abc";
+
+	routine Meth(){
+		self.index = 456;
+		self.name[1:2] = "xyz";
+		io.writeln( self.index )
+		io.writeln( self.name.size() )
+		io.writeln( self.property )
+		io.writeln( self.arbitrary )
+	}
+	routine .property(){
+		return "def"
+	}
+	routine .( field: string ){
+		return field
+	}
+}
+k = Klass()
+k.Meth()
+@[test(code_01)]
+@[test(code_01)]
+456
+4
+def
+arbitrary
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	var index = 123;
+
+	routine Meth(){
+		self.index = 456;
+		self.name[1:2] = "xyz";
+	}
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Field not exists}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	var index = 123;
+	var name = "abc";
+
+	static routine Meth(){
+		self.index = 456;
+		self.name[1:2] = "xyz";
+	}
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid self access in static method}}
+@[test(code_01)]

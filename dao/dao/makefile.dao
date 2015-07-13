@@ -1,0 +1,453 @@
+
+###########################################################################
+#
+# Create a project named "Dao", which can be accessed by other
+# DaoMake files using DaoMake::FindPackage( "Dao" ).
+#
+###########################################################################
+
+daovm = DaoMake::Project( "Dao" )
+
+###########################################################################
+#
+# Create options that can be modified from command line arguments
+# by specifying command line option "--option-NAME VALUE", where
+# "NAME" is the name of the option and "VALUE" the specified value.
+#
+# Options to set installation paths.
+#
+###########################################################################
+
+daovm_root_path = DaoMake::Option( "INSTALL-PATH", "/usr/local" )
+
+daovm_root_path = daovm.MakeBuildPath( daovm_root_path ).change( "(.) / $", "%1" )
+
+
+# Global variables to be written to every Makefile:
+DaoMake::Variables[ "INSTALL" ] = daovm_root_path
+
+DaoMake::Variables[ "INSTALL_BIN" ] = "$(INSTALL)/bin"
+DaoMake::Variables[ "INSTALL_LIB" ] = "$(INSTALL)/lib"
+DaoMake::Variables[ "INSTALL_INC" ] = "$(INSTALL)/include/dao"
+DaoMake::Variables[ "INSTALL_MOD" ] = "$(INSTALL)/lib/dao/modules"
+DaoMake::Variables[ "INSTALL_DOC" ] = "$(INSTALL)/share/dao"
+
+DaoMake::Variables[ "INSTALL_FINDER" ] = "$(INSTALL)/lib/daomake/packages"
+
+
+daovm_bin_path = "$(INSTALL_BIN)"
+daovm_lib_path = "$(INSTALL_LIB)"
+daovm_inc_path = "$(INSTALL_INC)"
+daovm_mod_path = "$(INSTALL_MOD)"
+daovm_doc_path = "$(INSTALL_DOC)"
+daomake_pkg_path = "$(INSTALL_FINDER)"
+
+
+###########################################################################
+#
+# Options to enable/disable language features:
+#
+###########################################################################
+
+daovm_with_numarray   = DaoMake::Option( "NUMARRAY",   $ON )
+daovm_with_decorator  = DaoMake::Option( "DECORATOR",  $ON )
+daovm_with_thread     = DaoMake::Option( "THREAD",     $ON )
+daovm_with_concurrent = DaoMake::Option( "CONCURRENT", $ON )
+
+daovm_with_readline   = DaoMake::Option( "READLINE",   $ON )
+
+daovm_bundle_program   = DaoMake::Option( "BUNDLE-SCRIPT", "" )
+daovm_bundle_resources = DaoMake::Option( "BUNDLE-RESOURCES", "" )
+
+daovm_full_static = DaoMake::Option( "FULL-STATIC", $OFF )
+
+daovm_use_gc_logger  = DaoMake::Option( "GC-LOGGER", $OFF )
+daovm_use_code_state = DaoMake::Option( "CODE-STATE", $OFF )
+
+daovm_use_help_path = DaoMake::Option( "HELP-PATH", "modules/help" )
+daovm_use_help_font = DaoMake::Option( "HELP-FONT", "monospace" )
+
+if( DaoMake::IsPlatform( "MINIX" ) ) daovm_with_thread = $OFF;
+if( DaoMake::IsPlatform( "IOS" ) ) daovm_with_readline = $OFF;
+if( daovm_full_static == $ON ){
+	daovm_with_thread = $OFF;
+	daovm_with_readline = $OFF;
+}
+if( daovm_with_thread == $OFF ) daovm_with_concurrent = $OFF;
+
+
+###########################################################################
+#
+# project.AddDefinition( "DEFINITION_NAME" ) will add "-DDEFINITION_NAME"
+# to the compiling flags of all its targets.
+#
+###########################################################################
+
+if( daovm_with_numarray   == $ON ) daovm.AddDefinition( "DAO_WITH_NUMARRAY" )
+if( daovm_with_decorator  == $ON ) daovm.AddDefinition( "DAO_WITH_DECORATOR" )
+if( daovm_with_thread     == $ON ) daovm.AddDefinition( "DAO_WITH_THREAD" )
+if( daovm_with_concurrent == $ON ) daovm.AddDefinition( "DAO_WITH_CONCURRENT" )
+if( daovm_use_gc_logger   == $ON ) daovm.AddDefinition( "DAO_USE_GC_LOGGER" );
+if( daovm_use_code_state  == $ON ) daovm.AddDefinition( "DAO_USE_CODE_STATE" );
+
+daovm.AddDefinition( "TARGET_PLAT", "\\\"" + DaoMake::Platform() + "\\\"" )
+
+changeset = io.read( DaoMake::SourcePath() /"manifest.uuid", true )
+if( % changeset ) daovm.AddDefinition( "CHANGESET_ID", "\\\"FOS." + changeset[:11] + "\\\"" )
+
+
+###########################################################################
+#
+# Header and source file lists:
+#
+###########################################################################
+
+daovm_kernel_headers =
+{
+	"kernel/dao.h" ,
+	"kernel/daoBase.h" ,
+	"kernel/daoClass.h" ,
+	"kernel/daoConst.h" ,
+	"kernel/daoGC.h" ,
+	"kernel/daoLexer.h" ,
+	"kernel/daoList.h" ,
+	"kernel/daoMap.h" ,
+	"kernel/daoNamespace.h" ,
+	"kernel/daoNumtype.h" ,
+	"kernel/daoObject.h" ,
+	"kernel/daoParser.h" ,
+	"kernel/daoBytecode.h" ,
+	"kernel/daoInferencer.h" ,
+	"kernel/daoOptimizer.h" ,
+	"kernel/daoProcess.h" ,
+	"kernel/daoRegex.h" ,
+	"kernel/daoRoutine.h" ,
+	"kernel/daoTasklet.h" ,
+	"kernel/daoStdlib.h" ,
+	"kernel/daoStdtype.h" ,
+	"kernel/daoStream.h" ,
+	"kernel/daoString.h" ,
+	"kernel/daoThread.h" ,
+	"kernel/daoPlatforms.h" ,
+	"kernel/daoInterface.h" ,
+	"kernel/daoType.h" ,
+	"kernel/daoValue.h" ,
+	"kernel/daoVmcode.h" ,
+	"kernel/daoVmspace.h" 
+}
+
+daovm_kernel_sources =
+{
+	"kernel/daoClass.c" ,
+	"kernel/daoConst.c" ,
+	"kernel/daoGC.c" ,
+	"kernel/daoLexer.c" ,
+	"kernel/daoList.c" ,
+	"kernel/daoMap.c" ,
+	"kernel/daoString.c" ,
+	"kernel/daoStdtype.c" ,
+	"kernel/daoNumtype.c" ,
+	"kernel/daoObject.c" ,
+	"kernel/daoRoutine.c" ,
+	"kernel/daoProcess.c" ,
+	"kernel/daoValue.c" ,
+	"kernel/daoType.c" ,
+	"kernel/daoNamespace.c" ,
+	"kernel/daoInterface.c" ,
+	"kernel/daoRegex.c" ,
+	"kernel/daoTasklet.c" ,
+	"kernel/daoStdlib.c" ,
+	"kernel/daoStream.c" ,
+	"kernel/daoThread.c" ,
+	"kernel/daoPlatforms.c" ,
+	"kernel/daoParser.c" ,
+	"kernel/daoBytecode.c" ,
+	"kernel/daoInferencer.c" ,
+	"kernel/daoOptimizer.c" ,
+	"kernel/daoVmcode.c" ,
+	"kernel/daoVmspace.c" 
+}
+
+
+
+###########################################################################
+#
+# daovm.AddObjects( source_file_list, header_file_list ) will create an object
+# set that includes the objects compiled from the "source_file_list":
+#
+###########################################################################
+daovm_kernel_objects = daovm.AddObjects( daovm_kernel_sources, daovm_kernel_headers )
+daovm_main_object    = daovm.AddObjects( { "kernel/daoMain.c" }, daovm_kernel_headers );
+
+
+###########################################################################
+#
+# Add standard targets:
+#
+###########################################################################
+#
+# Add a shared library target named "dao" to the project.
+# This target will be built from the object set "daovm_kernel_objects".
+#
+daovm_dll = daovm.AddSharedLibrary( "dao", daovm_kernel_objects )
+
+#
+# Add a static library target to the project:
+#
+daovm_lib = daovm.AddStaticLibrary( "dao", daovm_kernel_objects )
+
+#
+# Add an executable target:
+#
+daovm_exe = daovm.AddExecutable( "dao", daovm_main_object )
+
+if( DaoMake::IsPlatform( "WIN32" ) ){
+	daovm_dll.SetTargetPath( "bin" )  # Relative to build path;
+	daovm_lib.SetTargetPath( "bin" )
+}else{
+	daovm_dll.SetTargetPath( "lib" )
+	daovm_lib.SetTargetPath( "lib" )
+}
+daovm_exe.SetTargetPath( "bin" )
+
+daovm.AddIncludePath( "kernel" )
+
+
+###########################################################################
+#
+# Setup installation destinations before the library targets are used,
+# so that some linking flags can be generated properly:
+#
+###########################################################################
+finder_path = daovm.GenerateFinder( $TRUE );
+daovm.Install( daovm_bin_path, daovm_exe )
+daovm.Install( daovm_lib_path, daovm_dll, daovm_lib )
+daovm.Install( daovm_inc_path, daovm_kernel_headers )
+daovm.Install( daomake_pkg_path, finder_path );
+
+
+daomake_pkg_local = daovm.MakeBuildPath( "lib/daomake/packages/" )
+finder = daovm.AddCommand( "finder", "$(DAOMAKE) mkdir3 " + daomake_pkg_local )
+finder.AddCommand( "$(DAOMAKE) copy " + finder_path + " " + daomake_pkg_local )
+
+
+
+daovm_partial_static = DaoMake::Option( "STATIC", $OFF );
+
+#
+# Do not build statically linked executable on Windows, because the modules
+# must link against dao.dll, so the executable should also link against it.
+#
+if( DaoMake::IsPlatform( "WIN32" ) ) daovm_partial_static = $OFF;
+
+
+if( daovm_partial_static == $ON ){
+	daovm_main_object.AddDefinition( "DAO_KERNEL" );
+	daovm_exe.AddObjects( daovm_kernel_objects );
+}else{
+	daovm_exe.UseSharedLibrary( daovm, "dao" )
+	daovm_exe.AddDependency( daovm_dll )
+}
+
+
+
+###########################################################################
+#
+# Add platform specific flags:
+#
+###########################################################################
+
+daovm.AddPlatformDefs();
+
+if( DaoMake::IsPlatform( "UNIX" ) ){
+	daovm.AddCompilingFlag( "-fPIC" )
+	daovm.AddLinkingFlag( "-lm" )
+	if( DaoMake::IsPlatform( "LINUX" ) ) daovm.AddLinkingFlag( "-ldl" )
+	if( daovm_with_thread == $ON ) daovm.AddLinkingFlag( "-lpthread" )
+}else if( DaoMake::IsPlatform( "MINGW" ) ){
+	daovm.AddLinkingFlag( "-lwinmm" )
+}
+# Note for Haiku:
+# pthread is automatically linked as part of:
+# /Haiku/develop/lib/x86/libroot.so.
+
+
+if( daovm_with_readline == $ON ){
+	#
+	# DaoMake::FindPackage( "NAME" ) will search and load "FindNAME.dao",
+	# and then search for a project object named "NAME". This project
+	# object will be returned if found. Otherwise, a default project
+	# will be returned (which will not pass the conditional test).
+	#
+	# DaoMake::FindPackage( "NAME" ) will search "FindNAME.dao" in
+	# the following subdirectories:
+	# 1. "packages", relative to the daomake execution directory;
+	# 2. "packages", relative to the daomake executable directory;
+	# 3. Unix only: "../lib/daomake/packages", relative to the 
+	#    daomake executable directory;
+	#
+	readline = DaoMake::FindPackage( "ReadLine" )
+	if( readline != none ){
+		#
+		# The definition passed only to the compiling flags for compiling
+		# "daovm_main_object".
+		#
+		daovm_main_object.AddDefinition( "DAO_USE_READLINE" )
+		#
+		# The "ReadLine" should have exported some compiling flags and
+		# linking flags that will be added to "daovm_main_object" by
+		# calling UsePackage().
+		#
+		daovm_exe.UseSharedLibrary( readline, "readline" )
+	}
+}
+
+
+###########################################################################
+#
+# Add sub projects as additional targets:
+#
+###########################################################################
+
+debugger = daovm.AddDirectory( "debugger", "modules/debugger" );
+profiler = daovm.AddDirectory( "profiler", "modules/profiler" );
+auxlib = daovm.AddDirectory( "auxlib", "modules/auxlib" )
+help = daovm.AddDirectory( "help", "modules/help" )
+macro = daovm.AddDirectory( "macro", "modules/macro" )
+
+daomake = daovm.AddDirectory( "daomake", "tools/daomake" )
+daotest = daovm.AddDirectory( "daotest", "tools/daotest" )
+
+
+if( not DaoMake::IsPlatform( "IOS" ) ){
+	if( DaoMake::IsDir( "tools/clangdao" ) ) daovm.AddDirectory( "clangdao", "tools/clangdao" );
+}
+
+modules = daovm.AddDirectory( "modules", "modules" )
+
+
+
+# Add dependencies:
+debugger.AddDependency( daovm_dll )
+profiler.AddDependency( daovm_dll )
+auxlib.AddDependency( daovm_dll )
+help.AddDependency( daovm_dll )
+macro.AddDependency( daovm_dll )
+
+daomake.AddDependency( daovm_lib )
+modules.AddDependency( daovm_lib )
+modules.AddDependency( daovm_exe )
+
+
+
+daocmd  = daovm.BinaryPath() /"bin/dao"
+testcmd = daovm.BinaryPath() /"bin/daotest"
+if( DaoMake::UseLocalRPath() == 0 ){
+	ldpath = daovm_lib.MakeBuildPath( "lib" )
+	daocmd = "LD_LIBRARY_PATH=" + ldpath + " " + daocmd
+	testcmd = "LD_LIBRARY_PATH=" + ldpath + " " + testcmd
+}
+
+daovm.AddVariable( "DAO", daocmd );
+daovm.AddVariable( "HELP_PATH", daovm.MakeSourcePath( daovm_use_help_path ) );
+daovm.AddVariable( "HELP_FONT", daovm_use_help_font );
+
+
+###########################################################################
+#
+# Single executable deployment:
+#
+###########################################################################
+
+if( daovm_bundle_program.size() ){
+	bundle = DaoMake::SourcePath() /"bundle.dao"
+	arch = DaoMake::Architecture().trim()
+	mode = ((string) DaoMake::BuildMode())[1:].convert( $lower )
+	daos = daovm_bundle_program + ".dao"
+	darc = daovm_bundle_program + ".dar.c"
+	daolib = daovm_lib.BinaryPath() + daovm_lib.Name()
+	daomake_args  = "--platform " + DaoMake::Platform()
+	if( arch != "" ) daomake_args += " --arch " + arch
+	daomake_args += " --mode " + mode;
+	daomake_args += " --option-BUNDLE " + daovm_bundle_program
+	daomake_args += " --suffix .bundle " + bundle
+
+	archive = daovm.AddCommand( darc + ": " + daos + " " + daolib, "-@cd ." )
+#   The following commands will not work for cross compiling, so the solution is
+#   to make a single deployment build on the host platform, and then skip these
+#   commands to make a single deployment build for the target platform.
+	if( not DaoMake::IsPlatform( "IOS" ) ){
+		artool = DaoMake::SourcePath() /"tools/filetools/archive.dao"
+		archive.AddCommand( "$(DAO) -c " + daos )
+		archive.AddCommand( "$(DAO) -a " + daovm_bundle_program + ".dac " + daovm_bundle_resources )
+		archive.AddCommand( "$(DAO) " + artool + " " + daovm_bundle_program + ".dar" )
+	}
+	archive.AddCommand( "$(DAOMAKE) " + daomake_args )
+	archive.AddCommand( "$(MAKE) -f Makefile.bundle" )
+
+	return
+}
+
+
+
+# Add shell commands as a target:
+# Generate documentations here instead of inside modules/help,
+# as it might be problematic to use relative path in windows to invoke Dao.
+daovm_doc = daovm.AddCommand( "./doc/html/en/index.html: Makefile" + DaoMake::MakefileSuffix(), "@$(DAOMAKE) mkdir3 ./doc/html/en" );
+daovm_doc.AddCommand( "@$(DAOMAKE) mkdir3 ./doc/html/zh" );
+daovm_doc.AddCommand( @[]$(DAO) --path="$(HELP_PATH)" -e "load help; help::set_language('en'); help::set_font('$(HELP_FONT)'); help::export('','./doc/html/en')"@[] );
+daovm_doc.AddCommand( @[]$(DAO) --path="$(HELP_PATH)" -e "load help; help::set_language('zh'); help::set_font('$(HELP_FONT)'); help::export('','./doc/html/zh')"@[] );
+daovm_doc.AddDependency( daovm_dll );
+
+daovm.Install( daovm_doc_path, daovm.BinaryPath() /"doc" )
+
+demos = {
+	"demo/arrays.dao",
+	"demo/aspects.dao",
+	"demo/class_forward_claration.dao",
+	"demo/class_inheritance.dao",
+	"demo/classes.dao",
+	"demo/closures.dao",
+	"demo/decorators.dao",
+	"demo/defers.dao",
+	"demo/disjoint_union.dao",
+	"demo/enums.dao",
+	"demo/hello.dao",
+	"demo/interface.dao",
+	"demo/interface_forward_declaration.dao",
+	"demo/lists.dao",
+	"demo/macros.dao",
+	"demo/maps.dao",
+	"demo/mixins.dao",
+	"demo/numbers.dao",
+	"demo/object_operator.dao",
+	"demo/errors.dao",
+	"demo/routines.dao",
+	"demo/strings.dao",
+	"demo/tuples.dao",
+	"demo/user_functional.dao",
+	"demo/user_type_casting.dao",
+	"demo/verbatim.dao"
+}
+demos2 = {
+	"demo/concurrent/async_object.dao",
+	"demo/concurrent/channel_block.dao",
+	"demo/concurrent/channel_class.dao",
+	"demo/concurrent/critical.dao",
+	"demo/concurrent/future.dao",
+	"demo/concurrent/parallel_quicksort.dao",
+	"demo/concurrent/select_builtin.dao",
+	"demo/concurrent/select_custom.dao",
+	"demo/concurrent/select_mix.dao",
+	"demo/concurrent/start.dao"
+}
+
+daovm.Install( daovm_doc_path/"demo/", demos )
+daovm.Install( daovm_doc_path/"demo/concurrent/", demos2 )
+
+
+DaoMake::SetTestTool( testcmd )
+tests = daovm.AddDirectory( "tests", "tests" )
+tests.AddDependency( modules )
+tests.AddDependency( daotest )
+

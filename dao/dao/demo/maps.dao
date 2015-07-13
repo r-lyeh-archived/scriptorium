@@ -1,0 +1,43 @@
+
+# A map is created using "=>",
+map1  = { "EE" => 5, "BB" => 2, "CC" => 3, "AA" => 1 }
+
+# A hash map is created using "->",
+hash1 = { "EE" -> 5, "BB" -> 2, "CC" -> 3, "AA" -> 1 }
+
+io.writeln( std.about( map1 ) )
+io.writeln( std.about( hash1 ) )
+
+io.writeln( map1 )
+io.writeln( hash1 )
+io.writeln( "number of key/value pairs:", %hash1 )
+
+io.writeln( map1["BB"] )   # get value by key;
+io.writeln( hash1["CC"] )  # get value by key;
+
+io.writeln( map1[ "AA" : "CC" ] )  # get sub map by slicing;
+io.writeln( map1[ "BB" : ] )  # get sub map by slicing;
+io.writeln( map1[ : "CC" ] )  # get sub map by slicing;
+
+
+# The "map" keyword is optional,
+map2  = map{ "ABC" => 123, "DEF" => 456 }
+hash2 = map{ "ABC" -> 123, "DEF" -> 456 }
+
+io.writeln( map2 )
+io.writeln( hash2 )
+io.writeln( map2.size() )    # get size;
+io.writeln( map2.keys() )    # get keys;
+io.writeln( map2.values() )  # get values;
+
+
+# With explicit type, the initializing float keys are
+# converted to integers automatically:
+map3 : map<int,string> = { 12.3 => "abc", 45.6 => "def" }
+
+io.writeln( map3 )
+
+
+# Iterate over maps:
+for( keyvalue in map1 ) io.writeln( keyvalue )
+for( keyvalue in hash1 ) io.writeln( keyvalue )

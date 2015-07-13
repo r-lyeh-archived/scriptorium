@@ -1,0 +1,47 @@
+
+@[test(code)]
+tup : tuple<int,int,...:int> = ( 1, 2, 3 )
+io.writeln( tup )
+io.writeln( std.about(tup) )
+@[test(code)]
+@[test(code)]
+{{( 1, 2, 3 )
+tuple<int,int,...:int>}}
+@[test(code)]
+
+
+
+
+@[test(code)]
+tup : tuple<int,int,...:int> = ( 1, 2, 3 )
+io.writeln( tup[1:] )
+io.writeln( std.about(tup[1:]) )
+@[test(code)]
+@[test(code)]
+{{( 2, 3 )
+tuple<int,...:int>}}
+@[test(code)]
+
+
+
+
+@[test(code)]
+tup = ( "abc", 1, 2, 3 )
+idx = 2
+tup[idx] += 10
+@[test(code)]
+@[test(code)]
+{{At line}} .* {{Inconsistent typing}}
+@[test(code)]
+
+
+
+
+@[test(code)]
+tup = ( 1.5, 1, 2, 3 )
+idx = 2
+tup[idx] += 10
+@[test(code)]
+@[test(code)]
+{{At line}} .* {{Inconsistent typing}}
+@[test(code)]

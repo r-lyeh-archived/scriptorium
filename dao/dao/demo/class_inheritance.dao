@@ -1,0 +1,52 @@
+
+
+class AA
+{
+	static glb = 1;
+	const  cst = 123;
+	var    obj = 456;
+	var    obj2 = 789;
+
+	routine Meth(){ io.writeln( "AA::Meth()" ); return 123; }
+	routine Meth( a ){ io.writeln( "AA::Meth(a)" ); return 123; }
+
+	routine AA( i = 0 ){ io.writeln( "AA::AA( i = 0 )" ); }
+
+	interface routine Virt(){ io.writeln( "AA::Virt()" ) }
+	routine CallVirt(){
+		Virt()
+	}
+}
+
+class BB : AA
+{
+	const  cst = "abc";
+	var    obj = "abc";
+	var    obj2 = "abc";
+
+	routine Meth(){ io.writeln( "BB::Meth()" ); return "abc"; }
+
+	routine BB( i = 0 ){ io.writeln( "BB::BB( i = 0 )" ); }
+
+	routine Virt(){ io.writeln( "BB::Virt()" ) }
+}
+
+class CC : BB
+{
+	var  obj2 = 0C;
+
+	routine Virt(){ io.writeln( "CC::Virt()", self ) }
+}
+
+c = CC();
+
+io.writeln( c.cst == "abc" ? "ok" : "error" );
+io.writeln( c.obj == "abc" ? "ok" : "error" );
+io.writeln( c.obj2 == 0C ? "ok" : "error" );
+io.writeln( c.Meth() == 123 ? "ok" : "error" );
+
+io.writeln( c.Meth(1) );
+
+c.CallVirt();
+a: AA = c
+a.Virt()

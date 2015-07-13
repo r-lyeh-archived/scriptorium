@@ -4,21 +4,5 @@ global fibR = function(n)
     return (fibR(n-2) + fibR(n-1));
 };
 
-
-global fibI = function(n)
-{
-    local last = 0;
-    local cur = 1;
-    n = n - 1;
-    while(n)
-    {
-        n -= 1;
-        local tmp = cur;
-        cur = last + cur;
-        last = tmp;
-    }
-    return cur;
-};
-
 N = 34;
-print("fib: " + fibR(N) + " = " + fibI(N));
+print("fib: " + fibR(N));

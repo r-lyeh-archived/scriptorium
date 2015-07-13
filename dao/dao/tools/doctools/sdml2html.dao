@@ -1,0 +1,246 @@
+
+#{
+Author: Limin Fu
+Email: phoolimin@gmail.com
+Date: 2008-12-20
+#}
+
+load sdml_parser;
+load sdml_codehl;
+
+class Sdml2Html : SdmlParser
+{
+	routine Sdml2Html();
+	routine New() => SdmlParser { return Sdml2Html(); }
+	routine Warn( info : string );
+	routine Error( info : string );
+	routine AddPrefix();
+	routine Replace( src = '' )=>string;
+	routine OpenHeader( dtype = '' );
+	#routine CloseHeader(){ output += '</a>\n'; }
+	routine MakeTitle( title = '' );
+	routine MakeAuthor( name = '' );
+	routine MakeTOC( sect : TextSection );
+	routine OpenBody();
+	routine MakeImage( name = '' );
+	routine MakeLink( name='', tok1='', tok2='' )=>string;
+	routine MakeTable( headers : list<string>, cells : list<list<string> >, param='' );
+	routine OpenSection( level=0, numbering='' );
+	routine CloseSection( level=0, numbering='' );
+}
+
+routine Sdml2Html::Sdml2Html()
+{
+	codeparser[ 'dao' ] = DaoCodeHL();
+	codeparser[ 'cpp' ] = CppCodeHL();
+	codeparser[ 'bnf' ] = BnfCodeHL();
+	codeparser[ 'sdml' ] = SdmlCodeHL2();
+	makesuffix = 1;
+	linebreak = '<br/>';
+	orderlist = ( '<ol>', '\n</ol>\n' );
+	unorderlist = ( '<ul>', '\n</ul>\n' );
+	listitem = ( '\n<li>', '</li>\n' );
+	empty_table = '\n<table class="sdmltable"><tr><td>&nbsp;</td></tr></table>';
+	quotebegin = "<div class=\"hlcite text_italic\">";
+	quoteend = "</div>";
+	quotename1 = "<span class=text_bold>";
+	quotename2 = ":</span><p>";
+	BasicTagMap = {
+		"<*>" => ( "</*>", "<span class=text_bold>", "</span>") ,
+		"<%>" => ( "</%>", "<span class=text_italic>", "</span>" ) ,
+		"<->" => ( "</->", "<span class=text_delete>", "</span>" ) ,
+		"<_>" => ( "</_>", "<span class=text_underline>", "</span>" ) ,
+		"<bf>" => ( "</bf>", "<span class=text_bold>", "</span>" ) ,
+    "<it>" => ( "</it>", "<span class=text_italic>", "</span>" ) ,
+    "<red>" => ( "</red>", "<span style=\"color:#d00\">", "</span>" ) , 
+    "<green>" => ( "</green>", "<span style=\"color:#080\">", "</span>" ) , 
+    "<blue>" => ( "</blue>", "<span style=\"color:#00d\">", "</span>" )
+	};
+	#io.writeln( codeparser );
+}
+routine Sdml2Html::Warn( info : string )
+{
+	output += '<div><font color=\"#f00\">WARNING: ' + info + '!</font></div>\n';
+	std::error( info )
+}
+routine Sdml2Html::Error( info : string )
+{
+	output += '<div><font color=\"#f00\">ERROR: ' + info + '!</font></div>\n';
+	std::error( info )
+}
+routine Sdml2Html::OpenHeader( dtype = '' )
+{
+#	output += '<a name="start">\n';
+}
+routine Sdml2Html::AddPrefix()
+{
+	if( makeheader ==0 ) return;
+	output += '<br clear=all />';
+	if( output.find( suffix ) >=0 ){
+		preface = "<!--" + suffix + "-->\n" +  preface;
+		output = "<!--" + suffix + "-->\n" + output;
+	}
+}
+routine Sdml2Html::MakeTitle( title = '' )
+{
+	output += '<h2>' + title + '</h2>\n';
+}
+routine Sdml2Html::MakeAuthor( name = '' )
+{
+	name = name.change( '( %w[%w%.]* ) %s* @ %s* (%w+) %s* %. %s* (%w+)', 
+			'%1<img src="/images/at.png"/>%2<img src="/images/dot.png"/>%3' );
+	output += '<div align=center><p><b>' + name;
+	output += '</b></p></div>';
+	#output += '</b></p><p>' + std.ctimef( 0, '%Y-%M-%D' ) + '</p></div>';
+}
+routine Sdml2Html::OpenBody()
+{
+}
+routine Sdml2Html::MakeTOC( sect : TextSection )
+{
+	if( sect.level > top_level + 1 ) return;
+	if( sect.subsections.size() ==0 ) return;
+	tpl = '<li style="margin-top: 5px"><a href="#$(index)">$(name)</a></li>\n'
+	toc = '\n<table class=toc><tr><td><ol>';
+	for( sc in sect.subsections )
+		toc += tpl.expand( (index = sc.numbering, name = sc.sectname) );
+	output = output.insert( toc + '</ol></td></tr></table>', sect.bodyStart );
+}
+routine Sdml2Html::MakeImage( name = '' )
+{
+	const html_image = '<table align="right" class="textwrap" style="margin-right:50pt" ><tr><td><a @(onclick_$(suffix))="PromptUploadImage( \'$(name)\' );" @(href_$(suffix))="/space/@(space_$(suffix))/image/$(name)/?size=large" class="@(class_$(suffix))"><img src="/space/@(space_$(suffix))/image/$(name)"/><div>@(tooltip_$(suffix))</div></a></td></tr></table>';
+	if( name.match( '^ %w+ $' ) != none ){
+		expand = { 'align' => 'right', 'suffix' => suffix, 'name' => '' };
+		expand[ 'name' ] = name;
+		output += html_image.expand( expand );
+	}else{
+		output += '<img src="' + name + '"/>';
+	}
+}
+routine Sdml2Html::MakeLink( name='', tok1='', tok2='' )=>string
+{
+	code = "<a href=\"";
+	if( tok2.size() ){
+		code += "/space" + tok1 + "/page/" + tok2;
+	}else if( tok1.match( '^ %w+ (|#[%d%.]*) $' ) != none ){
+		code += "@(url_base_" + suffix + ")/page/" + tok1;
+	}else{
+		code += tok1;
+	}
+	code += "\">" + name + "</a>";
+	return code;
+}
+routine Sdml2Html::MakeTable( headers :list<string>, cells :list<list<string> >, param='' )
+{
+	parser = Sdml2Html();
+	parser.suffix = suffix;
+	parser.makesuffix = 0;
+	parser.makeheader = 0;
+	rows = cells.size();
+	colm = headers.size();
+	if( colm ==0 ) colm = cells[0].size();
+	table = "";
+	hsize = headers.size();
+	if( hsize ) table += "<tr>";
+	for( j = 0 : hsize-1 ) table += "<th>" + parser.Parse( headers[j] ) + "</th>";
+	if( hsize ) table += "</tr>\n";
+	for( i = 0 : rows-1 ){
+		if( cells[i].size() ==0 ){
+			table += '<tr>';
+			for( j = 0 : colm-1 ) table += '<td class=docTableCell></td>';
+			table += '</tr>\n';
+			skip;
+		}
+		table += "<tr class=docTableRow>";
+		for( j = 0 : colm-1 )
+			table += "<td class=docTableCell>" + parser.Parse( cells[i][j] ) + "</td>";
+		table += "</tr>\n";
+	}
+	output += '\n<table class="sdmltable">\n';
+	output += table;
+	output += "</table>\n";
+}
+routine Sdml2Html::OpenSection( level=0, numbering='' )
+{
+	tag = "H" + (string) (level+1);
+	output += "<table";
+	if( level == top_level + 1 ) output += ' class="topsection"';
+	output += "><tr><td><a name=\"" + numbering + "\">";
+	output += "<" + tag + ">" + numbering + " ";
+}
+routine Sdml2Html::CloseSection( level=0, numbering='' )
+{
+	tag = "H" + (string) (level+1);
+	output += "</" + tag + ">\n";
+	output += "</td><td align=\"right\"><a href=\"@(url_edit_" + suffix;
+	output += ")/?section=" + numbering + "\">@(edit_" + suffix + ")</a>&nbsp;";
+	output += "<a href=\"#start\">@(top_" + suffix + ")</a></td></tr></table>\n";
+#io.writeln( subsect.numbering, subsect.sectname );
+}
+routine Sdml2Html::Replace( src = '' ) => string
+{
+	src = src.replace( '<', '&lt;' );
+	src = src.replace( '>', '&gt;' );
+	src = src.change( '[\n] %s* [\n] %s* [\n]', '<br/><br/>\n' );
+	src = src.change( '[\n] %s* [\n]', '<br/>\n' );
+	return src;
+}
+
+
+src = 
+@[sdml]
+abc
+<code dao>
+class A
+{
+	var i
+}
+</code>
+<list>
+-- item;
+-- item;
+  <list>
+	-- item;
+	-- item;
+  </list>
+-- item;
+  <list>
+	-- item;
+	-- item;
+  </list>
+-- item;
+</list>
+@[sdml]
+
+#src = io.read( 'test2.sdml' )
+parser = Sdml2Html();
+fout = io.open( 'test.html', 'w' );
+html = parser.Parse( src )
+io.writeln( html )
+fout.writeln( html );
+fout.close();
+#{
+#}
+
+
+
+
+
+#{
+routine main( input : string, output = "" )
+{
+	src = io.read( input );
+	if( output.size() ==0 ){
+		dot = input.find( ".", -1, 1 );
+		if( dot >=0 ){
+			output = input[:dot] + "html";
+		}else{
+			output = input + ".html";
+		}
+	}
+	fout = io.open( output, "w" );
+	parser = Sdml2Html();
+	fout.writeln( parser.Parse( src ) );
+	fout.close();
+}
+#}

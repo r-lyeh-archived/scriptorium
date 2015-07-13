@@ -1,0 +1,68 @@
+
+# Abstract interface:
+interface InterA
+{
+	routine size()=>int
+	routine serialize()=>string
+}
+
+# Concrete interface for int:
+interface InterA for int
+{
+	routine size(){
+		io.writeln( "InterA<int>::size()", std.about(self) )
+		return self + 1;
+	}
+	routine serialize() => string { return "abc" + (string) self; }
+}
+
+var a: InterA = 123       # a: value type InterA<int>; variable type InterA;
+var b = (InterA) 123;     # b: value type InterA<int>; variable type InterA<int>;
+var c: InterA<int> = 123  # c: value type InterA<int>; variable type InterA<int>;
+
+io.writeln( a.size() )
+io.writeln( (int) a )
+
+var d: int = c
+
+# int is automatically converted to InterA<int>, where InterA or InterA<int>
+# is expected:
+var e: list<InterA<int>> = { 123 }
+
+e.append(456)
+
+var f: list<InterA> = { 678 }
+
+f.append(456)
+
+io.writeln( e, f )
+
+
+
+
+interface InterB : InterA
+{
+	routine []( index: int ) => int
+}
+
+interface InterB for int : InterA<int>
+{
+	routine []( index: int ) => int {
+		return (self & (1<<index)) >> index;
+	}
+}
+
+var k = (InterB) 0x7ffeff;
+
+f.append( k )
+
+io.writeln( f, k[1] )
+
+var h = (InterA) k;
+io.writeln( std.about(h), h )
+
+var m: InterA = k;
+io.writeln( std.about(m), m )
+
+var s = (InterA<int>) k;
+io.writeln( std.about(s), s )

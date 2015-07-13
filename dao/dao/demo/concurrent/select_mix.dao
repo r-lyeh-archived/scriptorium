@@ -1,0 +1,38 @@
+load os
+
+const N = 10;
+const C = 1;
+
+ichan = mt::Channel<int>(C)
+schan = mt::Channel<string>(C)
+
+
+fut = mt.start {
+	index = 0;
+	io.writeln( "begin producing" )
+	while( ++index <= N ){
+		if( rand(2) ){
+			io.writeln( "sending integer:", index );
+			ichan.send( index )
+		}else{
+			io.writeln( "sending string: index_" + (string) index );
+			schan.send( "index_" + (string) index )
+		}
+		#os.sleep(0.5)
+	}
+	io.writeln( "end producing" )
+	ichan.cap(0)  # set channel buffer size to zero to close the channel;
+	schan.cap(0)
+}
+
+selects = { ichan => 0, schan => 0, fut => 0 }
+
+io.writeln( "begin consuming" )
+while( 1 ){
+	io.writeln( "before selecting" );
+	data = mt::select( selects, 0.2 )
+	io.writeln( "received:", data );
+	if( data.status == $finished ) break
+}
+io.writeln( "end consuming" )
+

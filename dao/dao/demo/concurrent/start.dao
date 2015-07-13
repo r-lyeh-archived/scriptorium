@@ -1,0 +1,26 @@
+load os;
+
+routine Test()
+{
+	id = 123;
+	name = "abc";
+	return mt.start {
+		for( i = 1 : 10 ){
+			io.writeln( i );
+			os.sleep( 0.1 );
+		}
+		# here id, name should have been copied, and it is safe to
+		# access them even after Test() and its process is finished!
+		io.writeln( id, name );
+	}
+}
+
+t = Test();
+t.value(); # join
+
+Test();
+Test();
+
+io.writeln( "main thread done!" );
+
+# All threads are automatically joined before program finishes!

@@ -1,0 +1,86 @@
+
+# The error handling in Dao is based defer blocks which can be executed
+# unconditionally or conditionally with respect to exceptions.
+# Please see the "Defer Blocks" demo for more details.
+#
+# In Dao, an exception or error can be raised by the standard method
+# std.error() which has three overloaded versions. The simplest version can
+# take a string as parameter to become the message of the error.
+#
+# To handle an error of certain type, one need to define a defer block
+# with the error type as its parameter. Such that the block will only
+# be executed when an error of that type actually happened. Then the
+# error object will be passed to the defer block for proper handling.
+# The error is suppressed by such defer block to allow program procede
+# normally (after returning to its caller).
+#
+# If the error can be recovered, one should handle it in the defer block
+# and return a value explicitly. This value will be used as the new return
+# value of the routine where the defer block is defined.
+#
+
+routine Test()
+{
+	defer ( Error ){
+		io.writeln( "Error is handled! And a new value is returned!" )
+		return 456
+	}
+	io.writeln( "Test(): before error;" )
+	std.error( "some error" )
+	io.writeln( "Test(): after error;" )
+	return 123
+}
+
+io.writeln( Test() )
+
+# Example to handle user defined exception type:
+class MyError : Error
+{
+    routine (string)(){ return "MyError.{" + self.summary + "}" }
+}
+
+routine Test2()
+{
+	defer ( MyError as error ) {
+		io.writeln( "recovering from", error )
+		return none
+	}
+
+	io.writeln( "Test2(): before error;" )
+	std.error( MyError() );
+	io.writeln( "Test2(): after error;" )
+}
+
+Test2()
+
+
+# To simplify the handling of panics, Dao support a special type
+# of code blocks that are executed in new stack frames. Such blocks
+# can be defined in the following ways:
+#     std.exec { block }
+#     std.exec ( value ) { block }
+# which are expressions that may return values. In the second case,
+# if the "block" raises an exception, the default "value" is returned
+# instead, and the exception is suppressed.
+
+fout = io::stdio
+
+std.exec {
+	defer ( any ) { return none }
+	fout = io.open( "NonExistentFile.txt", "r+" )
+}
+
+if( fout != io::stdio ) defer{ fout.close() }
+
+fout.writeln( "hello" )
+
+
+# A simpler way to write the above codes:
+fout = std.exec( io::stdio ){ io.open( "NonExistentFile.txt", "r+" ) }
+
+# Or using the assertion operator ??:
+# fout = io.open( "NonExistentFile.txt", "r+" ) ?? io::stdio
+
+if( fout != io::stdio ) defer{ fout.close() }
+
+fout.writeln( "hello" )

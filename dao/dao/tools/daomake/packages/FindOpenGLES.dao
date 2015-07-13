@@ -1,0 +1,18 @@
+
+
+header_hints = ".;"
+
+
+if( DaoMake::IsPlatform( "IOS" ) ){
+	sdk_path = DaoMake::Variables[ "IOS_SDK_PATH" ]
+	header_path = "";
+	header_hints += sdk_path /"System/Library/Frameworks/OpenGLES.framework/Headers/ES3;"
+	header_path = DaoMake::FindFile( "gl.h", header_hints )
+	if( header_path == "" ) return;
+
+	opengl = DaoMake::Project( "OpenGLES" )
+	shlibs = "-framework OpenGLES"
+	opengl.AddSharedLibrary( "" )
+	opengl.AddIncludePath( header_path )
+	opengl.AddLinkingFlag( shlibs )
+}

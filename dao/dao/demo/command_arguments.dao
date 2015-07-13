@@ -1,0 +1,10 @@
+
+routine main( index : int, name = "abc" )
+{
+	io.writeln( "main(index:int,name=\"abc\")", index, name )
+}
+
+routine main( name : string )
+{
+	io.writeln( "main(name:string)", name )
+}

@@ -1,0 +1,279 @@
+
+
+
+
+@[test(code_00)]
+routine @Decorator( func(args) : routine )
+{
+    io.writeln( "@Decorator()" );
+    return func( args, ... );
+}
+
+@Decorator
+routine Function(){ io.writeln( "Function()" ); }
+
+@Decorator
+routine Function( a : int ){ io.writeln( "Function(int)", a ); }
+
+Function();
+Function(123);
+@[test(code_00)]
+@[test(code_00)]
+@Decorator()
+Function()
+@Decorator()
+Function(int) 123
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine @TestDecorator( func(args) : routine<index:int=>string>, expected = "" )
+{
+    res = func( args, ... );
+    io.writeln( res );
+    io.writeln( "Test result:", res == expected ? "passed" : "failed" );
+    return res;
+}
+
+@TestDecorator( "Hello" )
+routine Hello( index = 0 )
+{
+    io.writeln( "Calling Hello(int)" );
+    return "Hello";
+}
+
+Hello();
+@[test(code_00)]
+@[test(code_00)]
+Calling Hello(int)
+Hello
+Test result: passed
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine @Decorator( func(args) : routine )
+{
+    io.writeln( "@Decorator()" );
+    return func( args, ... ); # ... for parameter expanding;
+}
+routine @TestDecorator( func(args) : routine<index:int=>string>, expected = "" )
+{
+    res = func( args, ... );
+    io.writeln( res );
+    io.writeln( "Test result:", res == expected ? "passed" : "failed" );
+    return res;
+}
+routine @TestDecorator( func(args) : routine<name:string=>int>, expected = 0 )
+{
+    res = func( args, ... );
+    io.writeln( res );
+    io.writeln( "Test result:", res == expected ? "passed" : "failed" );
+    return res;
+}
+
+@Decorator
+@TestDecorator( 123 )
+routine Hello( name : string )
+{
+    io.writeln( "Calling Hello(string)", name );
+    return 123;
+}
+
+io.writeln( Hello( "abc" ), "\n" );
+
+const Hello3 = @Decorator( Hello )
+Hello3( "def" )
+
+@[test(code_00)]
+@[test(code_00)]
+@Decorator()
+Calling Hello(string) abc
+123
+Test result: passed
+123 
+
+@Decorator()
+@Decorator()
+Calling Hello(string) def
+123
+Test result: passed
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine @Decorator( func(args) : routine )
+{
+    io.writeln( "@Decorator()" );
+    return func( args, ... ); # ... for parameter expanding;
+}
+routine @TestDecorator( func(args) : routine<index:int=>string>, expected = "" )
+{
+    res = func( args, ... );
+    io.writeln( "Test result:", res == expected ? "passed" : "failed" );
+    return res;
+}
+routine Hello2( index = 123 )
+{
+    io.writeln( "Calling Hello2(int)", index );
+    return "Hello";
+}
+
+# Running time decoration:
+func = @TestDecorator( Hello2, "Hello" );
+func(123)
+
+func = @TestDecorator( func );
+func(123)
+@[test(code_00)]
+@[test(code_00)]
+Calling Hello2(int) 123
+Test result: passed
+Calling Hello2(int) 123
+Test result: passed
+Test result: failed
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine @Decorator( func(args) : routine )
+{
+    io.writeln( "@Decorator()" );
+    return func( args, ... ); # ... for parameter expanding;
+}
+routine Hello2( index = 123 )
+{
+    io.writeln( "Calling Hello2(int)", index );
+    return "Hello";
+}
+
+deco : any = @Decorator;
+func = deco( Hello2 );
+
+func(789);
+@[test(code_00)]
+@[test(code_00)]
+@Decorator()
+Calling Hello2(int) 789
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine @StaticDecorator( meth(args) :routine<id:int=>int>, value = 123 )
+{
+    io.writeln( args, value );
+    args.id = value;
+    return meth( args, ... );
+}
+routine @MethodDecorator( meth(args) :routine<self:@T,id:int=>int>, value = 123 )
+{
+    args.id = value;
+    return meth( args, ... );
+}
+class Klass
+{
+    static routine @ClassDecorator( meth(args) :routine<id:string=>@X>, value = "abc" ){
+        io.writeln( args, value );
+        args.id = value;
+        return meth( args, ... );
+    }
+
+    @StaticDecorator( 456 )
+    static routine StaticMeth( id :int ){ io.writeln( id ); return id }
+
+    @ClassDecorator
+    static routine StaticMeth( id :string ){ io.writeln( id ) }
+
+    @MethodDecorator( 789 )
+    routine Meth( id :int ){ io.writeln( id ); return id }
+}
+
+Klass::StaticMeth( 0 );
+Klass::StaticMeth( "a" );
+
+k = Klass();
+k.Meth(1);
+@[test(code_00)]
+@[test(code_00)]
+( 0 ) 456
+456
+( "a" ) abc
+abc
+789
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine @Decorator( func(args) : routine[...] )
+{
+    io.writeln( "Calling @Decorator()" );
+    return func( args, ... ){ [X] 
+        io.writeln( "Yielding", X );
+        yield( X )
+    }   
+}
+
+@Decorator
+routine Function()[int]
+{
+    io.writeln( "Function()" );
+    for( i = 1 : 3 ) yield(i)
+}
+
+Function{ [X] io.writeln(X) }
+@[test(code_00)]
+@[test(code_00)]
+Calling @Decorator()
+Function()
+Yielding 1
+1
+Yielding 2
+2
+Yielding 3
+3
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine @Decorator( func(args) : routine[...] )
+{
+    io.writeln( "Calling @Decorator()" );
+    return func( args, ... ){ [... as csargs] 
+        io.writeln( "Yielding", csargs );
+        yield( csargs, ... )
+    }   
+}
+
+@Decorator
+routine Function()[int]
+{
+    io.writeln( "Function()" );
+    for( i = 1 : 3 ) yield(i)
+}
+
+Function{ [X] io.writeln(X) }
+@[test(code_00)]
+@[test(code_00)]
+Calling @Decorator()
+Function()
+Yielding ( 1 )
+1
+Yielding ( 2 )
+2
+Yielding ( 3 )
+3
+@[test(code_00)]

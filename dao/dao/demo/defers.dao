@@ -1,0 +1,55 @@
+
+# A "defer" block is a block of code that can be executed when
+# a function returns normally or exits due to excpetions. Its
+# execution can be conditional or unconditional with respect
+# to exceptions:
+# -- "defer{block}" or "defer(){block}": unconditional exection,
+#    when a function exits with or without exception;
+# -- "defer(none){block}": conditional execution, only when the
+#    function exits without exception;
+# -- "defer(any){block}": conditional execution, when the function
+#    exit with any exception(s);
+# -- "defer(type){block}": conditional execution, only when the
+#    function exit with exception(s) matching to "type";
+# -- "defer(type as name){block}": the same as "defer(type){block}"
+#    except that the exception object will be accessible by "name".
+# 
+# A defer block is compiled as a closure, so it can access outer
+# scope constants and variables in the same way as closures.
+# These outer scope variables are captured at the time the defer
+# block is reached in the normal execution.
+#
+# When a function exits, all the executable defer blocks that have
+# been reached in the normal execution will be executed in the reverse
+# order of being reached. Each conditional defer block can only be
+# activated once by one exception object, and the more recent exception
+# object is checked first if there are multiple exception objects.
+#
+# An exception object is suppressed once it is used to activate and
+# execute a conditional defer block. Such defer block must return
+# or not return value in the same way as the routine where the defer
+# is defined. The returned value by such defer will by used as the
+# new return value of the routine.
+#
+
+routine Test()
+{
+	defer {
+		io.writeln( "always executed" )
+	}
+	defer( none ){
+		io.writeln( "defer( none )" )
+	}
+	defer( Error as error ){
+		io.writeln( "defer( Exception::Error as error )" )
+		return 999
+	}
+
+	for( i = 2 : 5 ) defer { io.writeln( "deferred", i ) }
+
+	std.error( Error( "something" ) )
+	io.writeln( "returning" );
+	return 123
+}
+
+io.writeln( Test() )

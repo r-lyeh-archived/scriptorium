@@ -1,0 +1,103 @@
+#
+# A Dao syntax macro defines two syntax patterns in a form similar to
+# the Extended Backus-Naur Form (EBNF or simply BNF):
+#
+#     syntax lang { source_pattern } as { target_pattern }
+#
+# The source pattern will be used to search for matching source code,
+# and transform the matched code according the target pattern.
+# The tokens captured by the special variables in the source pattern
+# are expanded for the same special variables in the target pattern.
+#
+#
+# Special variables are identifiers prefixed with a dollar symbol.
+# The following special variables are supported:
+# 1. $ID  : a valid identifier;
+# 2. $OP  : a valid operater;
+# 3. $EXP : an expression or subexpression;
+# 4. $BL  : a block of code may contain any type of syntax structures;
+# 5. $VAR : a temporary variable used in the target syntax pattern;
+#
+#
+# In such syntax patterns, sub pattern can be grouped and repeated
+# using the following markers:
+# 1. () : grouping;
+# 2. ?  : optional (repeat zero or once), must follow ();
+# 3. *  : repeat zero or more times, must follow ();
+# 4. +  : repeat once or more times, must follow ();
+# 5. !  : repeat zero time (namely does not appear), must follow ();
+# 6. [] : optional group, equivalent to ()?;
+# 7. {} : group with zero or more repeats, equivalent to ()*;
+# 8. |  : alternative pattern, must be inside grouping brackets (), [], {};
+#
+#
+# If a syntax macro is not associated with any language id, the macro will
+# only be applied automatically to the code in the same file where the macro
+# is defined. Otherwise, it will be applied automatically only to code in files
+# with extenstions equal to the language id.
+#
+# Or one can use the syntax explicitly by:
+#   use syntax lang
+
+
+load macro
+
+# Macros without language id:
+# routine definition
+syntax {
+	'routine' $ID1 { '::' $ID2 } '(' [ $BL1 ] ')' ( ';' )!
+		( '{' $BL2 '}' )!
+		[ $BL3 ]
+	'end'
+} as {
+	'routine' $ID1 { '::' $ID2 } '(' [ $BL1 ] ')' '{'
+		[ $BL3 ]
+	'}'
+}
+
+# class definition
+syntax {
+	'class'   $ID1 { '::' $ID2 } [ '(' [ $BL1 ] ')' ]
+		[ ':' $ID3 { '::' $ID4 } [ '(' [ $BL2 ] ')' ]
+		{ ',' $ID5 { '::' $ID6 } [ '(' [ $BL3 ] ')' ] } ]
+		( '{' $BL5 '}' )!
+		[ $BL4 ]
+	'end'
+} as {
+	'class' $ID1 { '::' $ID2 }
+		[ ':' $ID3 { '::' $ID4 } [ '(' [ $BL2 ] ')' ]
+		{ ',' $ID5 { '::' $ID6 } [ '(' [ $BL3 ] ')' ] } ]
+	'{'
+		[ $BL4 ]
+	'}'
+}
+
+syntax {
+	'my' $ID1
+} as {
+	'var' $ID1
+}
+
+
+# Use the new syntax:
+
+class Klass
+
+	my name = "Klass";
+
+	routine test( a :float )
+		io.writeln( "by test():", a )
+	end
+
+	routine test( b :string )
+		io.writeln( "by test():", b )
+	end
+end
+
+obj = Klass();
+
+io.writeln( obj.name );
+
+obj.test( 123 );
+obj.test( "abc" );
+

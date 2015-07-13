@@ -1,0 +1,48 @@
+
+PLATS = linux macosx freebsd openbsd mingw minix haiku ios
+
+# Set build mode: release, debug or profile;
+MODE ?= release
+
+# Set installation location:
+INSTALL ?= /usr/local
+
+# Set Dao root directory.
+# Not needed for in source building;
+# Required for out of source building.
+SRCDIR ?= .
+
+
+# Use STATIC=ON to turn on building statically linked Dao:
+STATIC ?= OFF
+
+# Use RESET=--reset to turn on resetting of file generation,
+# so that Makefiles will be overrided by force, and CacheFind*.dao
+# will be regenerated.
+RESET ?=
+
+# More options can be passed to DaoMake using: OPTIONS=...
+#
+# For example, one can use: OPTIONS="--option-THREAD OFF"
+# to turn off support for multithreading.
+#
+# Another example is to use: OPTIONS="--option-BUNDLE-SCRIPT example"
+# to enable single executable deployment.
+# And add "--option-BUNDLE-RESOURCES file1,file2" to the "OPTIONS" to specify
+# the files to be bundled into the executable.
+#
+OPTIONS ?=
+
+DAOMAKE_ARGS  = --mode $(MODE)
+DAOMAKE_ARGS += --option-INSTALL-PATH $(INSTALL)
+DAOMAKE_ARGS += --option-STATIC $(STATIC)
+DAOMAKE_ARGS += $(RESET) $(OPTIONS)
+
+all:
+	@echo "Please choose a platform among ($(PLATS))!"
+
+$(PLATS) :
+	cd $(SRCDIR)/tools/daomake/bootstrap && $(MAKE) $@ PLAT=$@
+	$(SRCDIR)/tools/daomake/bootstrap/daomake --platform $@ $(DAOMAKE_ARGS) $(SRCDIR)
+	$(MAKE)
+

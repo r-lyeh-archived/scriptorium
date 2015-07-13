@@ -1,0 +1,99 @@
+
+
+@[test(code_01)]
+class Klass
+{
+	var id = 123
+	static info = "Klass"
+	static routine StaticMethod(){ io.writeln( info ) }
+}
+obj = Klass::StaticMethod()
+@[test(code_01)]
+@[test(code_01)]
+Klass
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	var id = 123
+	static routine Klass(){ id += 1 }
+}
+obj = Klass()
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Variable declared out of context}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	var id = 123
+	static routine StaticMethod(){ id += 1 }
+}
+obj = Klass::StaticMethod()
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Variable declared out of context}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	var id = 123
+	routine NonStaticMeth(){ id = 3 }
+	static routine StaticMethod(){ NonStaticMeth() }
+}
+obj = Klass::StaticMethod()
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Calling non-static method without instance}}
+@[test(code_01)]
+
+
+
+
+
+############################################################
+# Test overloading between static and non-static methods:
+############################################################
+@[test(code_01)]
+class Klass
+{
+	var id = 123
+	routine MaybeStaticMeth(){ id = 3 }
+	static routine MaybeStaticMeth( a ){}
+	static routine StaticMethod(){ MaybeStaticMeth() }
+}
+obj = Klass::StaticMethod()
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Calling non-static method without instance}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Klass
+{
+	var id = 123
+	routine MaybeStaticMeth(){ id = 3 }
+	static routine MaybeStaticMeth( a ){ io.writeln( a ) }
+	static routine StaticMethod2(){ MaybeStaticMeth( "OK" ) }
+}
+obj = Klass::StaticMethod2()
+@[test(code_01)]
+@[test(code_01)]
+OK
+@[test(code_01)]

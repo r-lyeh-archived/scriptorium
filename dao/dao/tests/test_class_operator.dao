@@ -1,0 +1,187 @@
+
+@[test(code_01)]
+class Integer
+{
+	var value = 0
+
+	routine Integer( val = 0 ){ value = val }
+
+	static routine +( A : Integer, B : Integer ){
+		io.writeln( "Integer + Integer" );
+		return Integer( A.value + B.value );
+	}
+}
+I1 = Integer( 123 )
+I2 = Integer( 456 )
+I3 = I1 + I2
+@[test(code_01)]
+@[test(code_01)]
+Integer + Integer
+@[test(code_01)]
+
+
+
+
+
+#{ Optimization not working:
+@[test(code_01)]
+class Integer
+{
+	var value = 0
+
+	routine Integer( val = 0 ){ value = val }
+
+	static routine +( A : Integer, B : Integer ){
+		io.writeln( "Integer + Integer" );
+		return Integer( A.value + B.value );
+	}
+	static routine +( C : Integer, A : Integer, B : Integer ){
+		io.writeln( "Integer = Integer + Integer" );
+		C.value = A.value + B.value;
+		return C;
+	}
+}
+I1 = Integer( 123 )
+I2 = Integer( 456 )
+for( i = 1 : 3 ) I3 = I1 + I2
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+#}
+
+
+
+
+
+@[test(code_01)]
+class Integer
+{
+	var value = 0
+
+	routine Integer( val = 0 ){ value = val }
+
+	routine .val(){ io.writeln( "get value" ) }
+	routine .val=( v : int ){ value = v; io.writeln( "set value", 456 ) }
+}
+I = Integer( 123 )
+v = I.val
+I.val = 456
+@[test(code_01)]
+@[test(code_01)]
+get value
+set value 456
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Integer
+{
+	private
+	var value = 0
+
+	public
+	routine Integer( val = 0 ){ value = val }
+
+	routine .value(){ io.writeln( "get value" ) }
+	routine .value=( v : int ){ value = v; io.writeln( "set value", 456 ) }
+}
+I = Integer( 123 )
+v = I.value
+I.value = 456
+@[test(code_01)]
+@[test(code_01)]
+get value
+set value 456
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Integer
+{
+	var value = 0
+
+	routine Integer( val = 0 ){ value = val }
+
+	routine .value(){ io.writeln( "get value" ) }
+	routine .value=( v : int ){ value = v; io.writeln( "set value" ) }
+}
+I = Integer( 123 )
+v = I.value
+I.value = 456
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Getter/setter may not be used for}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class IntList
+{
+	var ints = {}
+
+	routine Append( value : int ){ ints.append( value ) }
+	routine []( index : int ){ return ints[index] }
+	routine []=( value :int, index : int ){
+		ints[index] = value
+		io.writeln( "set item" )
+	}
+}
+ilist = IntList()
+ilist.Append( 123 )
+ilist.Append( 456 )
+ilist[0] = 789
+io.writeln( ilist[0] )
+@[test(code_01)]
+@[test(code_01)]
+set item
+789
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+class Record
+{
+	var name = "";
+
+	routine .Name() {
+		io.writeln( "Get name:", name )
+		return name
+	}
+	routine .Name=( value : string ) {
+		io.writeln( "Set name:", value )
+		name = value
+	}
+
+	routine .( name : string ) {
+		io.writeln( "Get undefined field:", name )
+		return 123
+	}
+	routine .=( name : string, value : any ) {
+		io.writeln( "Set undefined field:", name, "with value:", value )
+	}
+}
+record = Record()
+record.Name = "abc"
+name = record.Name
+
+record.index = 123
+index = record.index
+@[test(code_01)]
+@[test(code_01)]
+Set name: abc
+Get name: abc
+Set undefined field: index with value: 123
+Get undefined field: index
+@[test(code_01)]

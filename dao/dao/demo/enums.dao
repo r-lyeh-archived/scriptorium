@@ -1,0 +1,50 @@
+
+# C++ style definition of enum symbol types:
+enum Bool
+{
+	False,
+	True
+}
+
+
+io.writeln( Bool::False )
+io.writeln( Bool.True )
+
+
+switch( Bool.False ){
+case Bool::False : io.writeln( "Bool::False" )
+case Bool::True  : io.writeln( "Bool::True" )
+}
+
+# The following will also work without casting,
+# but it will be less efficient:
+switch( (Bool) $True ){
+case Bool::False : io.writeln( "Bool::False" )
+case Bool::True  : io.writeln( "Bool::True" )
+}
+
+
+# Symbols can be assigned to a variable of an 
+# enum symbol type, as long as they are compatible:
+bl : Bool = $True
+io.writeln( bl )
+
+
+# The following is equivalent to:
+# enum CardSuit { Club, Diamond, Heart, Spade }
+type CardSuit = enum<Club,Diamond,Heart,Spade>
+
+card : CardSuit = $Spade
+card = CardSuit::Spade
+
+# In the following switch-case, the case constants $XYZ
+# can also be replaced with CardSuit::XYZ. Both will be
+# compiled into a jumping table, because the types of
+# "card" and switch case constants can be known/inferred
+# at compiling time:
+switch( card ){
+case $Club:    io.writeln( "Club card" )
+case $Diamond: io.writeln( "Diamond card" )
+case $Heart:   io.writeln( "Heart card" )
+case $Spade:   io.writeln( "Spade card" )
+}

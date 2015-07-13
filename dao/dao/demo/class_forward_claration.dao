@@ -1,0 +1,31 @@
+
+class One;
+
+class Another
+{
+	routine Test( o : One );
+}
+class One
+{
+	var index = 123;
+
+	routine Test1( dep :int );
+	routine Test2( dep :int ){
+		Test1( ++dep )
+	}
+	routine Test1( dep :int ){
+		io.writeln( Test1, dep );
+		if( dep > 5 ) return
+		Test2( ++dep )
+	}
+}
+
+routine Another::Test( o : One )
+{
+	io.writeln( o.index );
+}
+
+o = One();
+a = Another();
+a.Test( o );
+o.Test2(0)

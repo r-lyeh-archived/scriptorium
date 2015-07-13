@@ -1,0 +1,5 @@
+load bsd;
+
+io.writeln( "DaoMake: using OpenBSD settings!" )
+
+DaoMake::Platforms["OPENBSD"] = DaoMake::Platforms["BSD"] + 1

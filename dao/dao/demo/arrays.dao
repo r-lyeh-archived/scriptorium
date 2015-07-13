@@ -1,0 +1,15 @@
+
+vec1 = [1, 2, 3]  # array<int> vector, or 1x3 matrix;
+vec2 = [1.0; 2; 3]  # array<float> 3x1 matrix, or transposed vector;
+mat1 = [1.0, 2; 3, 4]  # array<float> 2x2 matrix;
+mat2 = [ [1, 2], [3, 4] ]  # 2x2 matrix
+mat3 = array{ 1, 2; 3, 4 }  # 2x2 matrix
+mat4 = array<int>(5){ [1, 2, 3] }  # 5x3 matrix;
+
+io.writeln( vec1 )
+io.writeln( vec2 )
+io.writeln( mat1 )
+io.writeln( mat2 )
+io.writeln( mat3 )
+io.writeln( mat4 )
+io.writeln( "number of elements:", %mat4 )

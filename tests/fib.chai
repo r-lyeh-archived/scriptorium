@@ -5,25 +5,6 @@ def fibR(n)
 }
 
 
-def fibI(n)
-{
-    var last;
-    var cur;
-    var tmp;
-    last = 0;
-    cur = 1;
-    n = n - 1;
-    while(n > 0)
-    {
-        --n;
-        tmp = cur;
-        cur = last + cur;
-        last = tmp;
-    }
-    return cur;
-}
-
-
 var N = 34;
 var M = N; //Should return 433494437
-print("fib: " + to_string(fibR(M)) + "=" + to_string(fibI(N)) );
+print("fib: " + to_string(fibR(M)) );

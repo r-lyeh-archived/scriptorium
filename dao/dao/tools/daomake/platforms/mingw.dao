@@ -1,0 +1,16 @@
+
+load win32;
+
+io.writeln( "DaoMake: using MinGW settings!" )
+
+DaoMake::Platforms["MINGW"] = DaoMake::Platforms["WIN32"] + 1
+
+#
+# 2013-07-24: -shared-libgcc
+# This flag is added as a workaround for a known bug in MinGW.
+# http://permalink.gmane.org/gmane.comp.lang.lua.luajit/2352
+#
+DaoMake::Settings["DLL-FLAG"]        = "-shared -shared-libgcc"
+DaoMake::Settings["RELEASE-LFLAG"]   = "-shared-libgcc"
+DaoMake::Settings["DEBUG-LFLAG"]     = "-ggdb -shared-libgcc"
+DaoMake::Settings["PROFILE-LFLAG"]   = "-pg -shared-libgcc"

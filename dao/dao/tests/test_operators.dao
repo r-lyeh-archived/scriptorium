@@ -1,0 +1,231 @@
+
+
+
+@[test(code_01)]
+a = 1;
+b = (a<<1) + (a<<2)
+io.writeln(a, b)
+@[test(code_01)]
+@[test(code_01)]
+1 6
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( (int) true, (int) false )
+@[test(code_01)]
+@[test(code_01)]
+1 0
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( (string) true, (string) false )
+@[test(code_01)]
+@[test(code_01)]
+true false
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( (bool) 1, (bool) 0 )
+@[test(code_01)]
+@[test(code_01)]
+true false
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( (bool) "true", (bool) "false" )
+@[test(code_01)]
+@[test(code_01)]
+true false
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+io.writeln( (float) true, (float) false )
+@[test(code_01)]
+@[test(code_01)]
+1.000000 0.000000
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+io.writeln( (float) 123 )
+@[test(code_01)]
+@[test(code_01)]
+123.000000
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+io.writeln( (string) 123 )
+@[test(code_01)]
+@[test(code_01)]
+123
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( (string) 123.45 )
+@[test(code_01)]
+@[test(code_01)]
+123.45
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( (list<any>) (123.45, 'abc') )
+@[test(code_01)]
+@[test(code_01)]
+{ 123.450000, "abc" }
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( (tuple<float,string>) {123.45, 'abc'} )
+@[test(code_01)]
+@[test(code_01)]
+( 123.450000, "abc" )
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar ls = { 1, 2, 3 }
+ls2 = (any) ls
+io.writeln( std.about(ls) != std.about(ls2) )
+@[test(code_01)]
+@[test(code_01)]
+true
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+class K
+{
+}
+invar k = K()
+o = (any) k
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::Type]]}} .* {{casting}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+	routine M(){}
+}
+invar k = { K() }
+o = (any) k
+o[0].M()
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::Type]]}} .* {{casting}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar class K
+{
+	routine M(){}
+}
+invar k = { K() }
+o = (any) k  # Allowed, K instance is invariable anyway;
+o[0].M()
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine Func( a: int ){}
+
+var a = (any) (123, Func)
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+a = 1
+b = (string) ++i
+@[test(code_01)]
+@[test(code_01)]
+{{At line 3 : Invalid expression}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+var a: tuple<int,any> = (123, none)
+var b: tuple<int,any> = (123, none)
+io.writeln( a == b )
+@[test(code_01)]
+@[test(code_01)]
+true
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+var a: tuple<int,any> = (123, none)
+var b: tuple<int,any> = (123, none)
+a[1] = a
+b[1] = b
+io.writeln( a == b )
+@[test(code_01)]
+@[test(code_01)]
+WARNING: recursion limit is reached for comparison!
+false
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class K
+{
+	routine ==( other: K ){
+		return (self,none) == (other,none)
+	}
+}
+k1 = K()
+k2 = K()
+io.writeln( k1 == k2 )
+@[test(code_01)]
+@[test(code_01)]
+WARNING: recursion limit is reached for comparison!
+false
+@[test(code_01)]

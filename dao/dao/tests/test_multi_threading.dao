@@ -1,0 +1,45 @@
+
+
+@[test(code_00)]
+routine Test()[ int ]
+{
+	a = { 123 }  # One item so that the result will be deterministic;
+	mt.iterate(a) { [X] io.writeln(X) }
+}
+Test { [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+123
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine Test()[ int ]
+{
+	a = {1, 2, 3}
+	mt.iterate(a) { [X] yield(X) }
+}
+Test { [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+	{{Error}} .* {{Invalid code section from different process}}
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine Test()[ int ]
+{
+	a = {1, 2, 3}
+	mt.iterate(a) { ... }
+}
+Test { [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+	{{Error}} .* {{Invalid code section from non-immediate caller}}
+@[test(code_00)]

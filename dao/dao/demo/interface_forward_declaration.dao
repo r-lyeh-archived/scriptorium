@@ -1,0 +1,30 @@
+
+interface InterAA;
+
+interface InterBB
+{
+	routine TestBB( aa : InterAA );
+	routine Show();
+}
+interface InterAA
+{
+	routine TestAA( bb : InterBB );
+	routine Show();
+}
+
+class One
+{
+	routine TestAA( bb : InterBB ){ bb.Show() }
+	routine Show(){ io.writeln( "One::Show()" ) }
+}
+
+class Another
+{
+	routine TestBB( aa : InterAA ){ aa.Show() }
+	routine Show(){ io.writeln( "Another::Show()" ) }
+}
+
+o = One();
+a = Another();
+o.TestAA( a );
+a.TestBB( o );

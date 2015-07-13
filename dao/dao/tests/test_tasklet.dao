@@ -1,0 +1,25 @@
+
+@[test(code_00)]
+a = {1,2,3}
+b = a.max()!!
+c=b.value()
+io.writeln( b, c )
+@[test(code_00)]
+@[test(code_00)]
+{{Future<tuple}} .* {{( 3, 2 )}}
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+a = {1,2,3}
+b = a.find() !! {
+	X == 2
+}
+c = b.value()
+io.writeln( b, c )
+@[test(code_00)]
+@[test(code_00)]
+{{Future<tuple}} .* {{( 1, 2 )}}
+@[test(code_00)]

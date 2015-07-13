@@ -1,0 +1,377 @@
+
+@[test(code_00)]
+routine f1()[]
+{
+	yield()
+}
+f1 { io.writeln( 123 ) }
+@[test(code_00)]
+@[test(code_00)]
+123
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine f2()[=>int]
+{
+	yield()
+}
+@[test(code_00)]
+@[test(code_00)]
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine f3()[=>int]
+{
+	return yield()
+}
+@[test(code_00)]
+@[test(code_00)]
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine f4()[...=>int]
+{
+	yield()
+}
+@[test(code_00)]
+@[test(code_00)]
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine f5()[...=>int]
+{
+	k = yield( 1, 2, 3, 4 )
+	io.writeln( k )
+}
+f5 { [a, b, c]
+	io.writeln( a, b, c )
+	return a + b + c
+}
+@[test(code_00)]
+@[test(code_00)]
+1 2 3
+6
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine f5()[...=>int]
+{
+	yield( 1, 2, 3, 4 )
+}
+f5 { [a, b, c]
+	io.writeln( a, b, c )
+}
+@[test(code_00)]
+@[test(code_00)]
+	{{ERROR}} .* {{RETURN}} .* {{Types not matching}}
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+routine f5()[... : int]
+{
+	yield( 1, 2, 3, "abc" )
+}
+f5 { [a, b, c]
+	io.writeln( a, b, c )
+}
+@[test(code_00)]
+@[test(code_00)]
+	{{ERROR}} .* {{YIELD}} .* {{Types not matching}}
+@[test(code_00)]
+
+
+
+
+
+
+@[test(code_00)]
+routine Test()[ int ]
+{
+	a = {1, 2, 3}
+	a.iterate { [X] yield(X) }
+}
+
+Test { [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+1
+2
+3
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine First()[int]
+{
+	io.writeln( "Calling First()" )
+	for( i = 1 : 5 ) yield(i)
+}
+
+routine Second()[int]
+{
+	io.writeln( "Calling Second()" )
+	First{ [X]
+		io.writeln( "Yielding from Second()" )
+		yield(X)
+	}
+}
+
+Second{ [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+Calling Second()
+Calling First()
+Yielding from Second()
+1
+Yielding from Second()
+2
+Yielding from Second()
+3
+Yielding from Second()
+4
+Yielding from Second()
+5
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine First()[int]
+{
+	for( i = 1 : 5 ) yield(i)
+}
+
+routine Second()[...]
+{
+	First{ [... as args] yield( args, ... ) }
+}
+
+Second{ [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+1
+2
+3
+4
+5
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine First()[int,int]
+{
+	for( i = 1 : 5 ) yield(i, i+10)
+}
+
+routine Second()[...]
+{
+	First{ ... }
+}
+
+Second{ io.writeln( X, Y ) } 
+@[test(code_00)]
+@[test(code_00)]
+1 11
+2 12
+3 13
+4 14
+5 15
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine First()[int]
+{
+	for( i = 1 : 5 ) yield(i)
+}
+
+routine Second()[...]
+{
+	First{ [A, B] yield( A, B ) }  # Two many code section arguments;
+}
+
+Second{ io.writeln( X, Y ) } 
+@[test(code_00)]
+@[test(code_00)]
+	{{ERROR}} .* {{Calling with invalid code section parameter}}
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine First()[int,int]
+{
+	for( i = 1 : 5 ) yield(i, i+10)
+}
+
+routine Second()[...]
+{
+	First{ ... }
+}
+
+Second{ [A, B, C] io.writeln( A, B ,C ) }  # Two many code section arguments;
+@[test(code_00)]
+@[test(code_00)]
+	{{Error}} .* {{Invalid code section}}
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine First()[int,int]
+{
+	for( i = 1 : 5 ) yield(i, i+10)
+}
+
+routine Second()[...]
+{
+	First{ ... }
+}
+
+S : any = Second
+
+S { [A, B, C] io.writeln( A, B ,C ) }  # Two many code section arguments;
+@[test(code_00)]
+@[test(code_00)]
+	{{Error}} .* {{Invalid code section}}
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine Test()[ int ]
+{
+    a = {123}  # One item so that the result will be deterministic;
+    a.iterate() !! { [X] io.writeln( X ) }
+}
+Test() { [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+123
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine Test()[ int ]
+{
+    a = {1, 2, 3}
+    a.iterate()!! { [X] yield(X) }
+}
+Test() { [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+	{{Error}} .* {{Invalid code section}}
+@[test(code_00)]
+
+
+
+
+
+@[test(code_00)]
+routine Test()[ int ]
+{
+    io.writeln( "Test()" )
+    a = {1, 2, 3}
+    a.iterate() !! { ... }
+}
+Test() { [X] io.writeln( X ) } 
+@[test(code_00)]
+@[test(code_00)]
+	{{Error}} .* {{Invalid code section}}
+@[test(code_00)]
+
+
+
+
+@[test(code_00)]
+class Base
+{
+    interface routine VirtualMethod()[]{
+        io.writeln( "Base::VirtualMethod()" )
+        yield()
+    }   
+    routine Test(){
+        VirtualMethod {
+            io.writeln( "Base::Test()" )
+        }   
+    }   
+}
+
+class Sub : Base
+{
+    routine VirtualMethod()[]{
+        io.writeln( "Sub::VirtualMethod()" )
+        yield()
+    }   
+}
+
+o = Sub()
+o.Test()
+@[test(code_00)]
+@[test(code_00)]
+Sub::VirtualMethod()
+Base::Test()
+@[test(code_00)]
+
+
+
+@[test(code_00)]
+class A { 
+	routine A(){
+		x = std.exec {return 0}
+	}   
+}
+@[test(code_00)]
+@[test(code_00)]
+@[test(code_00)]
+
+
+
+@[test(code_00)]
+invar x = {'a'}
+y = { 'a' -> 'b' }
+z = x.associate { (X, y[X]) }
+
+io.writeln( std.about(z) )
+@[test(code_00)]
+@[test(code_00)]
+{{map<string,string>}}
+@[test(code_00)]

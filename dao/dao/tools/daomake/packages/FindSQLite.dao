@@ -1,0 +1,8 @@
+
+header_path = DaoMake::FindFile( "sqlite3.h" )
+if( header_path == "" ) return;
+
+sqlite = DaoMake::Project( "SQLite" )
+sqlite.AddSharedLibrary( "sqlite3" )
+sqlite.AddIncludePath( header_path )
+sqlite.AddLinkingFlag( "-lsqlite3" )

@@ -1,0 +1,51 @@
+
+# A verbatim string is a string that can contain anything
+# without interpreting escape characters.
+
+# A pair of @[] can be used to quote a verbatim string: 
+str = @[] some text @[]
+
+# A delimiter can be placed in the squared brackets to make sure that
+# it can correctly mark the ending of the verbatim string.
+# A delimiter can contain letters, digits, underscores, blank spaces,
+# dots, colons, dashes, assignment marks.
+cpp =
+@[cpp x]
+class AA
+{
+	int index;
+};
+struct BB{};
+@[cpp x]
+
+
+# Lua codes in MBS:
+lua =
+@[lua]
+local a = 1;
+function Test()
+	io.write( "Hello" )
+end
+@[lua]
+
+# HTML codes in WCS:
+html =
+@[html:123456]
+<body>
+<span name="test"></span>
+</body>
+@[html:123456]
+
+random = 
+@[=============]
+asdffd348234lks"djcnzxkWPOWI"Q23EW487503498*(S*(&)(*&QW39EQ8723049
+ASFJA	9384170(*&0(*AS&(A*S&)(*A&sADSUYasi[0A9S8-09a8-AS69876%A
+"""""""asdfaoi0342sdlfkj(*&^98q73wrq)(&^%&^RFKJRYE"
+s8%S5$&A^5s4^a4"
+@[=============]
+
+io.writeln( str );
+io.writeln( cpp );
+io.writeln( lua );
+io.writeln( html );
+io.writeln( random );

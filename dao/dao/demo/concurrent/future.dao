@@ -1,0 +1,32 @@
+load os;
+
+class Test !!
+{
+	routine Meth(){
+		for( i = 1 : 5 ){
+			io.writeln( "@Test::Meth()", i );
+			#os.sleep(0.2);
+		}
+	}
+}
+
+t = Test()
+
+mt.iterate( 4 ) { [X]
+	io.writeln( "=========", "X"+(string)X );
+	f = mt.start {
+		for( i = 1 : 5 ){
+			io.writeln( "start{}", i );
+			#os.sleep(0.01);
+		}
+	}
+	#f.value(); # ERROR: cannot block inside code section methods;
+	io.writeln( "---------", X );
+}
+
+
+mt.iterate( 4 ) { [X]
+	io.writeln( "=========", X );
+	t.Meth() #.wait( 5 ); # ERROR: cannot block inside code section methods;
+	io.writeln( "---------", X );
+}

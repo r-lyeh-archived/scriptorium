@@ -1,0 +1,53 @@
+load bsd;
+
+io.writeln( "DaoMake: using MacOSX settings!" )
+
+xcode_path = DaoMake::Shell( "xcode-select --print-path" ).trim()
+if( xcode_path == "" ){
+	std.error( "Cannot find XCode location (try xcode-select -switch to set the correct path)" )
+}
+
+sdks = DaoMake::Shell( "xcodebuild -showsdks" )
+parts = sdks.capture( "macosx (%S+)" )
+if( %parts == 0 ) std.error( "Cannot find a valid MacOSX SDK" )
+
+sdk_version = parts[1];
+
+io.writeln( "DaoMake: using MacOSX SDK" + sdk_version + "!" )
+
+dev_path  = xcode_path/"Platforms/MacOSX.platform/Developer"
+sdk_path  = dev_path/"SDKs/MacOSX" + sdk_version + ".sdk"
+
+DaoMake::Platforms["MACOSX"]  = DaoMake::Platforms["BSD"] + 1
+
+DaoMake::Variables["MACOSX_DEV_PATH", "="]  = dev_path
+DaoMake::Variables["MACOSX_SDK_PATH", "="]  = sdk_path
+
+DaoMake::Settings["DLL-SUFFIX"]      = ".dylib"
+DaoMake::Settings["DLL-FLAG"]        = "-dynamiclib"
+DaoMake::Settings["DLL-NAME"]        = "-install_name @rpath/"
+DaoMake::Settings["DYNAMIC-EXPORT"]  = ""
+DaoMake::Settings["DYNAMIC-IMPORT"]  = "-undefined dynamic_lookup"
+DaoMake::Settings["DLL-RPATH"]       = "-Wl,-rpath,"
+DaoMake::Settings["DLL-RPATH-REL"]   = "-Wl,-rpath,@loader_path/"
+
+
+system_packages = 
+{
+	"Cocoa"           =>  "Cocoa.h",
+	"CoreFoundation"  =>  "CoreFoundation.h",
+	"CoreVideo"       =>  "CoreVideo.h",
+	"GLUT"            =>  "glut.h",
+	"IOKit"           =>  "IOKitLib.h",
+	"OpenGL"          =>  "gl.h",
+}
+
+# DaoMake::Packages is for system packages that have standard header files
+# and header locations, and can be used with standard compiling and linking flags.
+# Packages intended for static linking (not the case for most system packages)
+# should not be included here.
+
+system_packages.iterate { [name, header]
+	path = sdk_path /"System/Library/Frameworks/" + name + ".framework/Headers"
+	DaoMake::Packages[ name ] = ( path, header, "", "-framework " + name )
+}

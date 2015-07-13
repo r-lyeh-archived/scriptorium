@@ -1,0 +1,12 @@
+
+
+count = 0;
+mt.iterate( 10, 4 ){ [X,Y]
+	io.writeln( "outside of critical section", Y );
+	mt.critical{[] # avoid redeclaring Y implicitly
+		io.writeln( "in critical section", Y );
+		for( i = 1 : 100000 ) count += 1;
+	}
+}
+io.writeln( count );
+

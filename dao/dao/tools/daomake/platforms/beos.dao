@@ -1,0 +1,27 @@
+
+io.writeln( "DaoMake: using BeOS settings!" )
+
+DaoMake::Platforms["BEOS"]     = 1
+
+DaoMake::Settings["AR"]        = "ar rcs"
+
+DaoMake::Settings["EXE-SUFFIX"]      = ""
+DaoMake::Settings["DLL-SUFFIX"]      = ".so"
+DaoMake::Settings["LIB-SUFFIX"]      = ".a"
+DaoMake::Settings["DLL-PREFIX"]      = "lib"
+DaoMake::Settings["LIB-PREFIX"]      = "lib"
+DaoMake::Settings["EXE-FLAG"]        = ""
+DaoMake::Settings["DLL-FLAG"]        = "-shared"
+DaoMake::Settings["DLL-NAME"]        = "-Wl,-soname,"
+DaoMake::Settings["DYNAMIC-EXPORT"]  = "-Wl,-export-dynamic"
+DaoMake::Settings["DYNAMIC-IMPORT"]  = ""
+DaoMake::Settings["DLL-RPATH"]       = "-Wl,-rpath="
+DaoMake::Settings["DLL-RPATH-REL"]   = "-Wl,-rpath="
+
+DaoMake::Settings["RELEASE-CFLAG"]   = "-O2"
+DaoMake::Settings["RELEASE-LFLAG"]   = ""
+DaoMake::Settings["DEBUG-CFLAG"]     = "-ggdb -O0 -DDEBUG"
+DaoMake::Settings["DEBUG-LFLAG"]     = "-ggdb"
+DaoMake::Settings["PROFILE-CFLAG"]   = "-pg"
+DaoMake::Settings["PROFILE-LFLAG"]   = "-pg"
+

@@ -1,0 +1,37 @@
+
+# Integer numbers:
+
+I1 = 123
+I2 = 0x123a
+I3 :int = 789
+
+io.writeln( I1, I2, I3 )
+io.writeln( "size of int:", %I1 )
+io.writeln( std.about(I1), "\n" )
+
+
+F1 = .12
+F2 = 12.
+F3 = 12.5
+F4 = 2e-3
+F5 = 2E-3
+
+io.writeln( F1, F2, F3, F4, F5 )
+io.writeln( "size of float:", %F1 )
+io.writeln( std.about(F1), "\n" )
+
+
+
+# Complex number (C suffix for the imaginary part):
+
+C1 = 1C
+C2 = 123C
+C3 = 12.3C
+C4 = C3.real;
+C5 = C3.imag;
+
+io.writeln( C1, C2, C3, C4, C5 )
+io.writeln( "size of complex:", %C1 )
+io.writeln( std.about(C1), "\n" )
+
+

@@ -1,0 +1,13 @@
+
+if( DaoMake::IsPlatform( "UNIX" ) ){
+	cflags = DaoMake::Shell( "fltk-config --cflags" )
+	lflags = DaoMake::Shell( "fltk-config --use-gl --use-images --use-forms --ldflags" )
+	libs = DaoMake::Shell( "fltk-config --libs" )
+	stlibs = DaoMake::Shell( "fltk-config --ldstaticflags" )
+	if( stlibs == "" ) return;
+
+	fltk = DaoMake::Project( "FLTK" )
+	fltk.AddSharedLibrary( "fltk" )
+	fltk.AddCompilingFlag( cflags.chop() )
+	fltk.AddLinkingFlag( "-L/usr/local/lib " + lflags.chop() + " " + libs.chop() )
+}

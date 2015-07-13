@@ -1,0 +1,13 @@
+
+header_hints = ".;"
+if( DaoMake::IsPlatform( "MACOSX" ) ){
+	header_hints += "/usr/local/Cellar/glib/include;"
+}
+header_path = DaoMake::FindFile( "glib.h", header_hints )
+
+if( header_path == "" ) return;
+
+glib = DaoMake::Project( "GLib" )
+glib.AddSharedLibrary( "glib" )
+glib.AddIncludePath( header_path )
+glib.AddLinkingFlag( "-lglib-2.0 -lgobject-2.0" )

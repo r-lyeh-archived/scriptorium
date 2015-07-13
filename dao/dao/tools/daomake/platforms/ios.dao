@@ -1,0 +1,97 @@
+load macosx
+
+io.writeln( "DaoMake: using IOS settings!" )
+
+xcode_path = DaoMake::Shell( "xcode-select --print-path" ).trim()
+if( xcode_path == "" ){
+	std.error( "Cannot find XCode location (try xcode-select -switch to set the correct path)" )
+}
+
+sdks = DaoMake::Shell( "xcodebuild -showsdks" )
+parts = sdks.capture( "iphoneos (%S+)" )
+if( %parts == 0 ) std.error( "Cannot find a valid iOS SDK" )
+
+sdk_version = parts[1];
+
+dev_path  = xcode_path/"Platforms/iPhoneSimulator.platform/Developer"
+dev_path2 = xcode_path/"Platforms/iPhoneOS.platform/Developer"
+sdk_path = "";
+
+arch = DaoMake::Architecture()
+
+if( arch == "i386" or arch == "x86_64" ){
+	sdk_path  = dev_path/"SDKs/iPhoneSimulator" + sdk_version + ".sdk"
+}else if( arch == "armv6" or arch == "armv7" ){
+	sdk_path  = dev_path2/"SDKs/iPhoneOS" + sdk_version + ".sdk"
+}else{
+	std.error( "Invalid architecture" )
+}
+
+ios_version_min = DaoMake::GetEnv( "IOS_VERSION_MIN" )
+if( ios_version_min == "" ) ios_version_min = sdk_version.change( "%. %d+", ".0" )
+
+
+DaoMake::Platforms["IOS"]  = DaoMake::Platforms["MACOSX"] + 1
+
+DaoMake::Variables["IOS_DEV_PATH", "="]    = dev_path
+DaoMake::Variables["IOS_DEV_PATH2", "="]   = dev_path2
+DaoMake::Variables["IOS_SDK_PATH", "="]    = sdk_path
+DaoMake::Variables["IOS_VERSION_MIN", "="] = ios_version_min
+
+DaoMake::Variables["CC", "="]  = "$(IOS_DEV_PATH)/usr/bin/gcc"
+DaoMake::Variables["CXX", "="] = "$(IOS_DEV_PATH)/usr/bin/g++"
+DaoMake::Variables["LD", "="]  = "$(IOS_DEV_PATH)/usr/bin/ld"
+
+DaoMake::Settings["AR"] = "$(IOS_DEV_PATH2)/usr/bin/ar rcs"
+
+
+cflags  = " -pipe -no-cpp-precomp -isysroot$(IOS_SDK_PATH)"
+cflags += " -miphoneos-version-min=$(IOS_VERSION_MIN)"
+cflags += " -I$(IOS_SDK_PATH)/usr/include/"
+
+ldflags  = " -L$(IOS_SDK_PATH)/usr/lib/ -isysroot$(IOS_SDK_PATH)"
+ldflags += " -miphoneos-version-min=$(IOS_VERSION_MIN)"
+
+cflags  += " -arch " + arch
+ldflags += " -arch " + arch
+
+ldflags += " -lobjc -framework Foundation -framework CoreGraphics"
+ldflags += " -framework UIKit -framework GLKit -framework OpenGLES"
+
+#DaoMake::Settings["EXE-FLAG"]       = "-static-libgcc"
+DaoMake::Settings["RELEASE-CFLAG"] = "-O2" + cflags
+DaoMake::Settings["RELEASE-LFLAG"] = ldflags
+DaoMake::Settings["DEBUG-CFLAG"]   = "-O0" + cflags
+DaoMake::Settings["DEBUG-LFLAG"]   = ldflags
+DaoMake::Settings["PROFILE-CFLAG"] = cflags
+DaoMake::Settings["PROFILE-LFLAG"] = ldflags
+
+DaoMake::Settings["DLL-NAME"]        = "-install_name "
+DaoMake::Settings["DYNAMIC-EXPORT"]  = ""
+DaoMake::Settings["DYNAMIC-IMPORT"]  = "-undefined dynamic_lookup"
+DaoMake::Settings["DLL-RPATH"]       = ""
+DaoMake::Settings["DLL-RPATH-REL"]   = ""
+
+name = "OpenGLES"
+path = sdk_path /"System/Library/Frameworks/" + name + ".framework/Headers/ES3"
+DaoMake::Packages[ name ] = ( path, header, "", "-framework " + name )
+
+system_packages = 
+{
+	"Cocoa"           =>  "Cocoa.h",
+	"CoreFoundation"  =>  "CoreFoundation.h",
+	"CoreVideo"       =>  "CoreVideo.h",
+	"GLUT"            =>  "glut.h",
+	"IOKit"           =>  "IOKitLib.h",
+	"OpenGL"          =>  "gl.h",
+}
+
+# DaoMake::Packages is for system packages that have standard header files
+# and header locations, and can be used with standard compiling and linking flags.
+# Packages intended for static linking (not the case for most system packages)
+# should not be included here.
+
+system_packages.iterate { [name, header]
+	path = sdk_path /"System/Library/Frameworks/" + name + ".framework/Headers"
+	DaoMake::Packages[ name ] = ( path, header, "", "-framework " + name )
+}

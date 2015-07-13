@@ -1,0 +1,19 @@
+
+Credits and Acknowledgements
+
+Since I started the development of Dao, I have received many valuable feedbacks, 
+suggestions and bug reports from many people. Many thanks to them! 
+
+Special thanks to the following contributors:
+* Danilov, Aleksey (Nightwalker, TheTrueNightwalker [at] gmail.com)
+  Language improvements, modules, testing, bug reports and patches etc.
+* Beyer, Lucas (pompei2, pompei2 [at] gmail.com)
+  CMake support, testing, bug reports and patches etc.
+* Oleg, Belousov (belousov.oleg [at] gmail.com)
+  Testing, bug reports and patches etc.
+* Zhao, Zhiguo George (zhaozg [at] gmail.com)
+  Testing, bug reports and patches etc.
+* dumblob (https://github.com/dumblob)
+  Testing, bug reports and patches etc.
+
+-- Limin Fu

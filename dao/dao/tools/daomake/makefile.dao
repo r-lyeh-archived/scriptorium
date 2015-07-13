@@ -1,0 +1,25 @@
+
+project = DaoMake::Project( "DaoMake" ) 
+
+daovm = DaoMake::FindPackage( "Dao", $REQUIRED )
+
+if( daovm == none ) return
+
+project_objs = project.AddObjects( { "source/daoMake.c" } )
+project_exe  = project.AddExecutable( "daomake", project_objs )
+
+project.UseSharedLibrary( daovm )
+project_exe.SetTargetPath( "../../bin" )
+
+libpath = "../../lib/daomake/"
+
+copy = project.AddCommand( "configs", "$(DAOMAKE) mkdir2 " + libpath )
+copy.AddCommand( "$(DAOMAKE) copy " + project.MakeSourcePath( "platforms" ) + " " + libpath )
+copy.AddCommand( "$(DAOMAKE) copy " + project.MakeSourcePath( "packages" ) + " " + libpath )
+
+libpath = DaoMake::MakePath( DaoMake::Variables[ "INSTALL_LIB" ], "daomake/" );
+
+project.Install( DaoMake::Variables[ "INSTALL_BIN" ], project_exe );
+project.Install( libpath, "platforms" );
+project.Install( libpath, "packages" );
+

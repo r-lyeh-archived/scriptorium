@@ -1,0 +1,553 @@
+
+ChangeLog for the Dao language and virtual machine:
+
+================================
+release dao-2.0, 2014-XX-XX
+================================
+ADDED:
+-- Execution time profiler;
+-- Bytecode format and single file deployment;
+-- Basic data flow analysis and optimizations (CSE, DCE, register reallocation etc.);
+-- DaoJIT, LLVM-based JIT compiler;
+-- DaoCXX, Clang-based module to support embedding C/C++ codes;
+-- ClangDao, Clang-based automatic binding tool;
+-- Code section methods (similar to Ruby code blocks);
+-- Parallelized code section methods in mt;
+-- Asynchronous class and future value;
+-- Communication channel for tasklets;
+-- Abstract interface type: interface Name{ methods };
+-- Deferred code block and error handling;
+-- Typed function decorators;
+-- Class decorator and Apsect-Oriented Programming;
+-- Invariables and invar classes;
+-- Boolean type;
+-- Enum/flag/symbol type;
+-- Variant or disjoint union type: type1|type2;
+-- Hash map type (colliding keys as red-black tree);
+-- Support for customized comparisons and hashing;
+-- Explicit enumeration with keywords: array/list/map/tuple{};
+-- Verbatim string syntax;
+-- Customized for-in iteration;
+-- Improve operator overloading (added support for type casting);
+-- New technique for more efficient lookup of overloaded functions;
+-- Access control on syntax macros and global consts and variables;
+-- Data serialization (in aux module);
+-- Support for template-like C data type;
+-- Standard help system;
+CHANGED:
+-- "float" type to double precision (with "double" type removed);
+-- Internal data storage structures;
+-- Better parsing with a combination of top-down and bottom-up parsing;
+-- Better handling of control branching;
+-- Better handling of overloaded functions;
+-- Better support for function specialization;
+-- Better implementation of call stack;
+-- Various improvements to the basic data types;
+-- Various improvements to the garbage collector;
+-- Re-implementation of exception types as C data type;
+-- Moved aux, sys, math, meta and network modules from kernel to standard modules;
+-- Replaced builtin functional methods with various builtin code section methods;
+REMOVED:
+-- Wide character string;
+-- Posix like multi-threading methods;
+-- Try-catch style exception handling;
+-- Parameter passing by reference for basic data types;
+FIX:
+-- Many bugs;
+
+================================
+release dao-1.1, 2009-09-19
+================================
+ADDED:
+ -- do{}while() statement;
+ -- Tail call optimization;
+ -- Built-in mathematic functions;
+ -- Built-in functional methods such as map(), reduce() etc.;
+ -- Built-in functional-style methods for data construction such as string(), list(), array() etc.;
+ -- Type checking operators: ?=, ?<, and the associated VM instruction DVM_CHECK;
+ -- Support for "case c1, c2, c3:" and "case c1 ... c2:" in switch statement;
+ -- Function DaoFunction_Call() to the C interface for extending and embedding;
+ -- Support for using constant fields in namespaces or classes or cdata as
+    default value in function parameter list;
+ -- Partial ranking in list.rank();
+ -- Numeric array method: array.index(), to convert a flat index to proper multi-index;
+ -- Type casting by:  var :: ( type ) ;
+ -- In parameter list, parameters can be specified as "const";
+ -- Automatic inheritance of constructors from single parent class/cdata;
+ -- DaoVmSpace_AddVirtualFile(), and daoMainv.c to support binding script files into the Dao
+    interpreter executable.
+ -- New operator: ?? to check if the last operation is successful, 
+    and/or provide an alternative if not successful; example:
+      list[i] ??   # check if index "i" is in valid range;
+      map[key] ??  # check if a map has particular key;
+      val = map[key] ?? another  # if map has the key, assign its value, otherwise assign another;
+
+CHANGED:
+ -- Fixed a bug in the incremental GC algorithm for single threaded Dao VM;
+ -- Decreased GC frequency to greatly decrease the GC overhead for singel threaded version;
+ -- Improved GC by freeing more data directly, and by add tuple type to GC scanning process;
+ -- Reduced tuple creation when possible;
+ -- Revised type and function preparation methods for loading C modules;
+ -- Some C/C++ interface functions are moved from type DaoVmSpace to DaoNameSpace;
+ -- math.rand(), math.rand_gaussian() now take a parameter which is multiply to the
+    standard distribution (even and normal);
+ -- Constant number literal should now use 'D' to mark double precision instead of 
+    using double '0';
+ -- "stdio" is changed to "io", and "stdio" is kept as an alias to "io" for compatiblity;
+ -- "stdlib" is changed to "std", and "stdlib" is kept as an alias to "std" for compatiblity;
+ -- "stdio.print/printf/println" are changed to "io.write/writef/writeln", aliases are kept
+    for compatiblity;
+ -- Storage for local variables as references;
+ -- Class definition: class body no longer allows statements;
+ -- Passing parameter as references for simple data types is back;
+ -- Now max() and min() methods of list and array return a tuple to include the value and index;
+    And for list, a larger range of types are allowed for comparison;
+ -- Improved cast to tuples;
+ -- Disabled duplication of C functions, and disable data copying for parameters passed to C functions;
+
+FIXED:
+ -- A few bugs regarding modification to non-local variables due to the previous lacking of
+    reference representation of the variables;
+ -- A minor bug in handling 0 as default parameter for DaoCData types;
+ -- A minor bug for handing compatible types in DaoAbsType_MatchValue();
+ -- Proper parsing >> in type names, and >= after type names, such as:
+    list<list<int>>, a : list<int>= {};
+
+REMOVED:
+ -- list.sort(); replaced by functional method sort();
+ -- array.noapply(); array.apply(); the later is replaced by functional method apply();
+ -- single precision complex array;
+ -- "buffer" type;
+
+================================
+release dao-1.0.1, 2009-06-02
+================================
+
+ADDED:
+  -- Type checked instructions for DVM_CALL and DVM_MCALL;
+
+CHANGED:
+  -- map.key() and map.value() are changed to map.keys() and map.values();
+  -- A slight change to the C interface to make embedding much simpler;
+  -- C interfaces for DaoVmProcess and DaoVmSpace types;
+  -- Data structures for function call stack frames;
+  -- Improved usage of namespaces for module loading, script compiling and
+     evaluation;
+  -- Changed implementation for returning by parameters;
+  -- Remove the global constant "NULL" as the NULL pointer object which can be
+     used as the default parameter value for C types in C functions; Now a
+	  simple alternative solution is used to allow using "0" in place of "NULL"
+	  as a default parameter value for C types.
+FIXED:
+  -- Finished a neglected new implementation of do-until statements;
+  -- A typing error in creating the typing object of the "::main()" function;
+  -- A minor bug in using specialized VM instructions such as SETV_XY;
+  -- A running time data type related bug in comparison operation;
+  -- A compiling error in erasing virtual instructions after constant folding
+     for operations that generate codes other than codes for arithmatics, e.g.
+		  "A = 0 || 1" or "A = 1 ? 10 : 20" etc.
+
+================================
+release dao-1.0
+================================
+ADDED:
+  -- "long" type as multiple/arbitrary precision integer (BigInteger);
+  -- new implementation of a clean lexer;
+  -- new and parallelized regular expression matching engine, 
+     which can be accessed by new string methods such as: 
+     string.match(), string.submatch(), string.extract(), 
+     string.capture(), string.change(), string.pfind();
+  -- parallelized arithmetic operations for numeric arrays;
+  -- JIT compiling for X86-64 platform;
+  -- coroutine with typed interface, added keyword "yield";
+  -- parameter grouping as in python, to allow passing tuples as parameters,
+     and get the fields of the tuples to be bound to the corresponding
+	  parameters automatically;
+  -- "local" keyword for local data;
+  -- "virtual" keyword to indicate class virtual methods;
+  -- a new syntax for easy construction of list or array: { expr ... count };
+  -- list items pushback and popback by operators: << and >>;
+  -- configuration by file;
+  -- string += integer_as_char;
+  -- string.expand( ... );
+  -- string.replace( key_value_map, max );
+  -- stdlib.time( calendar_time_tuple ), return time in seconds.
+  -- stdio.read( file_name : string ), to read whole file;
+  -- Set default values for simple types in class instance creation, for
+     fields that are declared without default values;
+  -- stdio.popen( command : string, mode : string );
+  -- flush output stream before closing;
+  -- Raising error when reading from or write to closed file or pipe;
+  -- More restrict type checking for compatible types;
+  -- tuple as map keys, where tuples are ordered according to each item;
+  -- added missed type checking for some specialized VM instructions;
+  -- subindexing with a tuple of two numbers: a = list[ (i, j) ], which is
+     equivalent to: a = list[ i : j ];
+  -- new behavior: string.chop() => string.chop( utf8=0 ), to allow removing 
+     corrupted utf-8 code from the end of a string;
+  -- new behavior: string.split(), when called without parameters, the string
+     will be splitted into tokens, such that each token is either a byte of an
+	  ASCII character, or multi-bytes encoding a single utf-8 symbol, or a
+	  block of bytes with invalid encoding;
+  -- Proper handling of paths for modules loaded through modules,
+     namely, the path of a module is added to the searching paths
+     when the module is being loaded, so that this module can load
+     other modules relative in path to itself;
+  -- Support for setting default values for parent class variables.
+CHANGED:
+  -- stdlib.load( file, safe ) => stdlib.load( file, import, safe );
+  -- stdlib.ctime() => stdlib.ctimef(), return formated time;
+  -- stdlib.ctime(), return unformated time as a tuple;
+  -- stream.read() => stream.read( count );
+  -- string.splitby() => string.split();
+  -- representation and handling of abstract types (DaoAbsType);
+  -- implementation of returning value by parameters;
+  -- implementation of switch-case statement;
+  -- implementation of post parsing to setup conditional branching;
+  -- improved code parsing by better using token lexical information;
+  -- revised GETF/SETF instructions;
+  -- simplified instruction GETCL/G/K, GETVG/K/O and SETVG/K/O into GETC, GETV
+     and SETV;
+  -- composite operation: |=, OR to BITOR, &=, AND to BITAND;
+FIXED:
+  -- Some memory leaking bugs as detected by valgrind;
+  -- Support for infinite looping;
+  -- A bug in deriving member methods from a parent class;
+  -- A bug in string.encrypt();
+  -- A bug in updating reference count causing memory leaking;
+  -- A few bugs in tuple typing, and field naming;
+  -- A bug in the parser to print error information;
+  -- A bug in handling errors during incremental compiling;
+  -- A bug for break/skip;
+  -- A bug in compiling nested classes;
+  -- A bug in regex to match '.' to no-ascii characters;
+  -- A bug of missed type checking for setting single map item;
+  -- A bug in lexing unicode source codes;
+  -- A bug in parsing pathes with dots;
+  -- A bug in simple optimization for tuple enumeration;
+  -- A bug in self in/de-crement opteration for list items;
+  -- A bug in regex engine parallelization;
+  -- A bug in DaoVmSpace and DaoNameSpace allocation;
+  -- A bug in calling main();
+  -- A bug in iterating list/map in for-in loops;
+  -- A bug in list.sort(), list.rank();
+  -- A bug in run code section from list.sort();
+  -- A bug in class instance creation;
+  -- A bug in initializing exception classes;
+  -- A bug in copying routine constants;
+  -- A bug in virtual register reallocation for numbers;
+  -- A bug in erasing a range of keys from a map;
+  -- A minor bug in typing for map key/value insertion;
+  -- A bug in using no-ascii symbols as variable names;
+REMOVED:
+  -- The old regular expression engine, and the syntax support for it;
+  -- The interface to support embedding codes of another language;
+  -- remove keyword "extern" and instruction GETCE, GETVE and SETVE;
+
+================================
+release 1.0-preview2, 2008-05-01
+================================
+
+ADDED:
+  -- "function" as equivalent keyword of "routine".
+
+FIXED:
+  -- Parsing error for scientific number.
+  -- A bug in using environment variable DAO_DIR for loading dao.so.
+  -- A bug for VM instruction DVM_TEST for double type due to a typo.
+  -- A bug in DValue_GetString() for double type due to a typo.
+  -- Better error information for mixing string quotation symbols " and '.
+
+================================
+release 1.0-preview, 2008-04-24
+================================
+
+ADDED:
+  -- enum and typedef keywords.
+  -- New data type: tuple.
+  -- Automatic parsing of command line arguments for explicitly defined
+  main() routine.
+  -- Comments as documentations for classes and routines.
+  -- Safe running mode is taken back with a simpler implementation.
+  -- An incremental garbage collector similar to the concurrent garbage collector 
+  with double object pools.
+  -- String encryption methods using XXTEA.
+
+FIXED:
+  -- Dao macro system for defining new syntax.
+  -- TCC module for embedding C codes.
+  -- A bug in list subindexing with index range.
+  -- A bug in typing of list assignment with different type of items.
+  -- A bug in array.dim().
+  -- A bug causing memory leaking for numeric arrays.
+  -- A bug in free DaoVmProcess structure, very stupid bug (forgot to set the
+  function pointer field of its typer structure!).
+  -- A bug in parsing asynchronous function calls with multiple modes.
+  -- A bug in joining asynchronous function calls.
+  -- A bug in handling messages send to actors that are not in waiting mode.
+  -- A bug in counting line number after replacing escape chars.
+  -- A bug in declaration of class member when there is a variable with the
+  same name presented in the scope.
+  -- A bug in forgetting to set the constructor attribute for overloaded class
+  constructors.
+
+CHANGED:
+  -- Internal data storage scheme is changed to reduce memory consumption;
+  -- Data storage for class instances;
+  -- C interfaces are changed to cope with the change in internal data storage
+  scheme;
+  -- Load statement;
+  -- Methods in reflection library;
+  -- Implementation of the scheduler for AFC and MPI;
+  -- Implementation of power operator: **, from implemention by function
+  to implementation by VM machine instruction, for simplicity.
+  -- Dao type name: "hash"->"map", to better reflect the internal
+  implementation.
+  -- Dao internal structure name: "DaoNumArray"->"DaoArray", "DaoHash"->"DaoMap".
+  -- Members of some structures such as "DArray" have been switched from "int"
+  to "size_t" to support 64 bits.
+  -- Multiple assignment uses (), instead of [] and {}, for semantic
+  consistence.
+
+REMOVED:
+  -- Arrange operator: <@>, similar functionality can be achieved by 
+  Range enumeration: [ array/number : array/number : number ].
+  -- VM instruction for make dynamic field of a class instance: DVM_MAKEF,
+  it can be emulated by implementation of AddField(), DelField(),
+  _GETF() / SETF methods of a class. This instruction is introduced not
+  very long time ago.
+  -- Running time instruction with operand caching.
+
+=========================
+release on 2007-sep-09:
+=========================
+
+ADDED:
+  -- "int", "float" and "double" data type.
+  -- Constant field inheritance hierarchy for user-defined C/C++ types.
+  -- Direct deriving Dao classes from user-defined C/C++ types.
+  -- Flexible type casting.
+  -- Better interactive shell using readline library.
+  -- "final" keyword to finalize a class to prevent it from sub-classing,
+  and to support a set of optimized VM instructions.
+  -- In-place index permutation for multi-dimensional array (matrix
+  transpose).
+  -- stdlib.enable_fe() and stdlib.disable_fe(): enable and disable
+  floating point exception.
+  -- stream.printf(): formated printing, support most of the C printf() flags.
+  -- Typing for setters and getter.
+  -- Some optimized virtual machine instructions.
+  -- Simple common subexpression elimination and register reallocation.
+  -- Missed type checking at running time for getting/setting non-local data.
+  -- Data scoping by keyword "extern", for data available throughout a
+  virtual machine space.
+
+CHANGED:
+  -- Simplified DRoutine structure to reduce memory consumption.
+  -- Abstract interface defined dao.h.
+
+FIXED:
+  -- A timing bug in DCondVar_TimedWait().
+  -- An optimization bug in GC (now scalar types that may be deleted directly
+  are no long push in the GC pools.)
+  -- A bug in extracting matched sub-string for regular expresssion matching.
+  -- A bug in handling exception scopes.
+
+2007-06-30:
+CHANGED:
+  Better interactive shell using readline library.
+
+2007-05-26:
+ADDED:
+  "use" statement.
+  
+ADDED:
+  Type casting.
+  
+2007-05-20:
+ADDED:
+  Integer and single precision floating number, so type name "number" now 
+  becomes "int", "float" and "double".
+
+2007-05-01:
+ADDED:
+  Method stream.printf(): formated printing.
+
+OPTIMIZED:
+  Context caching.
+
+2007-04-15:
+CHANGED:
+  New set of exception classes.
+
+ADDED:
+  Floating point exceptions.
+
+REMOVED:
+  Safe running mode.
+
+2007-04-14:
+CHANGED:
+  Embedded expression in regular expression is now compiled in the normal way,
+  instead of creating a code section.
+
+CHANGED:
+  Bits operations is now implemented as virtual instructions instead of
+  as function calls.
+
+2007-04-13:
+ADDED:
+  do { stmts } until ( exprs ).
+
+CHANGED:
+  The behaviour of boolean operators: &&(and), ||(or), become the same as
+  those in Lua. That is, the last evaluated operand is returned as the result
+  when considering there is short-cut evaluation.
+
+2007-04-11:
+ADDED:
+  for( var = first [ : step ] : last ), equivalent to
+  for( var = first; var <= last; var += step ), step=1 by default.
+
+2007-04-08:
+FIXED:
+  A bug in determining the ending of a statement.
+
+2007-04-01:
+ADDED:
+  Typing system for Dao.
+
+2007-03-17:
+ADDED:
+  Constant folding for DVM_GETMI with single index.
+
+CHANGED:
+  string[i] returns a number instead of a substring.
+  
+2007-03-03:
+CHANGED:
+  The Dao VM instructions: new meaning of operand indexes and more specialized
+  instructions; new operand caching mechanism.
+  
+ADDED:
+  Synonymous operators: and or not
+  
+2007-02-25:
+FIXED:
+  A minor bug in supporting operator overloading (missing a "break" in
+  "swith-case" );
+
+ADDED:
+  Function curry.
+
+2007-02-22:
+ADDED:
+  Support for mixed programming with other languages: currently C language is
+  supported using libtcc.
+
+2007-02-13:
+CHANGED:
+  Implementation of a new mechanism for join mode of asynchronous function call.
+
+2007-02-10:
+ADDED:
+  A powerful macro system for Dao: syntax { ... } as { ... }
+
+2007-02-06:
+ADDED:
+  Lambda like function: a = @(x,y){ body }
+  
+2007-02-05:
+REMOVED:
+  Parameter passing by name with operator @.
+
+CHANGED:
+  Parameter passing by name and object enumeration with operator @= is changed to =>.
+
+2007-01-27+4:
+CHANGED:
+  New message passing interfaces for concurrent and distributed programming
+  based on the actor model.
+
+2007-01-19:
+ADDED:
+  Lazy compiling of routines: they are compiled in to VM codes when
+  the are called for the first time.
+
+2007-01-08:
+FIXED:
+  A bug when raising exceptions outside of try ... rescue.
+
+2007-01-06:
+FIXED:
+  1. printing of non null-terminated string;
+  2. MBS-WCS conversion for strings containing null-chars.
+
+2007-01-02:
+ADDED:
+  1. network supports;
+  2. message passing through network sockets.
+  
+FIXED:
+  1. implementation of condition variable based on Win32 APIs.
+
+2006-12-07:
+ADDED:
+  supporting dynamic field for class instance.
+
+2006-12-06:
+ADDED:
+  1. supporting synchronization of asynchronous function calls with keyword join;
+  2. supporting return future values from asynchronous function calls;
+  3. stdlib.spawn(), stdlib.send() and stdlib.receive();
+  4. asynchronous function call "hurry" mode.
+
+2006-12-03:
+ADDED:
+  exception handling. added keywords: try raise rescue retry.
+
+2006-12-01:
+ADDED:
+  actor model: asynchronous function call.
+
+ADDED:
+  declare un-exposed class. class Abc; class Abc::Edf; 
+
+2006-11-30:
+ADDED:
+  expand list in parameter list, func( pa, list, ... ), the elements of
+  the list are used to fill the rest part of the parameters. Function parameters
+  are also checked for such call to identify the right one among overloaded
+  functions to call.
+
+2006-11-27:
+OPTIMIZED:
+  single element accessing of a numarray with multiple-indexing.
+
+2006-11-26:
+FIXED:
+  a bug in implementation of arrange operator as an internal method.
+
+2006-11-25:
+FIXED:
+  a bug in stdio redirection.
+
+CHANGED:
+  duplicate simple data type when it is assigned to a field of
+  class instance or namespace.
+
+2006-11-24:
+FIXED:
+  a bug in for-in-do for hash type.
+
+2006-11-23:
+OPTIMIZED:
+  invoking of builtin methods in loops( optimized out an internal
+  function call for searching the method by name ).
+
+2006-11-22:
+OPTIMIZED:
+  single subindexing of list.
+
+2006-11-20;
+RELEASED: Dao 1.0 Beta.

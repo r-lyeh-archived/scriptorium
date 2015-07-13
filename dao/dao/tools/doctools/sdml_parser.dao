@@ -1,0 +1,729 @@
+
+#{
+Author: Limin Fu
+Email: phoolimin@gmail.com
+Date: 2008-12-20
+#}
+
+load string.tokenize;
+
+
+interface SdmlCodeHL
+{
+	routine Highlight( source : string, name='' )=>string;
+}
+
+routine random_string( n=1 )
+{
+	const alnum = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	s = string(n){
+		k = 62 * rand()
+		return alnum[ k : k ]
+	}
+	return s;
+}
+
+const top_level = 1;
+
+class TextSection
+{
+	var bodyStart = 0;
+	var numbering = '';
+	var sectname = '';
+	var sectmark = '';
+	var level = top_level;
+	var subsections : list<TextSection> = {};
+}
+
+class SdmlParser
+{
+	var source = '';
+	var output = '';
+	var suffix = '';
+	var brief = '';
+	var plain = '';
+	var hlcode = '';
+	var section = '';
+	var sectindex = '';
+	var preface = '';
+	var precount = 0;
+	var makesuffix = 0;
+	var makeheader = 1;
+	var linebreak = '\n\n';
+	var quotebegin = '';
+	var quoteend = '';
+	var quotename1 = '';
+	var quotename2 = '';
+	var tokens : list<string> = {};
+
+	var orderlist = ( '', '' );
+	var unorderlist = ( '', '' );
+	var listitem = ( '', '' );
+	var empty_table = '';
+	var BasicTagMap : map<string,tuple<string,string,string> > = {=>};
+	var codeparser : map<string,SdmlCodeHL> = {=>};
+	#var codeparser : map<string,class<SdmlCodeHL> > = {=>};
+
+	routine SdmlParser(){
+	}
+
+	routine Tokenize2( src : string, last=0, end=0 );
+	routine Tokenize();
+	routine Parse( src : string );
+	routine ParseSection( sect : TextSection, start : int, end : int );
+	routine ParseBlock( sect : TextSection, start : int, end : int, top=0, nopreface=0 );
+	routine ParseCode( src : string, lang : string );
+	routine ParseList( src : string );
+	routine ParseTable( src : string );
+
+	interface routine New(){ return SdmlParser(); }
+	interface routine Replace( src = '' )=>string{ return src }
+	interface routine Warn( info : string ){ output += info; }
+	interface routine Error( info : string ){ output += info; }
+	interface routine AddPrefix(){}
+	interface routine OpenHeader( type = '' ){}
+	interface routine CloseHeader(){}
+	interface routine MakeTitle( title='' ){ output += title; }
+	interface routine MakeAuthor( name='' ){ output += name; }
+	interface routine MakeTOC( sect : TextSection ){}
+	interface routine MakeImage( name='' ){ output += name; }
+	interface routine MakeLink( name='', tok1='', tok2='' )=>string{ return name; }
+	interface routine MakeTable( headers:list<string>,cells:list<list<string> >,param=''){}
+	interface routine MakeItemName( name = '' ){ return name; }
+	interface routine EvalDemo( source = '' ){ return ''; }
+	interface routine OpenBody(){}
+	interface routine CloseBody(){}
+	interface routine OpenSection( level=0, numbering='' ){}
+	interface routine CloseSection( level=0, numbering='' ){}
+}
+
+routine SdmlParser::Tokenize2( src : string, last=0, end=0 )
+{
+	const search = '%<%s* ([%w=]+ |%* |%% |_) (%s* | %s [%s%w]*) %>';
+	m = src.match( search );
+	#io.writeln( m );
+	while( m != none ){
+		start = m.start;
+		tags = src[m.start:m.end].capture( search );
+		tag = tags[1];
+		if( tag == '*' || tag == '%' ) tag = '%' + tag;
+		p = '%B{ %<%s* (' + tag + ') (%s* | %s [%s%w]*) %> }{ %< %s* / %s* %1 %s*%> }';
+		p2 = '%<%s* (' + tag + ') (%s* | %s [%s%w]*) %> (.*) ( %< %s* / %s* %1 %s*%> )';
+		m2 = src.match( p, 0, start );
+		if( tag == 'comment' && m2 != none ){
+			last = m2.end + 1;
+		}else if( m2 != none ){
+			if( start > last ) tokens.append( src[ last : start-1 ] );
+			tks = src.capture( p2, start, m2.end );
+			tokens.append( src[m.start:m.end] );
+			mid = tks[3];
+			switch( tag ){
+				case 'table' , 'list' , 'code' , 'demo' :
+					tokens.append( mid );
+				default :
+					Tokenize2( mid, 0, mid.size()-1 );
+			}
+			tokens.append( tks[4] );
+			last = m2.end + 1;
+		}else{
+			if( end >= last ) tokens.append( src[ last : end ] );
+			last = end + 1;
+		}
+		m = src.match( search, 0, last, end );
+		#io.writeln( m, last );
+	}
+	if( end >= last ) tokens.append( src[ last : end ] );
+}
+routine SdmlParser::Tokenize()
+{
+#io.writeln( source );
+	tokens = (list<string>) {};
+	Tokenize2( source, 0, source.size()-1 );
+	#io.writeln( tokens.size(), tokens );
+	return 1;
+}
+
+routine SdmlParser::Parse( src : string )
+{
+	plain = '';
+	brief = '';
+	output = '';
+	if( makesuffix ){
+		suffix = random_string( 5 );
+		for( i = 5 : 20 ){
+			done = 0;
+			for( j = 1 : 5 ){
+				suffix = random_string( i );
+				if( src.find( suffix ) <0 ){
+					done = 1;
+					break;
+				}
+			}
+			if( done ) break;
+		}
+	}
+	source = src;
+	source = source.trim();
+	Tokenize();
+
+	start = 0;
+	size = tokens.size();
+	if( size ==0 ) return output;
+	if( makeheader ){
+		tok0 = size > 0 ? tokens[0] : '';
+		tok1 = size > 1 ? tokens[1] : '';
+		tok2 = size > 2 ? tokens[2] : '';
+		tag0 = tok0.capture( '^ %< %s* (title|article|report|book) %s* %> $' );
+		tag1 = tok1.capture( '^ %< %s* / %s* (title|article|report|book) %s* %> $' );
+		tag2 = tok2.capture( '^ %< %s* / %s* (title|article|report|book) %s* %> $' );
+		if( %tag0 ){
+			doctype = tag0[1];
+			OpenHeader( doctype );
+			if( %tag1 && tag1[1] == doctype ){
+				start = 2;
+				MakeTitle();
+			}else if( %tag2 && tag2[1] == doctype ){
+				start = 3;
+				MakeTitle( tokens[1] );
+			}else if( %tag1 ){
+				Warn( 'invalid title' );
+				start = 2;
+			}else if( %tag2 ){
+				Warn( 'invalid title' );
+				start = 3;
+			}
+		}else{
+			OpenHeader();
+		}
+		CloseHeader();
+		while( tokens[start].match( '^ %s+ $' ) != none ) if( (++ start) >= size ) break;
+
+		if( start < size && tokens[start] == '<author>' ){
+			if( size == start+1 ){
+				Error( 'invalid author tag' );
+				return output;
+			}else if( tokens[start+1] == '</author>' ){
+				start += 2;
+				MakeAuthor();
+			}else if( size <start+3 || tokens[start+2] != '</author>' ){
+				Warn( 'invalid author tag' );
+				start += 2;
+			}else{
+				MakeAuthor( tokens[start+1] );
+				start += 3;
+			}
+		}
+		OpenBody();
+	}
+
+	topSection = TextSection();
+	ParseSection( topSection, start, size-1 );
+	if( makeheader ) MakeTOC( topSection );
+
+	if( makesuffix ){
+		suffix_old = suffix;
+		for( i = 5 : 20 ){
+			done = 0;
+			for( j = 1 : 5 ){
+				suffix2 = random_string( i );
+				if( output.find( suffix2 ) <0 ){
+					output = output.replace( suffix, suffix2 );
+					suffix = suffix2;
+					done = 1;
+					break;
+				}
+			}
+			if( done ) break;
+		}
+		preface = preface.replace( suffix_old, suffix );
+	}
+	if( makeheader ) CloseBody();
+	repl = { '|'=>'| ', '-'=>'- ', '_'=>'_ ', '/'=>'/ ', '\\'=>'\\ ',
+		'$'=>'$ ', '%'=>'% ', '^'=>'^ ', '&'=>'& ', '='=>'= ' };
+	repl.iterate{ plain = plain.replace( X, Y ) }
+	brief = plain[:145];
+	#brief.utf8();
+	brief.chop();
+	if( brief.size() < plain.size() ) brief += " ...";
+	AddPrefix();
+	#io.writeln( brief );
+	#io.writeln( plain[:199] );
+	#io.writeln( suffix );
+	#if( source.size() > 1000 ) io.writeln( preface.size() );
+	return output;
+}
+routine Replace2( tok : string ) => string
+{
+	tok = tok.replace( '<', '&lt;' );
+	tok = tok.replace( '>', '&gt;' );
+	tok = tok.change( '[\n] %s* [\n] %s* [\n]', '<br/><br/>\n' );
+	tok = tok.change( '[\n] %s* [\n]', '<br/>\n' );
+	tok = tok.replace( ' ', '&nbsp;' );
+	tok = tok.replace( '\t', '&nbsp;&nbsp;&nbsp;&nbsp;' );
+	return tok;
+}
+routine SdmlParser::ParseSection( sect : TextSection, start : int, end : int )
+{
+	sect.bodyStart = output.size();
+	sectonly = sectindex.size();
+	if( sectonly && section.size() ) return;
+	sectsym = '';
+	sectpos = {};
+	while( start <= end && tokens[start] == '\n' ) start += 1;
+	for( i = start : end ){
+		tk = tokens[i];
+		if( tk.match( '^ %< =+ %> $' ) != none ){
+			if( tk.size() > 20 ){
+				end = i-1;
+				break;
+			}
+			if( sectsym == '' ) sectsym = tk;
+			if( tk == sectsym ) sectpos.append( i );
+			if( tk.size() > sectsym.size() ) sectpos.append( i );
+		}
+	}
+	if( sectpos.size() ){
+		if( not sectonly ) ParseBlock( sect, start, sectpos[0]-1, 1 );
+		sectpos.append( end + 1 );
+	}else{
+		if( not sectonly ) ParseBlock( sect, start, end, 1 );
+	}
+	for( i = 0 : sectpos.size()-2 ){
+		numbering = sect.numbering;
+		if( numbering.size() ) numbering += '.';
+		numbering += (string)(i+1);
+		subsect = TextSection.{ numbering = numbering, sectmark=tokens[sectpos[i]] };
+		sect.subsections.append( subsect );
+		k = 0;
+		for( k = sectpos[i]+1 : sectpos[i+1] ){
+			if( tokens[k].match( '^ %< / (=+) %> $' ) != none ) break;
+		}
+		if( sect.level == top_level ){
+			subsect.level = sect.level + 1;
+		}else{
+			subsect.level = sect.level + (sect.sectmark.size()-subsect.sectmark.size());
+		}
+		OpenSection( subsect.level, numbering );
+		if( k < sectpos[i+1] ){
+			if( not sectonly )
+				subsect.sectname = ParseBlock( subsect, sectpos[i]+1, k-1, 0, 1 );
+			k += 1;
+		}else{
+			k = sectpos[i] + 1;
+		}
+		CloseSection( subsect.level, numbering );
+		tk = tokens[ sectpos[i] ];
+		if( tk.size() > sectsym.size() )
+			Warn( 'invalid section division,' + sectsym + ' -> ' + tk );
+
+		io.writeln( '==========================' )
+		hlcode += "<p><span class=CodeStruct>";
+		for( j = sectpos[i] : k-1 ) hlcode += Replace2( tokens[j] );
+		hlcode += "</span></p>";
+		if( sectonly && numbering == sectindex ){
+			for( j = sectpos[i] : sectpos[i+1]-1 ) section += tokens[j];
+			return;
+		}
+		ParseSection( subsect, k, sectpos[i+1] -1 );
+		if( makeheader ) MakeTOC( subsect );
+		if( precount < 1000 && output.size() < 1500 ){
+			c =  output[preface.size():].split().size();
+			if( precount + c < 1000 ){
+				preface = output;
+				precount += c;
+			}
+		}
+	}
+}
+
+routine SdmlParser::ParseBlock( sect : TextSection, start : int, end : int, top=0, nopreface=0 )
+{
+	#io.writeln( start, end );
+	if( start > end ) return '';
+	if( start == end ){
+		#io.writeln( tokens[start] );
+		tks = str.tokenize( tokens[start], '\\' );
+		n = tks.size() - 1;
+		src = '';
+		for( j = 0 : n ){
+			tk = tks[j];
+			if( tk == '\\' && j+1 <= n ){
+				tk = tks[j+1];
+				src += tk;
+				j += 1;
+			}else{
+				src += tk;
+			}
+		}
+		plain += src + ' ';
+		hlcode += Replace2( tokens[start] );
+		tks2 = src.extract( '([%w%p]+ | %s | %n+)', $both );
+		tks = (list<string>){};
+		for( tk in tks2 ){
+			if( tk.size() > 40 ){
+				tks3 = tk.split();
+				if( tks3.size() == tk.size() ){
+					for( tk in tks3 ) tks.append( tk );
+				}else{
+					tks.append( tk );
+				}
+			}else{
+				tks.append( tk );
+			}
+		}
+		#io.writeln( tks );
+		n = tks.size() - 1;
+		output += ' ';
+		for( j = 0 : n ){
+			tk = tks[j];
+			output += Replace( tk );
+			#io.writeln( "<p>", tk.size(), preface.size(), precount );
+			if( nopreface==0 && precount < 1000 && output.size() < 1500 ){
+				c = output[preface.size():].split().size();
+				if( precount + c < 1000 ){
+					preface = output;
+					precount += c;
+				}
+			}
+		}
+		return Replace( tokens[start] );
+	}
+	old = output.size();
+	i = start;
+	while( i <= end ){
+		tk = tokens[i];
+		if( tk == "\n" and i+1 <= end and tokens[i+1] =="\n" ){
+			plain += " ";
+			hlcode += linebreak;
+			output += linebreak;
+		}else if( BasicTagMap.find( tk ) != none ){
+			tags = BasicTagMap[ tk ];
+			output += tags[1];
+			j = 0;
+			for( j = i + 1 : end ){
+				tk2 = tokens[j];
+				if( tk2 == tags[0] ){
+					ParseBlock( sect, i+1, j-1, 0, nopreface );
+					break;
+				}
+			}
+			output += tags[2];
+			i = j;
+		}else if( tk == "<link>" ){
+			if( tokens[i+2] == "</link>" ){
+				tk = tokens[i+1];
+				eq = tk.find( "=" );
+				code = "";
+				if( eq >0 ){
+					lname = tk[:eq-1];
+					lhref = tk[eq+1:];
+					tks2 = lhref.split( "::" );
+					code = MakeLink( lname, lhref, tks2.size()>1 ? tks2[1] : '' );
+					plain += lname;
+				}else{
+					code += MakeLink( tk );
+					plain += tk;
+				}
+				output += code;
+				hlcode += code;
+				i += 2;
+			}else if( tokens[i+1] == "</link>" ){
+				i += 1;
+			}else{
+				Warn( 'invalid link tag' );
+			}
+		}else if( tk == "<image>" ){
+			hlcode += "<table class=sdmltable><tr><td>";
+			if( tokens[i+2] == "</image>" ){
+				hlcode += Replace2( tk + tokens[i+1] + tokens[i+2] );
+				tk = tokens[i+1];
+				MakeImage( tk );
+				if( tk.match( '^ %w+ $' ) != none ) plain += tk;
+				i += 2;
+			}else if( tokens[i+1] == "</image>" ){
+				hlcode += Replace2( tk + tokens[i+1] );
+				i += 1;
+			}else{
+				Warn( 'invalid image tag' );
+			}
+			hlcode += "</td></tr></table>";
+		}else if( tk == "<list>" || tk == "<table>" ){
+			if( i+1 <= end ){
+				if( tk == '<list>' ){
+					ParseList( tokens[i+1] );
+					if( i+2 > end || tokens[i+2] != '</list>' ){
+						Error( 'unpaired list tag' );
+						a = tokens[-1];
+					}
+				}else{
+					ParseTable( tokens[i+1] );
+					if( i+2 > end || tokens[i+2] != '</table>' ){
+						Error( 'unpaired table tag' );
+						a = tokens[-1];
+					}
+				}
+			}
+			hlcode += "<table class=sdmltable><tr><td>";
+			hlcode += Replace2( tk + tokens[i+1] + '\n' + tokens[i+2] );
+			hlcode += "</td></tr></table>";
+			i += 2;
+		}else if( tk == "<comment>" ){
+			i += 2;
+		}else if( tk[:4] == "<code" || tk[:4] == "<demo" ){
+			hlcode += "<div class=hlcode>";
+			hlcode += Replace2( tk + tokens[i+1] + '\n' + tokens[i+2] ) + "</div>";
+			index = tk.fetch( 'index' );
+			lang = tk[ 6 : tk.size()-2 ];
+			lang = lang.change( 'index', '' );
+			lang = lang.trim();
+			if( i+1 <= end ) ParseCode( tokens[i+1], lang );
+			if( tk[:4] == '<demo' ) EvalDemo( tokens[i+1] );
+			i += 2;
+		}else if( tk[:4] == "<cite" ){
+			name = tk[ 6 : tk.size()-2 ];
+			name = name.trim();
+			code = quotebegin;
+			if( %name ) code += quotename1 + name + quotename2;
+			output += code;
+			hlcode += code;
+			j = 0;
+			for( j = i + 1 : end ){
+				tk2 = tokens[j];
+				if( tk2 == "</cite>" ){
+					ParseBlock( sect, i+1, j-1, 0, nopreface );
+					break;
+				}
+			}
+			code = quoteend;
+			output += code;
+			hlcode += code;
+			i = j;
+		}else{
+			ParseBlock( sect, i, i, top, nopreface );
+		}
+		if( nopreface ==0 && precount < 1000 && output.size() < 1500 ){
+			c =  output[preface.size():].split().size();
+			if( precount + c < 1000 ){
+				preface = output;
+				precount += c;
+			}
+		}
+		i += 1;
+	}
+	return output[ old : ];
+}
+routine SdmlParser::ParseCode( src : string, lang : string )
+{
+	if( codeparser.find( lang ) == none ) return;
+	parser = codeparser[ lang ];
+	src = src.trim();
+	output += parser.Highlight( src );
+}
+routine SplitListBlock( src : string, marker : string )
+{
+	pt = '%B{ %< %s* ( %w+ ) (| %s+ %w+) %s* %> }{ %< %s* / %s* %1 %s* %> }';
+	items = {''}; # for typing
+	items.clear();
+	remains = '';
+	src.scan( pt ){ [start, end, state]
+		substring = src[start:end];
+		if( state == $matched ){
+			remains += substring;
+			return;
+		}
+		substring.scan( marker ){ [start2, end2, state2]
+			if( state2 == $matched ){
+				if( %remains ) items.append( remains );
+				remains = '';
+			}else{
+				remains += substring[start2:end2];
+			}
+		}
+	}
+	if( %remains ) items.append( remains );
+	return items;
+}
+routine SdmlParser::ParseList( src : string )
+{
+	parser = (SdmlParser) New();
+	parser.suffix = suffix;
+	parser.makesuffix = 0;
+	parser.makeheader = 0;
+	tk = src.trim()[:1];
+	if( tk == '--' || tk == '==' ){
+		tagend = '';
+		items = {''}; # for typing
+		if( tk == '--' ){
+			items = SplitListBlock( src, '%-%-' );
+			output += unorderlist[0];
+			tagend = unorderlist[1];
+		}else{
+			items = SplitListBlock( src, '==' );
+			output += orderlist[0];
+			tagend = orderlist[1];
+		}
+		for( it in items ){
+			if( it.match( '^ %s* $' ) != none ){
+				output += linebreak;
+				skip;
+			}   
+
+			tks = it.capture( '^ %s* ( %b[] ) ( %s* ) ( .* $ )' );
+			output += listitem[0];
+			if( %tks ){
+				name = tks[1];
+				name = name[1:name.size()-2]
+				output += MakeItemName( parser.Parse( name ) );
+				output += tks[2];
+				output += parser.Parse( tks[3] );
+			}else{
+				output += parser.Parse( it );
+			}
+			output += listitem[1];
+		}
+		output += tagend;
+	}else{
+		output += '\n' + unorderlist[0] + parser.Parse( src ) + unorderlist[1];
+	}
+}
+routine SdmlParser::ParseTable( src : string )
+{
+	lines = src.split( "\n" );
+	size = lines.size();
+	if( size == 0 ){
+		output += empty_table;
+		return;
+	}
+	if( lines[0].size() == 0 ){ lines.pop( $front ); }
+	if( size == 0 ){
+		output += empty_table;
+		return;
+	}
+	param = "";
+	headers : list<string> = {};
+	cells : list<list<string>> = {};
+	size = lines.size();
+	i = 0;
+	j = 0;
+	length = 0;
+	line = lines[0];
+	line = line.change( '^ %s+', '' );
+	if( j = line.find( "^" ); j >=0 ){
+		line = line.change( '^ %s* %^', '' );
+		line = line.change( ' %^ %s* $', '' );
+		toks = line.split( "^" );
+		if( toks.size() ){
+			param += "| c | ";
+			headers.append( toks[0] );
+			for( j = 1 : toks.size()-1 ){
+				param += " c |";
+				headers.append( toks[j] );
+			}
+		}
+		i += 1;
+	}
+	while( i< size ){
+		line = lines[i];
+		line = line.change( '^ %s+', '' );
+		if( line[:2] == "===" ){
+			cells.append( (list<string>){} );
+			i += 1;
+			skip;
+		}
+		tkns = str.tokenize( line, "|", "\"", 1 );
+		toks = {};
+		for( j = 0 : tkns.size()-1 ){
+			tok = tkns[j];
+			if( tok != "|" ){
+				toks.append( tok );
+			}else if( j >0 && tkns[j-1] == "|" ){
+				toks.append( "" );
+			}
+		}
+		if( toks.size() > 0 ){
+			if( param.size() ==0 ){
+				param += "| c |";
+				for( j = 1 : toks.size()-1 ) param += " c |";
+			}
+			row = {};
+			for( j = 0 : toks.size()-1 ) row.append( toks[j] );
+			cells.append( (list<string>)row );
+		}
+		i += 1;
+	}
+	MakeTable( headers, cells, param );
+}
+
+#{
+var src = 
+'<title>Simple Document Marking Language</title>
+<author>Test</author>
+<==>Abc <it>DEF</it></==>
+<code  dao>
+class Foo{}
+as = 123;
+io.writeln( "abc" );
+</ code>
+<=>xyz1</=>asfa
+<table>
+| <*>#</*> | single line comments |
+| <*>#{  #}</*> | multiple line comments |
+| <*>;</*> | statement ending <code dao>a = 123</code> |
+</table>
+<=>xyz2</=>adfa
+<===>xyz3</===>adfa
+<==>"as<==>dfa"</==>
+<=>xyz1</=>asfa
+<image>test.png</image>
+<image>test.png<adsfa|</image>
+';
+src = 
+'<title>Simple Document Marking Language</title>
+<author>Test</author>
+<==>Abc <it>DEF</it></==>
+<=>xyz1</=>asfa
+<table>
+| <*>#</*> | single line comments |
+| <*>#{  #}</*> | multiple line comments |
+| <*>;</*> | statement ending |
+</table>
+<=>xyz2</=>adfa
+<===>xyz3</===>adfa
+<list>
+== item1
+== item2
+</list>
+<link>ABC</link>
+<link>abc|edf</link>
+<==>"as<==>dfa"</==>
+<=>xyz1</=>asfa
+';
+#SdmlParser::codeparser[ 'cpp' ] = DaoCodeHL;
+src = 'dao language for scripting and computing';
+src = '
+/home/fulimin/winux/projects/Cybego/templates
+/home/fulimin/winux/projects/Cybego/scripts
+';
+src = '<list>
+-- first
+<list>
+-- one
+-- two <image>FirstImage</image>
+</list>
+-- second
+</list>
+
+<list>
+== first
+== second
+<code dao>
+==
+</code>
+</list>';
+src = '<image>FirstImage</image>';
+parser = SdmlParser();
+io.writeln( parser.Parse( src ) );
+io.writeln( parser.codeparser );
+io.writeln( parser.brief );
+parser = SdmlParser();
+#}

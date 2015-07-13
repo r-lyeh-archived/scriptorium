@@ -1,0 +1,31 @@
+
+header_path = DaoMake::FindFile( "mysql/mysql.h" )
+
+if( header_path == "" ) return;
+
+code = 
+@[cxx]
+#include<stdio.h>
+#include<mysql/mysql.h>
+int main(void){
+	mysql_get_client_version();
+	return 0;
+}
+@[cxx]
+
+cflags = "-I" + header_path
+lflags = "-L" + header_path.change( "include $", "lib" )
+
+ismysql = DaoMake::TestCompile( code, lflags + " -lmysqlclient", cflags )
+ismaria = DaoMake::TestCompile( code, lflags + " -lmariadbclient -lssl -lz", cflags )
+
+if( ismysql == 0 and ismaria == 0 ) return
+
+mysql = DaoMake::Project( "MySQL" )
+mysql.AddSharedLibrary( "" )
+mysql.AddIncludePath( header_path + "/mysql" )
+if( ismysql ){
+	mysql.AddLinkingFlag( lflags + " -lmysqlclient" )
+}else{
+	mysql.AddLinkingFlag( lflags + " -lmariadbclient -lssl -lz" )
+}

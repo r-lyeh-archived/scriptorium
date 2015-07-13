@@ -7,24 +7,9 @@ fibR(n)
 }
 
 
-fibI(n)
-{
-    new last = 0
-    new cur = 1
-    n = n - 1
-    while(n)
-    {
-        --n
-        new tmp = cur
-        cur = last + cur
-        last = tmp
-    }
-    return cur
-}
-
 main()
 {
     new N = 34 //Should return 433494437
-    printf("fib: %d = %d\n", fibR(N), fibI(N))
+    printf("fib: %d\n", fibR(N))
 }
 

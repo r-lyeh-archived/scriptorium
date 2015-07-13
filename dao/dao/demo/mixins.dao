@@ -1,0 +1,39 @@
+
+class Base
+{
+	var value = 456
+	routine Meth2(){ io.writeln( self, value ) }
+}
+
+#
+# Classes to be used as mixin bases can be specified in a pair of brackets
+# following the class name. Only classes without parent classes can
+# be used as mixins.
+#
+class Mixin ( Base )
+{
+	var index = 123
+
+	routine Meth(){ io.writeln( self, index, value ) }
+	routine Meth2( a : string ){ io.writeln( self, index, value, a ) }
+}
+
+#
+# The "Base" class will be presented only once in "Klass":
+#
+class Klass ( Base, Mixin )
+{
+	var index = 123456
+	routine Meth2( a : int ){ io.writeln( self, index, value, a ) }
+}
+
+k = Klass()
+
+io.writeln( k.index )
+
+k.Meth()
+k.Meth2()
+k.Meth2( "abc" )
+k.Meth2( 789 )
+
+

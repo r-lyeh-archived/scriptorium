@@ -1,0 +1,5 @@
+
+To build:
+
+make bind
+make

@@ -1,0 +1,39 @@
+
+class Test
+{
+	var value = { 123.2, 456.5 };
+
+	# conversion to int:
+	routine (float) () {
+		io.writeln( "casting to float" );
+		return value.sum();
+	}
+	# conversion to string:
+	routine (string) () {
+		io.writeln( "casting to string" )
+		return value.reduce(""){ [x, y] y += (string)x }; # convert to string
+	}
+	routine (array<int>) () {
+		io.writeln( "casting to array<int>" );
+		return array<int>( %value ){ [i] value[i] }
+	}
+	routine (tuple<float,float>) () {
+		io.writeln( "casting to tuple<float,float>" );
+		return (value[0], value[1])
+	}
+}
+
+t = Test();
+
+a = (int)t;
+b = (float)t;
+c = (string)t;
+v = (array<int>)t;
+v2 = (tuple<a:int,b:float>)t;
+
+io.writeln( a, b, c, v2, std.about(v2) )
+
+e = Exception::Error( "testing" );
+io.writeln( (string)e );
+
+# a = (int)e; # error

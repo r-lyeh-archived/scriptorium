@@ -1,0 +1,295 @@
+
+routine TestFunction( a : string, b = 123 )
+{
+	io.writeln( a, b )
+}
+
+
+routine TestVariadicFunction( a : string, ... : int )
+{
+}
+
+
+########################
+## Static Checking
+########################
+
+# Test default parameter:
+@[test(code_01)]
+	TestFunction( "abc" )
+@[test(code_01)]
+@[test(code_01)]
+	abc %s 123
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction( "abc", 456.5 )  # implicit conversion;
+@[test(code_01)]
+@[test(code_01)]
+	abc %s 456
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction()
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{too few parameters}}
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction( "abc", 123, 456 )
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{too many parameters}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+	TestVariadicFunction( "abc" )  # right parameter;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction( "abc", 123 )  # right parameter;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction( 123 )  # wrong first parameter;
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction( "abc", "abc" )  # wrong second parameter;
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+
+##########################
+## Static Checking
+## With function type only
+##########################
+
+var TestFunction2 = TestFunction
+var TestVariadicFunction2 = TestVariadicFunction
+
+# Test default parameter:
+@[test(code_01)]
+	TestFunction2( "abc" )
+@[test(code_01)]
+@[test(code_01)]
+	abc %s 123
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction2( "abc", 456.5 )  # implicit conversion;
+@[test(code_01)]
+@[test(code_01)]
+	abc %s 456
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction2()
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{too few parameters}}
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction2( "abc", 123, 456 )
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{too many parameters}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+	TestVariadicFunction2( "abc" )  # right parameter;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction2( "abc", 123 )  # right parameter;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction2( 123 )  # wrong first parameter;
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction2( "abc", "abc" )  # wrong second parameter;
+@[test(code_01)]
+@[test(code_01)]
+	{{At line}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+##########################
+## Dynamic Checking
+##########################
+
+var TestFunction3 : any = TestFunction
+var TestVariadicFunction3 : any = TestVariadicFunction
+
+# Test default parameter:
+@[test(code_01)]
+	TestFunction3( "abc" )
+@[test(code_01)]
+@[test(code_01)]
+	abc %s 123
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction3( "abc", 456.5 )  # implicit conversion;
+@[test(code_01)]
+@[test(code_01)]
+	abc %s 456
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction3()
+@[test(code_01)]
+@[test(code_01)]
+	{{Error::Param}} .* {{too few parameters}}
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestFunction3( "abc", 123, 456 )
+@[test(code_01)]
+@[test(code_01)]
+	{{Error::Param}} .* {{too many parameters}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+	TestVariadicFunction3( "abc" )  # right parameter;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction3( "abc", 123 )  # right parameter;
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction3( 123 )  # wrong first parameter;
+@[test(code_01)]
+@[test(code_01)]
+	{{Error::Param}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+@[test(code_01)]
+	TestVariadicFunction3( "abc", "abc" )  # wrong second parameter;
+@[test(code_01)]
+@[test(code_01)]
+	{{Error::Param}} .* {{Invalid parameter type}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine f(...: tuple<enum<a>, int>){ io.writeln(1) }
+routine f(...: tuple<enum<b>, int>){ io.writeln(2) }
+
+f(a = 1)
+f(b = 1)
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine f() => list<tuple<a:int,b:int>>
+{
+	return {(1,2), (3,4)}
+}
+routine g() => tuple<list<int>, list<string>>
+{
+	return ({}, {})
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine f() => tuple<list<int>, list<string>>
+{
+	({}, {})
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine t( a: array<@T<int|float>>, b: @T = 1 )
+{
+	io.writeln( a, std.about(b) )
+};
+t( [1.0] )
+@[test(code_01)]
+@[test(code_01)]
+float
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine ForwardDeclaredRoutine( a: tuple<int,string> )
+
+routine ForwardDeclaredRoutine( a: tuple<int,string> )
+{
+	io.writeln( a )
+}
+ForwardDeclaredRoutine( (123, "abc") )
+@[test(code_01)]
+@[test(code_01)]
+( 123, "abc" )
+@[test(code_01)]

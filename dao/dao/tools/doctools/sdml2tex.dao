@@ -1,0 +1,389 @@
+
+#{
+Author: Limin Fu
+Email: phoolimin@gmail.com
+Date: 2008-12-20
+#}
+
+load sdml_parser;
+load codehl2tex;
+
+var useCJK = 0;
+
+const texconfig1 =
+"
+% normal,footnotesize works for CJK at 12pt!
+\\documentclass[12pt,a4,oneside,openright]{";
+
+const texconfig2 =
+"}
+\\usepackage{graphicx}
+\\usepackage[usenames]{color}
+
+%\\usepackage{times}
+\\renewcommand{\\rmdefault}{ptm}
+\\renewcommand{\\sfdefault}{phv}
+% do not change the font for \\\\texttt
+%\\renewcommand{\\ttdefault}{pcr}
+
+\\addtolength{\\hoffset}{-2em}
+\\addtolength{\\textwidth}{4em}
+\\addtolength{\\voffset}{-2em}
+\\addtolength{\\textheight}{4em}
+\\setlength{\\parindent}{2em}
+\\linespread{1.1} % also in front page
+
+\\usepackage[italian,english]{babel}
+\\usepackage[titles]{tocloft} % Alter the style of the Table of Contents
+
+\\newcommand\\alert[1]{\\textcolor[rgb]{0.9,0,0}{#1}}
+\\newcommand\\greentext[1]{\\textcolor[rgb]{0,0.6,0}{#1}}
+";
+
+const texconfig3 =
+"
+% the original \\chapter command does not work with CJK package
+% in the presence of CJK, either \\chapter or \\section or something else
+% will not work!
+\\usepackage{fancyhdr}
+\\renewcommand{\\chaptermark}[1]{\\markboth{Chapter \\thechapter\\ \\ #1}{}}
+";
+
+const texconfig4 =
+"
+\\setcounter{secnumdepth}{3}
+\\setcounter{tocdepth}{1}
+%\\usepackage{hlcode}
+
+%\\usepackage{hyperref} % not working with CJK package
+
+\\usepackage{fancyvrb}
+
+\\definecolor{Black}{rgb}{ 0, 0, 0 }
+\\definecolor{FrameColor}{rgb}{ 0.9, 0.8, 1 }
+\\definecolor{CommentColor}{rgb}{ 0.2, 0.2, 1 }
+\\definecolor{StructColor}{rgb}{ 0, 0.9, 0 }
+\\definecolor{StmtKeyColor}{rgb}{ 0.9, 0.6, 0 }
+\\definecolor{StdMethColor}{rgb}{ 0.3, 0.5, 0 }
+\\definecolor{StorageColor}{rgb}{ 0.2, 0.8, 0.5 }
+\\definecolor{AccessColor}{rgb}{ 0.2, 0.7, 0.7 }
+\\definecolor{TypeColor}{rgb}{ 0.4, 0.8, 0 }
+\\definecolor{ConstColor}{rgb}{ 0.65, 0.35, 0 }
+\\definecolor{NumberColor}{rgb}{0.9,0.2,0}
+\\definecolor{StringColor}{rgb}{0.8,0.3,0}
+\\definecolor{BraceColor}{rgb}{0.2,0.5,0.1}
+\\definecolor{SpecSymColor}{rgb}{0.4,0.6,0}
+\\definecolor{MethodColor}{rgb}{ 0.3, 0.5, 0 }
+
+\\definecolor{TabColor}{rgb}{0.8,0.9,0.4}
+\\renewcommand\\FancyVerbTab{\\textcolor{TabColor}{$\\mid$}}
+
+\\newcommand\\COMMENT[1]{\\textcolor{CommentColor}{#1}}
+\\newcommand\\STRUCT[1]{\\textcolor{StructColor}{#1}}
+\\newcommand\\STMTKEY[1]{\\textcolor{StmtKeyColor}{#1}}
+\\newcommand\\STORAGE[1]{\\textcolor{StorageColor}{#1}}
+\\newcommand\\ACCESS[1]{\\textcolor{AccessColor}{#1}}
+\\newcommand\\TYPE[1]{\\textcolor{TypeColor}{#1}}
+\\newcommand\\CONST[1]{\\textcolor{ConstColor}{#1}}
+\\newcommand\\NUMBER[1]{\\textcolor{NumberColor}{#1}}
+\\newcommand\\STRING[1]{\\textcolor{StringColor}{#1}}
+\\newcommand\\SPECIAL[1]{\\textcolor{SpecSymColor}{#1}}
+\\newcommand\\METHOD[1]{\\textcolor{MethodColor}{#1}}
+
+\\newcommand\\END{\\textcolor{keycolor}{end}}
+\\newcommand\\PARALLEL{\\textcolor{keycolor}{parallel}}
+\\newcommand\\WHILE{\\textcolor{keycolor}{while}}
+\\newcommand\\FOR{\\textcolor{keycolor}{for}}
+\\newcommand\\DO{\\textcolor{keycolor}{do}}
+\\newcommand\\IF{\\textcolor{keycolor}{if}}
+\\newcommand\\ELSE{\\textcolor{keycolor}{else}}
+\\newcommand\\THEN{\\textcolor{keycolor}{then}}
+\\newcommand\\NOT{\\textcolor{keycolor}{not}}
+\\newcommand\\OR{\\textcolor{keycolor}{or}}
+\\newcommand\\NEW{\\textcolor{keycolor}{new}}
+\\newcommand\\CLEAR{\\textcolor{keycolor}{clear}}
+\\newcommand\\SWAP{\\textcolor{keycolor}{swap}}
+\\newcommand\\FALSE{\\textcolor{keycolor}{false}}
+\\newcommand\\TRUE{\\textcolor{keycolor}{true}}
+\\newcommand\\BREAK{\\textcolor{keycolor}{break}}
+\\newcommand\\for{\\textcolor{keycolor}{for}}
+";
+
+const texconfig_book = texconfig1 + "book" + texconfig2 + texconfig3 + texconfig4;
+const texconfig_report = texconfig1 + "article" + texconfig2 + texconfig4;
+const texconfig_article = texconfig1 + "article" + texconfig2 + texconfig4;
+
+class Sdml2Tex : SdmlParser
+{
+	var doctype = '';
+
+  routine Sdml2Tex();
+
+	routine New(){ return Sdml2Tex(); }
+	routine Replace( src = '' )=>string;
+	routine Warn( info : string );
+	routine Error( info : string );
+	routine OpenHeader( dtype = '' );
+	routine CloseHeader();
+	routine MakeTitle( title = '' ){ output += '\\title{' + title + '}\n'; }
+	routine MakeAuthor( name = '' ){ output += '\\author{' + name + '}\n'; }
+	routine MakeLink( name='', tok1='', tok2='' )=>string{ return '{\\it ' + name + '}'; }
+	routine MakeTable( headers : list<string>, cells : list<list<string> >, param='' );
+	routine MakeItemName( name = '' ){ return "\\greentext{\\bf " + name + '}'; }
+	routine EvalDemo( source = '' );
+	routine MakeImage( name='' ){} # XXX
+	routine OpenBody(){
+		output += '\\maketitle\n';
+		if( doctype == 'report' || doctype == 'book' ) output += '\\tableofcontents\n';
+	}
+	routine CloseBody(){
+		if( useCJK ) output += "\n\\end{CJK}\n";
+		output += '\n\\end{document}\n';
+	}
+	routine OpenSection( level=0, numbering='' );
+	routine CloseSection( level=0, numbering='' );
+
+}
+
+routine Sdml2Tex::Sdml2Tex()
+{
+	codeparser[ 'dao' ] = DaoCodeHL();
+	codeparser[ 'cpp' ] = CppCodeHL();
+	codeparser[ 'bnf' ] = BnfCodeHL();
+	orderlist = ('\\begin{enumerate}','\n\\end{enumerate}\n');
+	unorderlist = ('\\begin{itemize}','\n\\end{itemize}\n');
+	listitem = ( '\n\\item ', '' );
+	empty_table = '\n\\begin{tabular}{|c|}\n\\hline\\\\\n\\hline\n\\end{tabular}\n';
+	quotebegin = "\n\\begin{quote}\n";
+	quoteend = "\n\\end{quote}";
+	quotename1 = "{\\bf ";
+	quotename2 = ":}\\newline\n";
+	BasicTagMap = {
+		"<*>" => ( "</*>", "{\\bf ", "}") ,
+		"<%>" => ( "</%>", "{\\it ", "}" ) ,
+		"<_>" => ( "</_>", "{\\bf ", "}") ,
+		"<->" => ( "</->", "{\\it ", "}" ) ,
+		"<bf>" => ( "</bf>", "{\\bf ", "}" ) ,
+		"<it>" => ( "</it>", "{\\it ", "}" ) ,
+		"<hl>" => ( "</hl>", "\\greentext{", "}" ) ,
+		"<hlbf>" => ( "</hlbf>", "\\greentext{\\bf ", "}" ) ,
+		"<hlit>" => ( "</hlit>", "\\greentext{\\it ", "}" )
+	};
+}
+
+routine Sdml2Tex::Replace( src = '' ) => string
+{
+	const chars = '#&%_{}';
+	out = "";
+	for( i = 0 : src.size()-1 ){
+		ch = src[i:i];
+		if( ch == "\\" ){
+			ch2 = src[i+1:i+1];
+			switch( ch2 ){
+				case "\'" : case "\"" : out += ch2;
+				case "|" : out += "$\\mid$";
+				case "$" : out += "\\$";
+				case "&" : out += "\\&";
+				case "_" : out += "\\_";
+				case "~" : out += "$\\sim$";
+				case "^" : out += "$\\land$";
+				case "<" : out += "$<$";
+				case ">" : out += "$>$";
+				case "{" : case "}" : case "#" : out += "$\\backslash$\\" + ch2;
+				default : out += "$\\backslash$" + ch2;
+			}
+			i += 1;
+		}else if( chars.find( ch ) >=0 ){
+			out += '\\' + ch;
+		}else if( ch == "^" ){
+			out += "$\\land$";
+		}else if( ch == "$" ){
+			out += "\\$";
+		}else if( ch == "|" ){
+			out += "$|$";
+		}else if( ch == "<" ){
+			s0 = src[i:i+1];
+			s1 = src[i:i+2];
+			s2 = src[i:i+3];
+			if( s1 == "<*>" ){
+				out += "{\\bf ";
+				i += 2;
+			}else if( s1 == "<%>" ){
+				out += "{\\it ";
+				i += 2;
+			}else if( s2 == "</*>" ){
+				out += "}";
+				i += 3;
+			}else if( s2 == "</%>" ){
+				out += "}";
+				i += 3;
+			}else{
+				out += "$<$";
+			}
+		}else if( ch == ">" ){
+			out += "$>$";
+		}else{
+			out += ch;
+		}
+	}
+#src.replace( "<->", "<span class=wiki_delete>" );
+#src.replace( "<_>", "<span class=wiki_underline>" );
+#src.replace( "</->", "</span>" );
+#src.replace( "</_>", "</span>" );
+	return out;
+}
+routine Sdml2Tex::Warn( info : string )
+{
+	output += '\\alert{WARNING: ' + info + '!}\n';
+}
+routine Sdml2Tex::Error( info : string )
+{
+	output += '\\alert{ERROR: ' + info + '!}\n';
+}
+routine Sdml2Tex::OpenHeader( dtype = '' )
+{
+	doctype = dtype;
+	switch( dtype ){
+		case 'title' : output += texconfig_article;
+		case 'article' : output += texconfig_article;
+		case 'report' : output += texconfig_report;
+		case 'book' : output += texconfig_book;
+		default : output += texconfig_article;
+	}
+	if( useCJK ) output += "\\usepackage{CJK}\n";
+	output += '\n\\begin{document}\n';
+	if( useCJK ) output += "\\begin{CJK}{UTF8}{gbsn}\n";
+}
+routine Sdml2Tex::CloseHeader()
+{
+}
+routine Sdml2Tex::MakeTable( headers :list<string>, cells :list<list<string> >, param='' )
+{
+	parser = Sdml2Tex();
+	parser.suffix = suffix;
+	parser.makesuffix = 0;
+	parser.makeheader = 0;
+	rows = cells.size();
+	colm = headers.size();
+	if( colm ==0 ) colm = cells[0].size();
+	widths = { 0 : colm };
+	for( i = 0 : headers.size()-1 ) widths[i] = headers[i].size();
+	for( i = 0 : rows-1 ){
+		if( cells[i].size() ==0 ) skip;
+		for( j = 0 : colm-1 ){
+			w = cells[i][j].size();
+			if( w > widths[j] ) widths[j] = w;
+		}
+	}
+	wcode = { "" : colm };
+	sum = 0.0;
+	for( i = 0 : colm-1 ) sum += widths[i];
+	thd = sum / colm;
+	for( i = 0 : colm-1 ){
+		if( widths[i] > thd )
+			widths[i] = thd;
+		else# if( widths[i] < thd/2 )
+			widths[i] = thd/2;
+	}
+	sum = 0.0;
+	for( i = 0 : colm-1 ) sum += widths[i];
+	for( i = 0 : colm-1 ){
+		w = (int) (90 * ( widths[i] / sum ));
+		wcode[i] = "0.";
+		if( w >= 10 ){
+			wcode[i] += (string) w;
+		}else{
+			wcode[i] += "0" + (string) w;
+		}
+		wcode[i] += "\\textwidth";
+	}
+	table = "";
+	for( j = 0 : headers.size()-1 ){
+		if( j >0 ) table += "& ";
+		table += "\\parbox{" + wcode[j] + "}{\\linespread{0.9}\\selectfont ";
+		table += "\n\\vspace*{1ex}\n";
+		table += parser.Parse( headers[j] ) + " ";
+		table += "\n\\vspace*{1ex} }\n";
+	}
+	if( headers.size() ) table += "\\\\\\hline\n";
+	for( i = 0 : rows-1 ){
+		if( cells[i].size() ==0 ){
+			table += "\\hline\n";
+			skip;
+		}
+		if( i >0 ) table += "\\hline\n";
+		for( j = 0 : colm-1 ){
+			if( j >0 ) table += "& ";
+			table += "\\parbox{" + wcode[j] + "}{\\linespread{0.9}\\selectfont ";
+			table += "\n\\vspace*{1ex}\n";
+			table += parser.Parse( cells[i][j] ) + " ";
+			table += "\n\\vspace*{1ex} }\n";
+		}
+		table += "\\\\\n";
+	}
+# small font not working with {CJK}{GB}{kai}
+	output += "\n{\\footnotesize\\noindent\\begin{tabular}{" + param + "}\n\\hline\n";
+	output += table;
+	output += "\\hline\n\\end{tabular}}\n";
+}
+routine Sdml2Tex::EvalDemo( source = '' )
+{
+	output += "{\\footnotesize";
+	output += "\\noindent{\\colorbox{FrameColor2}{\\makebox[0.98\\textwidth]{";
+	output += "\\texttt{\\textcolor{CommentColor}{Output}}}}}\n";
+	output += "\\begin{verbatim}\n";
+	ss = io.stream( $string );
+	std.eval( source, ss );
+	str = ss.read();
+	if( str.size() && str[ str.size()-1: ] != "\n" ) str += "\n";
+	output += str;
+	output += "\\end{verbatim}}\n";
+	output += "\\noindent{\\colorbox{FrameColor3}{\\makebox[0.98\\textwidth]{}}}\n";
+}
+routine Sdml2Tex::OpenSection( level=0, numbering='' )
+{
+	output += '\\';
+	if( doctype == 'book' ){
+		if( level < 3 ){
+			output += 'chapter{';
+		}else{
+			for( i = 4 : level ) output += 'sub';
+			output += 'section';
+			if( level >= 4 ) output += '*';
+			output += '{';
+		}
+	}else{
+		for( i = 3 : level ) output += 'sub';
+		output += 'section{';
+	}
+}
+routine Sdml2Tex::CloseSection( level=0, numbering='' )
+{
+	output += '}\n';
+}
+
+#{
+parser = Sdml2Tex();
+fout = io.open( 'test.tex', 'w' );
+fout.writeln( parser.Parse( src ) );
+fout.close();
+#}
+
+routine main( input : string, cjk="", output = "" )
+{
+	if( cjk == "cjk" ) useCJK = 1;
+	src = io.read( input );
+
+	if( output.size() ==0 ){
+		dot = input.find( ".", -1, 1 );
+		if( dot >=0 ){
+			output = input[:dot] + "tex";
+		}else{
+			output = input + ".tex";
+		}
+	}
+	fout = io.open( output, "w" );
+	parser = Sdml2Tex();
+	fout.writeln( parser.Parse( src ) );
+	fout.close();
+}

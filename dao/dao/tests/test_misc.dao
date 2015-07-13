@@ -1,0 +1,107 @@
+
+@[test(code_01)]
+a : array<any>
+@[test(code_01)]
+
+@[test(output_01)]
+Invalid %s type %s form
+@[test(output_01)]
+
+@[test(code_02)]
+a : array<string>
+@[test(code_02)]
+
+@[test(output_02)]
+Invalid %s type %s form
+@[test(output_02)]
+
+#{
+DecDigit ::= '0' ... '9'
+HexDigit ::= DecDigit | 'a' ... 'f' | 'A' ... 'F'
+
+DecInteger ::= DecDigit +
+HexInteger ::= ('0x' | '0X') DecDigit +
+Integer    ::= DecInteger | HexInteger
+#}
+
+@[test(code_03)]
+	io.writef( "%g", .5 )
+@[test(code_03)]
+@[test(code_03)]
+	0.5
+@[test(code_03)]
+
+
+@[test(code_03)]
+	io.writef( "%g", 123. )
+@[test(code_03)]
+@[test(code_03)]
+	123
+@[test(code_03)]
+
+
+@[test(code_03)]
+	12a
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	0x
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+@[test(code_03)]
+	0xh
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+
+# Incomplete string:
+@[test(code_03)]
+	"incomplete string
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+# Incomplete string:
+@[test(code_03)]
+	"incomplete string
+@[test(code_03)]
+@[test(code_03)]
+	Invalid %s token
+@[test(code_03)]
+
+
+
+
+# Test tail call optimization:
+@[test(code_03)]
+routine TestTailCall( n = 0 )
+{
+	if( n == 0 ) std.error( "test" )
+	TestTailCall( n - 1 )
+}
+TestTailCall( 5 )
+@[test(code_03)]
+# If broken, it will print multiple "Called by:  TestTailCall()"
+@[test(code_03)]
+{{Exception}} [^%n]* %n
+[^%n]* %n
+{{Raised by:}} [^%n]* %n
+{{In code snippet:}} [^%n]* %n
+[^%n]* {{GETCL}} [^%n]* %n
+[^%n]* {{MCALL}} [^%n]* %n
+[^%n]* {{GETCG}} [^%n]* %n
+{{Called by:  TestTailCall()}} [^%n]* %s*
+{{Called by:  __main__()}} [^%n]* %s*
+@[test(code_03)]

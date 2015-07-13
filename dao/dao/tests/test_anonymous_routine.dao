@@ -1,0 +1,30 @@
+
+
+@[test(code_01)]
+add = routine(x, y){ return x + y }
+res = add( 123, 456 )
+@[test(code_01)]
+@[test(code_01)]
+579
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+a = "ABC";
+rout = routine( x, y : string, z = a+a, s = 123 ){
+	a += "_abc";
+	io.writeln( "lambda ", a )
+	io.writeln( "lambda ", y )
+	io.writeln( "lambda ", z )
+	io.writeln( "lambda ", s )
+}
+rout( 1, "XXX" );
+@[test(code_01)]
+@[test(code_01)]
+lambda  ABC_abc
+lambda  XXX
+lambda  ABCABC
+lambda  123
+@[test(code_01)]

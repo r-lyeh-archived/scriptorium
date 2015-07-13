@@ -1,0 +1,59 @@
+
+@[test(code_01)]
+io.writeln( std.about( (123.45) ) )
+@[test(code_01)]
+@[test(code_01)]
+{{float}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+io.writeln( std.about( (123.45,) ) )
+@[test(code_01)]
+@[test(code_01)]
+{{tuple<float>}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine Test() { 123.45 }
+io.writeln( std.about( Test ) )
+@[test(code_01)]
+@[test(code_01)]
+Test%{routine%<=%>float%>%}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine Test() { if( 1 ) 123.45 }
+io.writeln( std.about( Test ) )
+@[test(code_01)]
+@[test(code_01)]
+Test%{routine%<=%>none%>%}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+var a
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Variable declared without initialization}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar a
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Variable declared without initialization}}
+@[test(code_01)]

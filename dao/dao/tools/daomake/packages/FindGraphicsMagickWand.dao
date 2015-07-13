@@ -1,0 +1,13 @@
+
+if( DaoMake::IsPlatform( "UNIX" ) ){
+	cflags = DaoMake::Shell( "GraphicsMagickWand-config --cflags" )
+	lflags = DaoMake::Shell( "GraphicsMagickWand-config --ldflags" )
+	libs = DaoMake::Shell( "GraphicsMagickWand-config --libs" )
+	stlibs = ""
+	if( libs == "" ) return;
+
+	wand = DaoMake::Project( "GraphicsMagickWand" )
+	wand.AddSharedLibrary( "Wand" )
+	wand.AddCompilingFlag( cflags.chop() )
+	wand.AddLinkingFlag( lflags.chop() + " " + libs.chop() )
+}

@@ -1,0 +1,185 @@
+
+@[test(code_01)]
+routine Test()
+{
+    defer {
+        io.writeln( "always executed" )
+    }   
+    defer( none ){
+        io.writeln( "defer( none )" )
+    }   
+    defer( Error as error ){
+        io.writeln( "defer( Exception::Error as error )" )
+        return 999 
+    }   
+
+    for( i = 2 : 5 ) defer { io.writeln( "deferred", i ) } 
+
+    std.error( Error( "something" ) ) 
+    io.writeln( "returning" );
+    return 123 
+}
+
+io.writeln( Test() )
+@[test(code_01)]
+@[test(code_01)]
+deferred 5
+deferred 4
+deferred 3
+deferred 2
+defer( Exception::Error as error )
+always executed
+999
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+routine Test()
+{
+    defer ( Error ){
+        io.writeln( "Error is handled! And a new value is returned!" )
+        return 456 
+    }   
+    io.writeln( "Test(): before error;" )
+    std.error( "some error" )
+    io.writeln( "Test(): after error;" )
+    return 123 
+}
+
+io.writeln( Test() )
+@[test(code_01)]
+@[test(code_01)]
+Test(): before error;
+Error is handled! And a new value is returned!
+456
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class MyError : Error
+{
+    routine (string)(){ return "MyError.{" + self.summary + "}" }
+}
+
+routine Test2()
+{
+    defer ( MyError as error ) { 
+        io.writeln( "recovering from", error )
+        return none
+    }
+
+    io.writeln( "Test2(): before error;" )
+    std.error( MyError() );
+    io.writeln( "Test2(): after error;" )
+}
+
+Test2()
+@[test(code_01)]
+@[test(code_01)]
+{{Test2(): before error;}} .*
+{{recovering from MyError}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+fout = io::stdio
+
+std.exec {
+    defer ( any ) { return none }
+    fout = io.open( "NonExistentFile.txt", "r+" )
+}
+
+if( fout != io::stdio ) defer{ fout.close() }
+
+fout.writeln( "hello" )
+@[test(code_01)]
+@[test(code_01)]
+hello
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+fout = std.exec( io::stdio ){ io.open( "NonExistentFile.txt", "r+" ) }
+if( fout != io::stdio ) defer{ fout.close() }
+fout.writeln( "hello" )
+@[test(code_01)]
+@[test(code_01)]
+hello
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+const UserError = Error::define( "Error::User" )
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+const UserError = Error::define( "Error::User" )
+std.error( UserError, "Test" )
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::User]]}} .* {{Test}}
+@[test(code_01)]
+
+
+
+
+
+@[test(code_01)]
+const UserError = Error::define( "User" )
+std.error( UserError, "Test" )
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::User]]}} .* {{Test}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+var abc = 123
+std.assert( abc == 0, "Test" )
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::Assertion]]}} .* {{Assertion failed at line 3 in file}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+const err = Error::define('Error::SomeError')
+e = std.try { std.error(err, 'test') }
+switch (e) type { case err: std.error(e) }
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::SomeError]]}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+const E = Error::define('Error::SomeError2');
+e = E('xyz');
+std.error(e)
+@[test(code_01)]
+@[test(code_01)]
+{{[[Error::SomeError2]]}}
+@[test(code_01)]

@@ -1,0 +1,96 @@
+
+@[test(code_01)]
+switch(2){
+case 1 : io.writeln( "case 1" )
+case 2 : io.writeln( "case 2" )
+case 3 : io.writeln( "case 3" )
+}
+@[test(code_01)]
+@[test(code_01)]
+case 2
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+switch(22){
+case 1  : io.writeln( "case 1" )
+case 2  : io.writeln( "case 2" )
+default : io.writeln( "default" )
+}
+@[test(code_01)]
+@[test(code_01)]
+default
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+switch(2){
+case 1, 2 : io.writeln( "case 1,2" )
+case 3 : io.writeln( "case 3" )
+}
+@[test(code_01)]
+@[test(code_01)]
+case 1,2
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+switch(2){
+case 1, 2 : io.writeln( "case 1,2" )
+case 2 : io.writeln( "case 2" )
+case 3 : io.writeln( "case 3" )
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Case values not distinctive}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+lst = { 123, 'abc', [1,2,3] }
+for( item in lst ){
+	switch( item ) type {
+	case int: io.writeln( 'int' )
+	case string: io.writeln( 'string' )
+	case array<int>: io.writeln( 'arrry<int>' )
+	}
+}
+@[test(code_01)]
+@[test(code_01)]
+int
+string
+arrry<int>
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+a: any = 123
+switch( a ) type {
+case int: a += 456
+case string: a += 'abc'
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+a: any = 123
+switch( a ) type {
+case int: a += 'abc'
+case string: a += 123
+}
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Invalid virtual machine instruction}} .* 
+{{At line}} .* {{Invalid operation on the type}}
+@[test(code_01)]

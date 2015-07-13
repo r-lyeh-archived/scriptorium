@@ -1,0 +1,13 @@
+
+if( DaoMake::IsPlatform( "UNIX" ) ){
+	cflags = DaoMake::Shell( "llvm-config --cppflags" )
+	lflags = DaoMake::Shell( "llvm-config --ldflags" )
+	libs = DaoMake::Shell( "llvm-config --libs" )
+	syslibs = DaoMake::Shell( "llvm-config --system-libs" ).chop()
+	if( libs == "" ) return;
+
+	llvm = DaoMake::Project( "LLVM" )
+	llvm.AddSharedLibrary( "" );
+	llvm.AddCompilingFlag( cflags.chop() + " -std=c++11" )
+	llvm.AddLinkingFlag( libs.chop() + " " + lflags.chop() + " " + syslibs )
+}

@@ -1,0 +1,40 @@
+
+@[test(code_01)]
+i = 0
+while( i < 3 ) io.writeln( ++i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+3
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+while( i += 1; i < 3 ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+do io.writeln(++i) while( i < 3 )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+3
+@[test(code_01)]
+

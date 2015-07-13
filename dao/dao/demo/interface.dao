@@ -1,0 +1,45 @@
+
+interface AA
+{
+	routine Meth( a = 0 );
+	routine[]( index : int )=>int;
+	routine.name()=>string;
+
+	routine for( iter : ForIterator );
+	routine[]( iter : ForIterator )=>int;
+}
+routine Test( o : AA )
+{
+	io.writeln( "Test( o : AA )", std.about(o) );
+	o.Meth( 123 );
+	io.writeln( o[1] );
+	io.writeln( o.name );
+	for( i in o ) io.writeln(i)
+}
+
+class BB
+{
+	routine Meth( a = 0 ){ io.writeln( a ) }
+	routine[]( index : int ){ return index }
+	routine.name(){ return "BB" }
+
+	routine for( iter : ForIterator ){
+		iter.valid = 1;
+		iter.iterator = 0;
+	}
+	routine[]( iter : ForIterator ){
+		id = (int)iter.iterator;
+		iter.valid = id + 1 < 5;
+		iter.iterator = id + 1;
+		return id;
+	}
+}
+class CC : BB
+{
+}
+
+
+Test( BB() );
+Test( CC() );
+
+for( i in BB() ) io.writeln(i)

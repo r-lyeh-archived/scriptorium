@@ -1,0 +1,14 @@
+
+tup01 = ( 123, "abc" )  # tuple with unnamed items;
+tup02 = ( index = 123, "abc" )  # first item is named as "index";
+tup03 = tuple{ 123, name = "abc" }
+
+io.writeln( tup01, tup02, tup03 )
+
+
+tup11 :tuple<int,int> = (1, 2)
+tup12 :tuple<index:int,name:string> = (123, "abc")
+tup13 :tuple<int,int,...> = (1, 2, 3, "abc")
+
+io.writeln( tup11, tup12, tup13 )
+io.writeln( "number of items:", %tup13 )

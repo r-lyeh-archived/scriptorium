@@ -1,0 +1,12 @@
+
+header_hints = ".;"
+if( DaoMake::IsPlatform( "MACOSX" ) ){
+	header_hints += "/usr/local/Cellar/libffi/include;"
+}
+header_path = DaoMake::FindFile( "ffi.h", header_hints )
+
+if( header_path == "" ) return;
+
+sqlite = DaoMake::Project( "FFI" )
+sqlite.AddIncludePath( header_path )
+sqlite.AddLinkingFlag( "-lffi" )

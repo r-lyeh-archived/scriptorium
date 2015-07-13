@@ -1,0 +1,287 @@
+
+
+class AA
+{
+	const  cst = 123;
+	var    obj = 456;
+	var    obj2 = 789;
+
+	routine AA( i = 0 ){ io.writeln( "AA::AA( i = 0 )" ); }
+
+	routine Meth(){ io.writeln( "AA::Meth()" ); return 123; }
+	routine Meth( a ){ io.writeln( "AA::Meth(a)" ); return 123; }
+
+	interface routine Virt(){ io.writeln( "AA::Virt()" ) }
+	routine CallVirt(){ Virt() }
+}
+
+class BB : AA
+{
+	const  cst = "abc";
+	var    obj = "def";
+	var    obj2 = "abc";
+
+	routine BB( i = 0 ){ io.writeln( "BB::BB( i = 0 )" ); }
+
+	routine Meth(){ io.writeln( "BB::Meth()" ); return "abc"; }
+	routine Virt(){ io.writeln( "BB::Virt()" ) }
+}
+
+class CC : BB
+{
+	var    obj2 = 0C;
+
+	routine Virt(){ io.writeln( "CC::Virt()", self ) }
+}
+
+var c = none;
+
+
+@[test(code_01)]
+c = CC();
+@[test(code_01)]
+@[test(code_01)]
+AA::AA( i = 0 )
+BB::BB( i = 0 )
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+c.cst
+@[test(code_01)]
+@[test(code_01)]
+"abc"
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+c.obj
+@[test(code_01)]
+@[test(code_01)]
+"def"
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+return c.obj2
+@[test(code_01)]
+@[test(code_01)]
+return 0C
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+c.Meth()
+@[test(code_01)]
+@[test(code_01)]
+AA::Meth()
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+c.Meth(1)
+@[test(code_01)]
+@[test(code_01)]
+AA::Meth(a)
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+c.CallVirt();
+@[test(code_01)]
+@[test(code_01)]
+BB::Virt()
+@[test(code_01)]
+
+
+
+
+
+# Test: automatic calling a constructor of the base class.
+@[test(code_01)]
+class Base
+{
+	var id = 0
+
+	routine Base( i = 123 ){
+		id = i
+		io.writeln( id )
+	}
+}
+class Sub : Base
+{
+	var value = "abc"
+}
+Sub()
+@[test(code_01)]
+@[test(code_01)]
+123
+@[test(code_01)]
+
+
+
+
+
+# Test: automatic calling a constructor of the base class.
+@[test(code_01)]
+class Base
+{
+	var id = 0
+
+	routine Base( i = 123 ){
+		id = i
+		io.writeln( id )
+	}
+}
+class Sub : Base
+{
+	var value = "abc"
+
+	routine Sub( v = "ABC" ){ value = v }
+}
+Sub()
+@[test(code_01)]
+@[test(code_01)]
+123
+@[test(code_01)]
+
+
+
+
+
+# Test: calling a constructor of the base class.
+@[test(code_01)]
+class Base
+{
+	var id = 0
+
+	routine Base( i = 123 ){
+		id = i
+		io.writeln( id )
+	}
+}
+class Sub : Base
+{
+	var value = "abc"
+
+	routine Sub( v = "ABC", i = 456 ) : Base( i ) { value = v }
+}
+Sub()
+@[test(code_01)]
+@[test(code_01)]
+456
+@[test(code_01)]
+
+
+
+
+
+# Test: automatic calling a constructor of the base class.
+@[test(code_01)]
+class Base
+{
+	var id = 0
+
+	routine Base( i : int ){
+		id = i
+		io.writeln( id )
+	}
+}
+class Sub : Base
+{
+	var value = "abc"
+}
+Sub()
+@[test(code_01)]
+@[test(code_01)]
+{{ERROR}} .* {{too few parameters}}
+@[test(code_01)]
+
+
+load UserType
+
+@[test(code_01)]
+class Sub : UserType
+{
+	routine Sub(){} # Error calling: UserType(value:int)
+}
+@[test(code_01)]
+@[test(code_01)]
+{{Invalid number of parameter --- " too few parameters "}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Sub : UserType
+{
+	routine Sub() : UserType( 123 ) {}
+}
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Sub : UserType
+{
+	routine Sub() : UserType( 123 ) {}
+}
+
+s = Sub()
+io.writeln( s )
+@[test(code_01)]
+@[test(code_01)]
+UserType.{123}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class Sub : UserType
+{
+	routine Sub() : UserType( 123 ) {}
+	routine (string)(){ return "Sub.{" + (string)(UserType)self + "}" }
+}
+
+s = Sub()
+io.writeln( s )
+@[test(code_01)]
+@[test(code_01)]
+Sub.{UserType.{123}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class SubType : UserType
+{
+	routine SubType( id: int ) : UserType( id ) {}
+	routine (string)(){ return "SubType.{" + (string)(int)self + "}" }
+	routine (int)(){ return (int)(UserType)self }
+}
+
+var m1 = { SubType(3) => 3, SubType(1) => 1, SubType(4) => 4, SubType(2) => 2 }
+var m2 = { SubType(3) -> 3, SubType(1) -> 1, SubType(4) -> 4, SubType(2) -> 2 }
+io.writeln( m1 )
+io.writeln( m2.find( SubType(0) ) )
+io.writeln( m2.find( SubType(2) ) )
+@[test(code_01)]
+@[test(code_01)]
+{ SubType.{1} => 1, SubType.{2} => 2, SubType.{3} => 3, SubType.{4} => 4 }
+none
+( SubType.{2}, 2 )
+@[test(code_01)]

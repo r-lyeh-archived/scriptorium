@@ -1,0 +1,166 @@
+
+
+@[test(code_01)]
+i = 0
+for( i = 1 : 3 ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+4
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+for(var i = 1 : 3 ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+0
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+for(i=1; i<=3; ++i) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+4
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+for(var i=1; i<=3; ++i) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+0
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+for(; i<=3; ++i) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+0
+1
+2
+3
+4
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+for( i in {1, 2, 3} ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+3
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+i = 0
+for(var i in {1, 2, 3} ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+1
+2
+3
+0
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+invar ls = {(1,1), (2,2), (3,3)};
+for( invar x in ls ){
+	io.writeln(x)
+}
+@[test(code_01)]
+@[test(code_01)]
+( 1, 1 )
+( 2, 2 )
+( 3, 3 )
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+for( i = 1 : 3 ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Symbol not defined}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+for( i=1; i<=3; ++i ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Symbol not defined}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+for( i in {1, 2, 3} ) io.writeln( i )
+io.writeln( i )
+@[test(code_01)]
+@[test(code_01)]
+{{At line}} .* {{Symbol not defined}}
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+m =
+{
+	"AA" => 12,
+	"BB" => 34
+}
+for( x in m ){
+	for( y in m ){  # Must never mess with the outer loop;
+		io.writeln( x, y )
+	}
+}
+@[test(code_01)]
+@[test(code_01)]
+( "AA", 12 ) ( "AA", 12 )
+( "AA", 12 ) ( "BB", 34 )
+( "BB", 34 ) ( "AA", 12 )
+( "BB", 34 ) ( "BB", 34 )
+@[test(code_01)]

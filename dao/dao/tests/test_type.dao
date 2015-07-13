@@ -1,0 +1,76 @@
+
+
+@[test(code_01)]
+var a: dao::int = 1
+var b: dao::string = "x"
+var c: dao::list<int> = {}
+var d: dao::tuple<int,string> = (1,"a")
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+
+
+# Test auto-type casting:
+@[test(code_01)]
+var a : none|int = 123
+var b = a + 100
+@[test(code_01)]
+# no error, no output
+@[test(code_01)]
+@[test(code_01)]
+
+@[test(code_01)]
+var a : none|@T = 123
+var b = a + 100
+@[test(code_01)]
+# no error, no output
+@[test(code_01)]
+@[test(code_01)]
+
+@[test(code_01)]
+x = (none|@V)99
+y = x + x
+@[test(code_01)]
+@[test(code_01)]
+@[test(code_01)]
+
+# Test recursive types:
+@[test(code_01)]
+type Node = tuple<value: int, next: none|Node>
+var node : Node = ( 123, none )
+node.next = node
+io.writeln( node )
+@[test(code_01)]
+@[test(code_01)]
+{{( 123, (...) )}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+type Node = tuple<value: int, next: none|Node>
+var node : Node = ( 123, (Node)( 456, none ) )
+node.next.next = node
+io.writeln( node )
+@[test(code_01)]
+@[test(code_01)]
+{{( 123, ( 456, (...) ) )}}
+@[test(code_01)]
+
+
+
+@[test(code_01)]
+type Test1 = none | tuple<value: int, next: Test1>
+type Test2 = none | tuple<value: float, next: Test2>
+type Test3 = none | tuple<value: string, next: Test3>
+type Test4 = none | tuple<value: string, next: Test4>
+
+type Test5 = none | tuple<value: string, next: Test3>
+type Test6 = none | tuple<value: string, next: Test4>
+
+io.writeln( Test1 ?= Test2, Test1 ?= Test3, Test3 ?= Test4, Test5 ?= Test6 )
+@[test(code_01)]
+@[test(code_01)]
+^ {{false false true true}} $
+@[test(code_01)]

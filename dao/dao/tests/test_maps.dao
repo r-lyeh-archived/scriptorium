@@ -1,0 +1,96 @@
+
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+
+
+
+
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+
+
+
+
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+
+
+
+
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+
+
+
+
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+
+
+
+
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+#@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+class MyKey
+{
+    var value = 123 
+
+    routine ==( other: MyKey ){
+        return value == other.value;
+    }   
+    routine <( other: MyKey ){
+        return value < other.value;
+    }   
+    routine (int)( hashing = false ){
+        return value
+    }   
+    routine (string)(){
+        return "MyKey.{" + (string) value + "}" 
+    }   
+}
+
+var m1 = { MyKey.{5} => 5, MyKey.{2} => 2, MyKey.{3} => 3, MyKey.{4} => 4 }
+var m2 = { MyKey.{5} -> 5, MyKey.{2} -> 2, MyKey.{3} -> 3, MyKey.{4} -> 4 }
+io.writeln( m1 )
+io.writeln( m2.find( MyKey.{0} ) )
+io.writeln( m2.find( MyKey.{2} ) )
+@[test(code_01)]
+@[test(code_01)]
+{ MyKey.{2} => 2, MyKey.{3} => 3, MyKey.{4} => 4, MyKey.{5} => 5 }
+none
+( MyKey.{2}, 2 )
+@[test(code_01)]
+
+
+
+
+@[test(code_01)]
+load UserType
+var m1 = { UserType(3) => 3, UserType(1) => 1, UserType(4) => 4, UserType(2) => 2 }
+var m2 = { UserType(3) -> 3, UserType(1) -> 1, UserType(4) -> 4, UserType(2) -> 2 }
+io.writeln( m1 )
+io.writeln( m2.find( UserType(0) ) )
+io.writeln( m2.find( UserType(2) ) )
+@[test(code_01)]
+@[test(code_01)]
+{ UserType.{1} => 1, UserType.{2} => 2, UserType.{3} => 3, UserType.{4} => 4 }
+none
+( UserType.{2}, 2 )
+@[test(code_01)]

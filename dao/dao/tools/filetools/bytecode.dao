@@ -1,0 +1,1029 @@
+
+# OBSOLETE!!!
+
+enum DaoTypeID
+{
+	DAO_NONE ,
+	DAO_INTEGER ,
+	DAO_FLOAT ,
+	DAO_DOUBLE ,
+	DAO_COMPLEX ,
+	DAO_LONG ,
+	DAO_STRING ,
+	DAO_ENUM ,
+	DAO_ARRAY ,
+	DAO_LIST ,
+	DAO_MAP ,
+	DAO_TUPLE ,
+	DAO_OBJECT ,
+	DAO_CDATA ,
+	DAO_CLASS ,
+	DAO_CTYPE ,
+	DAO_INTERFACE ,
+	DAO_ROUTINE ,
+	DAO_PROCESS ,
+	DAO_NAMESPACE ,
+	DAO_VMSPACE ,
+	DAO_TYPE ,
+	DAO_VARIANT ,
+	DAO_FUTURE ,
+	DAO_MACRO ,
+	DAO_CONSTANT ,
+	DAO_VARIABLE ,
+	DAO_ROUTBODY ,
+	DAO_TYPEKERNEL ,
+	DAO_CODEBLOCK ,
+	DAO_PAIR ,
+	DAO_PAR_NAMED ,
+	DAO_PAR_DEFAULT ,
+	DAO_PAR_VALIST ,
+
+	DAO_VALTYPE ,
+
+	DAO_ANY = (1<<6)|0,
+	DAO_THT = (1<<6)|1,
+	DAO_UDT = (1<<6)|2,
+}
+
+const DAO_NONE        : int = DaoTypeID::DAO_NONE
+const DAO_INTEGER     : int = DaoTypeID::DAO_INTEGER
+const DAO_FLOAT       : int = DaoTypeID::DAO_FLOAT
+const DAO_DOUBLE      : int = DaoTypeID::DAO_DOUBLE
+const DAO_COMPLEX     : int = DaoTypeID::DAO_COMPLEX
+const DAO_LONG        : int = DaoTypeID::DAO_LONG
+const DAO_STRING      : int = DaoTypeID::DAO_STRING
+const DAO_ENUM        : int = DaoTypeID::DAO_ENUM
+const DAO_ARRAY       : int = DaoTypeID::DAO_ARRAY
+const DAO_LIST        : int = DaoTypeID::DAO_LIST
+const DAO_MAP         : int = DaoTypeID::DAO_MAP
+const DAO_TUPLE       : int = DaoTypeID::DAO_TUPLE
+const DAO_OBJECT      : int = DaoTypeID::DAO_OBJECT
+const DAO_CDATA       : int = DaoTypeID::DAO_CDATA
+const DAO_CLASS       : int = DaoTypeID::DAO_CLASS
+const DAO_CTYPE       : int = DaoTypeID::DAO_CTYPE
+const DAO_INTERFACE   : int = DaoTypeID::DAO_INTERFACE
+const DAO_ROUTINE     : int = DaoTypeID::DAO_ROUTINE
+const DAO_PROCESS     : int = DaoTypeID::DAO_PROCESS
+const DAO_NAMESPACE   : int = DaoTypeID::DAO_NAMESPACE
+const DAO_VMSPACE     : int = DaoTypeID::DAO_VMSPACE
+const DAO_TYPE        : int = DaoTypeID::DAO_TYPE
+const DAO_VARIANT     : int = DaoTypeID::DAO_VARIANT
+const DAO_FUTURE      : int = DaoTypeID::DAO_FUTURE
+const DAO_MACRO       : int = DaoTypeID::DAO_MACRO
+const DAO_CONSTANT    : int = DaoTypeID::DAO_CONSTANT
+const DAO_VARIABLE    : int = DaoTypeID::DAO_VARIABLE
+const DAO_ROUTBODY    : int = DaoTypeID::DAO_ROUTBODY
+const DAO_TYPEKERNEL  : int = DaoTypeID::DAO_TYPEKERNEL
+const DAO_CODEBLOCK   : int = DaoTypeID::DAO_CODEBLOCK
+const DAO_PAIR        : int = DaoTypeID::DAO_PAIR
+const DAO_PAR_NAMED   : int = DaoTypeID::DAO_PAR_NAMED
+const DAO_PAR_DEFAULT : int = DaoTypeID::DAO_PAR_DEFAULT
+const DAO_PAR_VALIST  : int = DaoTypeID::DAO_PAR_VALIST
+const DAO_VALTYPE     : int = DaoTypeID::DAO_VALTYPE
+const DAO_ANY         : int = DaoTypeID::DAO_ANY
+const DAO_THT         : int = DaoTypeID::DAO_THT
+const DAO_UDT         : int = DaoTypeID::DAO_UDT
+
+
+type Module = tuple<file:int,loadas:int>
+
+type Declaration = tuple<type:int,subtype:int,dectype:int,refnum:int,host:int,field:int>
+
+type CoreType       = tuple<tid:int,att:int,name:int>
+type EnumType       = tuple<tid:int,att:int,name:int,flag:int,symbols:list<tuple<symbol:int,value:int>>>
+type ContainerType  = tuple<tid:int,att:int,name:int,types:list<int>>
+type VariantType    = tuple<tid:int,att:int,name:int,type:int,types:list<int>>
+type ValueType      = tuple<tid:int,att:int,name:int,value:any>
+type NameParamType  = tuple<tid:int,att:int,name:int,fname:int,ftype:int>
+type TypeHolderType = tuple<tid:int,att:int,name:int>
+type CodeBlockType  = tuple<tid:int,att:int,name:int,type:int,types:list<int>>
+type RoutineType    = tuple<tid:int,att:int,name:int,dec:int,retype:int,cbtype:int,types:list<int>>
+type InterfaceType  = tuple<tid:int,att:int,name:int,dec:int>
+type ClassType      = tuple<tid:int,att:int,name:int,dec:int>
+type InstanceType   = tuple<tid:int,att:int,name:int,dec:int>
+type CtypeType      = tuple<tid:int,att:int,name:int,dec:int,types:list<int>>
+type CdataType      = tuple<tid:int,att:int,name:int,dec:int,types:list<int>>
+
+type Type = tuple<tid:int,att:int,name:int,...>
+
+
+
+type NoneValue    = tuple<tid:int>
+type IntValue     = tuple<tid:int,value:int>
+type FloatValue   = tuple<tid:int,value1:int,value2:int>
+type DoubleValue  = tuple<tid:int,value1:int,value2:int>
+type ComplexValue = tuple<tid:int,real1:int,real2:int,imag1:int,imag2:int>
+type LongValue    = tuple<tid:int,sign:int,digits:list<int>>
+type StringValue  = tuple<tid:int,info:int,chars:list<int>>
+type EnumValue    = tuple<tid:int,etype:int,value:int>
+type ArrayValue   = tuple<tid:int,ntype:int,dims:list<int>,elems:list<int>>
+type ListValue    = tuple<tid:int,abtype:int,items:list<int>>
+type MapValue     = tuple<tid:int,abtype:int,hashing:int,items:list<int>>
+type TupleValue   = tuple<tid:int,abtype:int,items:list<int>>
+
+type CompleteInstanceValue = tuple<tid:int,flag:int,dec:int,values:list<int>>
+type PartialInstanceValue  = tuple<tid:int,flag:int,dec:int,offset:int,host:int>
+type DefaultInstanceValue  = tuple<tid:int,flag:int,dec:int>
+
+type RoutineValue   = tuple<tid:int,dec:int,routype:int,hostype:int,attribs:int>
+
+type ClassValue     = tuple<tid:int,dec:int>
+type CtypeValue     = tuple<tid:int,dec:int>
+type InterfaceValue = tuple<tid:int,dec:int>
+type NamespaceValue = tuple<tid:int,dec:int>
+
+type FutureValue    = tuple<tid:int,value:int>
+type TypeValue      = tuple<tid:int,type:int>
+type NamedValue     = tuple<tid:int,name:int,type:int,value:int>
+
+type Value          = tuple<tid:int,...>
+
+
+
+type Constant = tuple<name:int,index:int,perm:int,value:int>
+type Variable = tuple<name:int,index:int,perm:int,type:int,value:int>
+
+
+type TypeDecl = tuple<name:int,type:int>
+
+
+type Interface = tuple<dec:int,bases:list<int>,methods:list<int>>
+
+
+type Class = 
+tuple<dec:int,defCstr:int,att:int,bases:list<int>,
+	constants:list<Constant>,svariables:list<Variable>,
+	ivariables:list<Variable>,types:list<TypeDecl>>
+
+
+type Instruction = tuple<code:int,a:int,b:int,c:int>
+
+type Routine = 
+tuple<dec:int,name:int,routype:int,hostype:int,uprout:int,attribs:int,line:int,
+	constants:list<int>,varCount:int,varTypes:list<tuple<index:int,type:int>>,
+	lineCounts:list<tuple<line:int,count:int>>,codes:list<Instruction>>
+
+
+
+class DaoByteCode
+{
+	var strip = 0;
+
+	var data = "";
+	var offset = 0;
+	var intSize = 4;
+
+	var header = "";
+	var source = "";
+
+	var identifiers : list<string> = {};
+
+	var modules : list<Module> = {};
+	var declarations : list<Declaration> = {};
+
+	var types  : list<Type> = {};
+	var values : list<Value> = {};
+
+	var constants : list<Constant> = {};
+	var variables : list<Variable> = {};
+	var typeDecls : list<TypeDecl> = {};
+
+	var interfaces : list<Interface> = {};
+	var classes    : list<Class> = {};
+	var routines   : list<Routine> = {};
+
+	routine DecodeUInt8()=>int;
+	routine DecodeUInt16()=>int;
+	routine DecodeUInt32()=>int;
+	routine DecodeDaoInt()=>int;
+	routine DecodeShortString()=>string;
+
+	routine DecodeIdentifiers();
+	routine DecodeModules();
+	routine DecodeDeclarations();
+	routine DecodeTypes();
+	routine DecodeValues();
+	routine DecodeConstants();
+	routine DecodeVariables();
+	routine DecodeGlobalTypes();
+	routine DecodeInterfaces();
+	routine DecodeClasses();
+	routine DecodeRoutines();
+
+	routine DecodeConstant()=>Constant;
+	routine DecodeVariable()=>Variable;
+	routine DecodeValue()=>Value;
+
+	routine Decode( bytecodes : string );
+
+	routine EncodeUInt8( value : int )=>string
+	routine EncodeUInt16( value : int )=>string
+	routine EncodeUInt32( value : int )=>string
+	routine EncodeDaoInt( value : int )=>string
+
+	routine EncodeModule( tup : Module )=>string
+	routine EncodeDeclaration( tup : Declaration )=>string
+	routine EncodeType( tup : Type )=>string
+	routine EncodeValue( tup : Value )=>string
+	routine EncodeConstant( tup : Constant )=>string
+	routine EncodeVariable( tup : Variable )=>string
+	routine EncodeInterface( tup : Interface )=>string
+	routine EncodeClass( tup : Class )=>string
+	routine EncodeInstruction( tup : Instruction )=>string
+	routine EncodeRoutine( tup : Routine )=>string
+	routine Encode()=>string;
+
+	routine ErrorFormat(){ std::error( 'Invalid bytecode format' ) }
+}
+
+routine DaoByteCode::DecodeUInt8()=>int
+{
+	i = offset;
+	offset += 1;
+	if( offset > data.size() ) ErrorFormat();
+	return data[i];
+}
+routine DaoByteCode::DecodeUInt16()=>int
+{
+	i = offset;
+	offset += 2;
+	if( offset > data.size() ) ErrorFormat();
+	return (data[i]<<8) + data[i+1];
+}
+routine DaoByteCode::DecodeUInt32()=>int
+{
+	i = offset;
+	offset += 4;
+	if( offset > data.size() ) ErrorFormat();
+	return (data[i]<<24) + (data[i+1]<<16) + (data[i+2]<<8) + data[i+3];
+}
+routine DaoByteCode::DecodeDaoInt()=>int
+{
+	routine ErrorTooBigInt(){ std::error( 'Too big integer' ) }
+
+	sizeofInt = % 0
+	if( offset + intSize > data.size() ) ErrorFormat()
+	B1 = data[offset+0];
+	B2 = data[offset+1];
+	B3 = data[offset+2];
+	B4 = data[offset+3];
+	if( intSize > sizeofInt ){
+		B5 = data[offset+4];
+		B6 = data[offset+5];
+		B7 = data[offset+6];
+		B8 = data[offset+7];
+		offset += intSize;
+		if( (B1 == 0x7F || B1 == 0xFF) && B2 == 0xFF && B3 == 0xFF && B4 == 0xFF ){
+			if( B5 & 0x80 ) ErrorTooBigInt();
+			if( B1 == 0xFF ) B5 |= 0x80;
+		}else if( B1 || B2 || B3 || B4 ){
+			ErrorTooBigInt()
+		}
+		return (B5<<24)|(B6<<16)|(B7<<8)|B8;
+	}else if( intSize < sizeofInt ){
+		offset += intSize;
+		if( B1 & 0x80 ){
+			leading = (0xFF<<24)|(0xFF<<16)|(0xFF<<8)|0xFF;
+			return (leading<<32)|(0xFF<<24)|((B1&0x7F)<<24)|(B2<<16)|(B3<<8)|B4;
+		}
+		return (B1<<24)|(B2<<16)|(B3<<8)|B4;
+	}
+
+	value = 0;
+	for( i = 1 : intSize ){
+		value |= data[offset+i-1] << (8*(intSize-i)); # FIXME: precedence a << b*c;
+		#io.writef( '%15i %6i %6i\n', value, data[offset+i-1], 8*(intSize-i) );
+	}
+	offset += intSize;
+	return value;
+}
+routine DaoByteCode::DecodeShortString()=>string
+{
+	len = DecodeUInt16();
+	i = offset;
+	offset += len;
+	return '' + data[i:i+len-1];
+}
+routine DaoByteCode::DecodeIdentifiers()
+{
+	count = DecodeUInt32();
+	for( i = 1 : count ) identifiers.append( DecodeShortString() )
+}
+routine DaoByteCode::DecodeModules()
+{
+	count = DecodeUInt32();
+	for( i = 1 : count ) modules.append( Module.{ DecodeUInt32(), DecodeUInt32() } );
+}
+routine DaoByteCode::DecodeDeclarations()
+{
+	count = DecodeUInt32();
+	for( i = 1 : count ){
+		otype = DecodeUInt8();
+		subtype = DecodeUInt8();
+		dectype = DecodeUInt8();
+		name = DecodeUInt32();
+		host = DecodeUInt32();
+		field = DecodeUInt32();
+		declarations.append( Declaration.{ otype, subtype, dectype, name, host, field } );
+	}
+}
+routine DaoByteCode::DecodeValue()=>Value
+{
+	tid = DecodeUInt8();
+	io.writeln( 'value tid:', tid, offset )
+	value = Value.{ tid };
+	switch( tid ){
+	case DAO_NONE :
+	case DAO_INTEGER :
+		value = IntValue.{ tid, DecodeDaoInt() }
+	case DAO_FLOAT ,
+	case DAO_DOUBLE :
+		value = FloatValue.{ tid, DecodeUInt32(), DecodeUInt32() }
+	case DAO_COMPLEX :
+		i1 = DecodeUInt32();
+		i2 = DecodeUInt32();
+		i3 = DecodeUInt32();
+		i4 = DecodeUInt32();
+		value = ComplexValue.{ tid, i1, i2, i3, i4 }
+	case DAO_LONG :
+		sign = DecodeUInt8();
+		count = DecodeDaoInt();
+		value2 = LongValue.{ tid, count, {} };
+		value = value2;
+		digits = value2.digits;
+		for( i = 1 : count ) digits.append( DecodeUInt8() );
+	case DAO_STRING :
+		flag = DecodeUInt8();
+		charsize = flag & 0xF;
+		count = DecodeDaoInt();
+		value3 = StringValue.{ tid, flag, {} };
+		value = value3;
+		chars = value3.chars;
+		switch( charsize ){
+		case 1 : for( i = 1 : count ) chars.append( DecodeUInt8() );
+		case 2 : for( i = 1 : count ) chars.append( DecodeUInt16() );
+		case 4 : for( i = 1 : count ) chars.append( DecodeUInt32() );
+		}
+	case DAO_ENUM :
+		value = EnumValue.{ tid, DecodeUInt32(), DecodeUInt32() }
+	case DAO_ARRAY :
+		ntype = DecodeUInt8()
+		size = DecodeDaoInt()
+		ndim = DecodeUInt16()
+		value2 = ArrayValue.{ tid, ntype, {}, {} }
+		value = value
+		dims = value2.dims
+		elems = value2.elems
+		switch( ntype ){
+		case DAO_FLOAT   ,
+		case DAO_DOUBLE  : size *= 2;
+		case DAO_COMPLEX : size *= 4;
+		}
+		for( i = 1 : ndim ) dims.append( DecodeDaoInt() );
+		for( i = 1 : size ) elems.append( DecodeUInt32() );
+	case DAO_LIST :
+		abtype = DecodeUInt32()
+		size = DecodeDaoInt()
+		value2 = ListValue.{ tid, abtype, {} }
+		value = value2
+		items = value2.items
+		for( i = 1 : size ) items.append( DecodeUInt32() );
+	case DAO_TUPLE :
+		abtype = DecodeUInt32()
+		size = DecodeUInt32()
+		value2 = ListValue.{ tid, abtype, {} }
+		value = value2
+		items = value2.items
+		for( i = 1 : size ) items.append( DecodeUInt32() );
+	case DAO_MAP :
+		abtype = DecodeUInt32()
+		hashing = DecodeUInt32()
+		size = DecodeDaoInt()
+		value2 = MapValue.{ tid, abtype, hashing, {} }
+		value = value2
+		items = value2.items
+		for( i = 1 : 2*size ) items.append( DecodeUInt32() );
+	case DAO_TYPE :
+		abtype = DecodeUInt32()
+		value = TypeValue.{ tid, abtype }
+	case DAO_OBJECT :
+		flag = DecodeUInt8()
+		dec = DecodeUInt32()
+		if( flag == 0x0 ){
+			num = DecodeUInt16()
+			value2 = CompleteInstanceValue.{ tid, flag, dec, {} }
+			value = value2
+			vals = value2.values
+			for( i = 1 : num ) vals.append( DecodeUInt32() )
+		}else if( flag == 0x1 ){
+			offset = DecodeUInt16()
+			host = DecodeUInt32()
+			value = PartialInstanceValue.{ tid, flag, dec, offset, host }
+		}else{
+			value = DefaultInstanceValue.{ tid, flag, dec }
+		}
+	case DAO_CLASS ,
+	case DAO_CTYPE ,
+	case DAO_INTERFACE ,
+	case DAO_NAMESPACE :
+		dec = DecodeUInt32()
+		value = ClassValue.{ tid, dec }
+	case DAO_CDATA :
+	case DAO_ROUTINE :
+		dec = DecodeUInt32()
+		routype = DecodeUInt32()
+		hostype = DecodeUInt32()
+		flag = DecodeUInt8()
+		value = RoutineValue.{ tid, dec, routype, hostype, flag }
+	case DAO_FUTURE :
+		id = DecodeUInt32()
+		value = FutureValue.{ tid, id }
+	case DAO_PAR_NAMED :
+		name = DecodeUInt32();
+		tp = DecodeUInt32();
+		val = DecodeUInt32()
+		value = NamedValue.{ tid, name, tp, val }
+	default :
+		io.writeln( 'undecode value:', tid )
+	}
+	return value;
+}
+routine DaoByteCode::DecodeTypes()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeTypes()', count );
+	for( i = 1 : count ){
+		tid = DecodeUInt8();
+		att = DecodeUInt8();
+		name = DecodeUInt32();
+		#io.writef( '%5i %5i %5i   %3i   %s\n', i, tid, name, types.size(), identifiers[name-1] )
+		switch( tid ){
+		case DAO_NONE ,
+		case DAO_INTEGER ,
+		case DAO_FLOAT ,
+		case DAO_DOUBLE ,
+		case DAO_COMPLEX ,
+		case DAO_LONG ,
+		case DAO_STRING :
+			types.append( CoreType.{ tid, att, name } );
+		case DAO_ENUM :
+			subtype = DecodeUInt8();
+			symcount = DecodeUInt16();
+			enumType = EnumType.{ tid, att, name, subtype, {} };
+			symbols = enumType.symbols;
+			for( j = 1 : symcount ) symbols.append( (DecodeUInt32(), DecodeUInt32()) );
+			types.append( enumType );
+		case DAO_ARRAY ,
+		case DAO_LIST ,
+		case DAO_MAP ,
+		case DAO_TUPLE ,
+		case DAO_TYPE ,
+		case DAO_FUTURE :
+			typeCount = DecodeUInt16();
+			contype = ContainerType.{ tid, att, name, {} };
+			itypes = contype.types;
+			for( j = 1 : typeCount ) itypes.append( DecodeUInt32() );
+			types.append( contype )
+		case DAO_OBJECT ,
+		case DAO_CLASS ,
+		case DAO_INTERFACE :
+			dec = DecodeUInt32();
+			types.append( InstanceType.{ tid, att, name, dec } );
+		case DAO_CDATA ,
+		case DAO_CTYPE :
+			dec = DecodeUInt32();
+			typeCount = DecodeUInt16();
+			tup = CdataType.{ tid, att, name, dec, {} };
+			itypes = tup.types;
+			for( j = 1 : typeCount ) itypes.append( DecodeUInt32() );
+			types.append( tup );
+		case DAO_ROUTINE :
+			dec = DecodeUInt32();
+			retype = DecodeUInt32();
+			cbtype = DecodeUInt32();
+			typeCount = DecodeUInt16();
+			tup = RoutineType.{ tid, att, name, dec, retype, cbtype, {} };
+			itypes = tup.types;
+			for( j = 1 : typeCount ) itypes.append( DecodeUInt32() );
+			types.append( tup );
+		case DAO_VARIANT ,
+		case DAO_CODEBLOCK :
+			holder = DecodeUInt32();
+			typeCount = DecodeUInt16();
+			contype = VariantType.{ tid, att, name, holder, {} };
+			itypes = contype.types;
+			for( j = 1 : typeCount ) itypes.append( DecodeUInt32() );
+			types.append( contype );
+		case DAO_PAR_NAMED ,
+		case DAO_PAR_DEFAULT :
+			fname = DecodeUInt32();
+			ftype = DecodeUInt32();
+			types.append( NameParamType.{ tid, att, name, fname, ftype } );
+		case DAO_VALTYPE :
+			value = DecodeValue();
+			types.append( ValueType.{ tid, att, name, value } );
+		default :
+			types.append( CoreType.{ tid, att, name } );
+		}
+	}
+}
+routine DaoByteCode::DecodeValues()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeValues()', count )
+	for( i = 1 : count ) values.append( DecodeValue() )
+}
+routine DaoByteCode::DecodeConstant()=>Constant
+{
+	name = DecodeUInt32()
+	index = DecodeUInt16()
+	perm = DecodeUInt8()
+	value = DecodeUInt32()
+	return Constant.{ name, index, perm, value }
+}
+routine DaoByteCode::DecodeConstants()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeConstants()', count );
+	for( i = 1 : count ) constants.append( DecodeConstant() )
+}
+routine DaoByteCode::DecodeVariable()=>Variable
+{
+	name = DecodeUInt32()
+	index = DecodeUInt16()
+	perm = DecodeUInt8()
+	typeid = DecodeUInt32()
+	value = DecodeUInt32()
+	return Variable.{ name, index, perm, typeid, value }
+}
+routine DaoByteCode::DecodeVariables()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeVariables()', count );
+	for( i = 1 : count ) variables.append( DecodeVariable() )
+}
+routine DaoByteCode::DecodeGlobalTypes()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeGlobalTypes()', count );
+	for( i = 1 : count ){
+		name = DecodeUInt32()
+		typeid = DecodeUInt32()
+		typeDecls.append( TypeDecl.{ name, typeid } )
+	}
+}
+routine DaoByteCode::DecodeInterfaces()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeInterfaces()', count );
+	for( i = 1 : count ){
+		dec = DecodeUInt32()
+		inter = Interface.{ dec, {}, {} }
+		bases = inter.bases
+		meths = inter.methods
+		count = DecodeUInt16()
+		for( j = 1 : count ) bases.append( DecodeUInt32() )
+		count = DecodeUInt16()
+		for( j = 1 : count ) meths.append( DecodeUInt32() )
+		interfaces.append( inter )
+	}
+}
+routine DaoByteCode::DecodeClasses()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeClasses()', count );
+	for( i = 1 : count ){
+		classID = DecodeUInt32()
+		cstrID = DecodeUInt32()
+		attribs = DecodeUInt16()
+		klass = Class.{ classID, cstrID, attribs, {}, {}, {}, {}, {} }
+		bases = klass.bases
+		consts = klass.constants
+		svars = klass.svariables
+		ivars = klass.ivariables
+		abtypes = klass.types
+		for( j = 1 : DecodeUInt16() ) bases.append( DecodeUInt32() )
+		for( j = 1 : DecodeUInt16() ) consts.append( DecodeConstant() )
+		for( j = 1 : DecodeUInt16() ) svars.append( DecodeVariable() )
+		for( j = 1 : DecodeUInt16() ) ivars.append( DecodeVariable() )
+		for( j = 1 : DecodeUInt16() ) abtypes.append( TypeDecl.{ DecodeUInt32(), DecodeUInt32() } )
+		classes.append( klass )
+	}
+}
+routine DaoByteCode::DecodeRoutines()
+{
+	count = DecodeUInt32();
+	io.writeln( 'DecodeRoutines()', count );
+	for( i = 1 : count ){
+		routid = DecodeUInt32();
+		nameid = DecodeUInt32();
+		typeid = DecodeUInt32();
+		hostid = DecodeUInt32();
+		uproutid = DecodeUInt32();
+		attribs = DecodeUInt16();
+		line = DecodeUInt16();
+
+		rout = Routine.{ routid, nameid, typeid, hostid, uproutid, attribs, line, {},0,{},{},{} }
+		consts = rout.constants
+		varTypes = rout.varTypes
+		lineCounts = rout.lineCounts
+		codes = rout.codes
+		for( j = 1 : DecodeUInt16() ) consts.append( DecodeUInt32() )
+		rout.varCount = DecodeUInt16()
+		for( j = 1 : DecodeUInt16() ){
+			index = DecodeUInt16()
+			typeid = DecodeUInt32()
+			varTypes.append( (index, typeid) )
+		}
+		for( j = 1 : DecodeUInt16() ){
+			line = DecodeUInt16()
+			count2 = DecodeUInt8()
+			lineCounts.append( (line, count2) )
+		}
+		for( j = 1 : DecodeUInt16() ){
+			code = DecodeUInt16()
+			a = DecodeUInt16()
+			b = DecodeUInt16()
+			c = DecodeUInt16()
+			codes.append( Instruction.{ code, a, b, c } )
+		}
+		routines.append( rout )
+	}
+}
+routine DaoByteCode::Decode( bytecodes : string )
+{
+# "bytecodes" could be MBS, with character range [-127,127];
+# Map it to WCS, so that the character range will become [0,255];
+	#data = bytecodes.collect{ (X+256)%256 }
+
+	if( data.size() < 16 ) std::error( 'Invalid bytecode file' );
+	if( data[:3] != "\33Dao" ) std::error( 'Not a Dao bytecode file' );
+
+	header = data[:15];
+
+	intSize = data[9];
+	offset = 16;
+
+	source = DecodeShortString();
+	DecodeIdentifiers();
+	DecodeModules();
+	DecodeDeclarations();
+	DecodeTypes();
+	DecodeValues();
+	DecodeConstants();
+	DecodeVariables();
+	DecodeGlobalTypes();
+	DecodeInterfaces();
+	DecodeClasses();
+	DecodeRoutines();
+}
+
+
+routine DaoByteCode::EncodeUInt8( value : int )=>string
+{
+	encode = "0"
+	encode[0] = value & 0xFF;
+	return encode;
+}
+routine DaoByteCode::EncodeUInt16( value : int )=>string
+{
+	encode = "00"
+	encode[0] = (value >> 8) & 0xFF;
+	encode[1] = value & 0xFF;
+	return encode;
+}
+routine DaoByteCode::EncodeUInt32( value : int )=>string
+{
+	encode = "0000"
+	encode[0] = (value >> 24) & 0xFF;
+	encode[1] = (value >> 16) & 0xFF;
+	encode[2] = (value >>  8) & 0xFF;
+	encode[3] = value & 0xFF;
+	return encode;
+}
+routine DaoByteCode::EncodeDaoInt( value : int )=>string
+{
+	encode = ""
+	for( i = 1 : intSize ) encode += string( 1, (value >> (8*(intSize-i))) & 0xFF );
+	#FIXME for( i = 1 : intSize ) encode += (value >> 8*(intSize-i)) & 0xFF;
+	return encode;
+}
+routine DaoByteCode::EncodeDeclaration( tup : Declaration )=>string
+{
+	encode = EncodeUInt8( tup.type )
+	encode += EncodeUInt8( tup.subtype )
+	encode += EncodeUInt8( tup.dectype )
+	encode += EncodeUInt32( tup.refnum )
+	encode += EncodeUInt32( tup.host )
+	encode += EncodeUInt32( tup.field )
+	return encode;
+}
+routine DaoByteCode::EncodeType( tup : Type )=>string
+{
+	encode = EncodeUInt8( tup.tid )
+	encode += EncodeUInt8( tup.att )
+	encode += EncodeUInt32( tup.name )
+	switch( tup.tid ){
+	case DAO_NONE ,
+	case DAO_INTEGER ,
+	case DAO_FLOAT ,
+	case DAO_DOUBLE ,
+	case DAO_COMPLEX ,
+	case DAO_LONG ,
+	case DAO_STRING :
+		tt = (CoreType) tup;
+	case DAO_ENUM :
+		tt = (EnumType) tup;
+		encode += EncodeUInt8( tt.flag )
+		encode += EncodeUInt16( tt.symbols.size() )
+		for( sym in tt.symbols ){
+			encode += EncodeUInt32( sym.symbol )
+			encode += EncodeUInt32( sym.value )
+		}
+	case DAO_ARRAY ,
+	case DAO_LIST ,
+	case DAO_MAP ,
+	case DAO_TUPLE ,
+	case DAO_TYPE ,
+	case DAO_FUTURE :
+		tt = (ContainerType) tup;
+		encode += EncodeUInt16( tt.types.size() )
+		for( tp in tt.types ) encode += EncodeUInt32( tp )
+	case DAO_OBJECT ,
+	case DAO_CLASS ,
+	case DAO_INTERFACE :
+		tt = (InstanceType) tup;
+		encode += EncodeUInt32( tt.dec )
+	case DAO_CDATA ,
+	case DAO_CTYPE :
+		tt = (CdataType) tup;
+		encode += EncodeUInt32( tt.dec )
+		encode += EncodeUInt16( tt.types.size() )
+		for( tp in tt.types ) encode += EncodeUInt32( tp )
+	case DAO_ROUTINE :
+		tt = (RoutineType) tup;
+		encode += EncodeUInt32( tt.dec )
+		encode += EncodeUInt32( tt.retype )
+		encode += EncodeUInt32( tt.cbtype )
+		encode += EncodeUInt16( tt.types.size() )
+		for( tp in tt.types ) encode += EncodeUInt32( tp )
+	case DAO_VARIANT ,
+	case DAO_CODEBLOCK :
+		tt = (VariantType) tup;
+		encode += EncodeUInt32( tt.type )
+		encode += EncodeUInt16( tt.types.size() )
+		for( tp in tt.types ) encode += EncodeUInt32( tp )
+	case DAO_PAR_NAMED ,
+	case DAO_PAR_DEFAULT :
+		tt = (NameParamType) tup;
+		encode += EncodeUInt32( tt.fname );
+		encode += EncodeUInt32( tt.ftype );
+	case DAO_VALTYPE :
+		tt = (ValueType) tup;
+		encode += EncodeValue( tt.value );
+	default :
+	}
+	return encode;
+}
+routine DaoByteCode::EncodeValue( tup : Value )=>string
+{
+	encode = EncodeUInt8( tup.tid )
+	switch( tup.tid ){
+	case DAO_NONE :
+	case DAO_INTEGER :
+		value = (IntValue) tup;
+		encode += EncodeDaoInt( value.value )
+	case DAO_FLOAT ,
+	case DAO_DOUBLE :
+		value = (FloatValue) tup;
+		encode += EncodeUInt32( value.value1 )
+		encode += EncodeUInt32( value.value2 )
+	case DAO_COMPLEX :
+		value = (ComplexValue) tup;
+		encode += EncodeUInt32( value.real1 )
+		encode += EncodeUInt32( value.real2 )
+		encode += EncodeUInt32( value.imag1 )
+		encode += EncodeUInt32( value.imag2 )
+	case DAO_LONG :
+		value = (LongValue) tup;
+		encode += EncodeUInt8( value.sign )
+		encode += EncodeDaoInt( value.digits.size() )
+		for( d in value.digits ) encode += EncodeUInt8( d )
+	case DAO_STRING :
+		value = (StringValue) tup;
+		encode += EncodeUInt8( value.info )
+		encode += EncodeDaoInt( value.chars.size() )
+		switch( value.info & 0xF ){
+		case 1 : for( ch in value.chars ) encode += EncodeUInt8( ch )
+		case 2 : for( ch in value.chars ) encode += EncodeUInt16( ch )
+		case 4 : for( ch in value.chars ) encode += EncodeUInt32( ch )
+		}
+	case DAO_ENUM :
+		value = (EnumValue) tup;
+		encode += EncodeUInt32( value.etype )
+		encode += EncodeUInt32( value.value )
+	case DAO_ARRAY :
+		value = (ArrayValue) tup;
+		size = value.elems.size()
+		switch( value.ntype ){
+		case DAO_FLOAT   ,
+		case DAO_DOUBLE  : size /= 2;
+		case DAO_COMPLEX : size /= 4;
+		}
+		encode += EncodeUInt8( value.ntype )
+		encode += EncodeDaoInt( size )
+		encode += EncodeUInt16( value.dims.size() )
+		for( dim in value.dims ) encode += EncodeDaoInt( dim )
+		for( elem in value.elems ) encode += EncodeUInt32( elem )
+	case DAO_LIST :
+		value = (ListValue) tup;
+		encode += EncodeUInt32( value.abtype )
+		encode += EncodeDaoInt( value.items.size() )
+		for( item in value.items ) encode += EncodeUInt32( item )
+	case DAO_TUPLE :
+		value = (TupleValue) tup;
+		encode += EncodeUInt32( value.abtype )
+		encode += EncodeUInt32( value.items.size() )
+		for( item in value.items ) encode += EncodeUInt32( item )
+	case DAO_MAP :
+		value = (MapValue) tup;
+		encode += EncodeUInt32( value.abtype )
+		encode += EncodeUInt32( value.hashing )
+		encode += EncodeDaoInt( value.items.size() / 2 )
+		for( item in value.items ) encode += EncodeUInt32( item )
+	case DAO_TYPE :
+		value = (TypeValue) tup
+		encode += EncodeUInt32( value.type )
+	case DAO_OBJECT :
+		value = (DefaultInstanceValue) tup
+		encode += EncodeUInt8( value.flag )
+		encode += EncodeUInt32( value.dec )
+		if( value.flag == 0x0 ){
+			var value = (CompleteInstanceValue) tup
+			encode += EncodeUInt16( value.values.size() )
+			for( val in value.values ) encode += EncodeUInt32( val )
+		}else if( value.flag == 0x1 ){
+			var value = (PartialInstanceValue) tup
+			encode += EncodeUInt16( value.offset )
+			encode += EncodeUInt32( value.host )
+		}
+	case DAO_CLASS ,
+	case DAO_CTYPE ,
+	case DAO_INTERFACE ,
+	case DAO_NAMESPACE :
+		value = (ClassValue) tup
+		encode += EncodeUInt32( value.dec )
+#	case DAO_CDATA :
+	case DAO_ROUTINE :
+		value = (RoutineValue) tup
+		encode += EncodeUInt32( value.dec )
+		encode += EncodeUInt32( value.routype )
+		encode += EncodeUInt32( value.hostype )
+		encode += EncodeUInt8( value.attribs )
+	case DAO_FUTURE :
+		value = (FutureValue) tup
+		encode += EncodeUInt32( value.value )
+	case DAO_PAR_NAMED :
+		value = (NamedValue) tup
+		encode += EncodeUInt32( value.name )
+		encode += EncodeUInt32( value.type )
+		encode += EncodeUInt32( value.value )
+	default :
+		io.writeln( 'unencode value', tup )
+	}
+	return encode;
+}
+routine DaoByteCode::EncodeConstant( tup : Constant )=>string
+{
+	encode = EncodeUInt32( tup.name )
+	encode += EncodeUInt16( tup.index )
+	encode += EncodeUInt8( tup.perm )
+	encode += EncodeUInt32( tup.value )
+	return encode;
+}
+routine DaoByteCode::EncodeVariable( tup : Variable )=>string
+{
+	encode = EncodeUInt32( tup.name )
+	encode += EncodeUInt16( tup.index )
+	encode += EncodeUInt8( tup.perm )
+	encode += EncodeUInt32( tup.type )
+	encode += EncodeUInt32( tup.value )
+	return encode;
+}
+
+routine DaoByteCode::EncodeInterface( tup : Interface )=>string
+{
+	encode = EncodeUInt32( tup.dec )
+	encode += EncodeUInt16( tup.bases.size() )
+	for( base in tup.bases ) encode += EncodeUInt32( base )
+	encode += EncodeUInt16( tup.methods.size() )
+	for( method in tup.methods )encode += EncodeUInt32( method )
+	return encode;
+}
+routine DaoByteCode::EncodeClass( tup : Class )=>string
+{
+	encode = EncodeUInt32( tup.dec )
+	encode += EncodeUInt32( tup.defCstr )
+	encode += EncodeUInt16( tup.att )
+	encode += EncodeUInt16( tup.bases.size() )
+	for( it in tup.bases ) encode += EncodeUInt32( it )
+	encode += EncodeUInt16( tup.constants.size() )
+	for( it in tup.constants ) encode += EncodeConstant( it )
+	encode += EncodeUInt16( tup.svariables.size() )
+	for( it in tup.svariables ) encode += EncodeVariable( it )
+	encode += EncodeUInt16( tup.ivariables.size() )
+	for( it in tup.ivariables ) encode += EncodeVariable( it )
+	encode += EncodeUInt16( tup.types.size() )
+	for( it in tup.types ) encode += EncodeUInt32( it.name ) + EncodeUInt32( it.type )
+	return encode;
+}
+routine DaoByteCode::EncodeInstruction( tup : Instruction )=>string
+{
+	encode = EncodeUInt16( tup.code )
+	encode += EncodeUInt16( tup.a )
+	encode += EncodeUInt16( tup.b )
+	encode += EncodeUInt16( tup.c )
+	return encode;
+}
+routine DaoByteCode::EncodeRoutine( tup : Routine )=>string
+{
+	encode = EncodeUInt32( tup.dec )
+	encode += EncodeUInt32( tup.name )
+	encode += EncodeUInt32( tup.routype )
+	encode += EncodeUInt32( tup.hostype )
+	encode += EncodeUInt32( tup.uprout )
+	encode += EncodeUInt16( tup.attribs )
+	encode += EncodeUInt16( tup.line )
+	encode += EncodeUInt16( tup.constants.size() )
+	for( it in tup.constants ) encode += EncodeUInt32( it )
+	encode += EncodeUInt16( tup.varCount )
+	encode += EncodeUInt16( tup.varTypes.size() )
+	for( it in tup.varTypes ) encode += EncodeUInt16( it.index ) + EncodeUInt32( it.type )
+	if( strip ){
+		encode += EncodeUInt16( 0 )
+	}else{
+		encode += EncodeUInt16( tup.lineCounts.size() )
+		for( it in tup.lineCounts ) encode += EncodeUInt16( it.line ) + EncodeUInt8( it.count )
+	}
+	encode += EncodeUInt16( tup.codes.size() )
+	for( it in tup.codes ) encode += EncodeInstruction( it )
+	return encode;
+}
+routine DaoByteCode::Encode()=>string
+{
+	encode = header + EncodeUInt16( source.size() ) + source
+
+	encode += EncodeUInt32( identifiers.size() )
+	for( id in identifiers ) encode += EncodeUInt16( id.size() ) + id
+
+	encode += EncodeUInt32( modules.size() )
+	for( mod in modules ) encode += EncodeUInt32( mod.file ) + EncodeUInt32( mod.loadas )
+
+	encode += EncodeUInt32( declarations.size() )
+	for( dec in declarations ) encode += EncodeDeclaration( dec );
+
+	encode += EncodeUInt32( types.size() )
+	for( tp in types ) encode += EncodeType( tp )
+
+	encode += EncodeUInt32( values.size() )
+	for( val in values ) encode += EncodeValue( val )
+
+	encode += EncodeUInt32( constants.size() )
+	for( val in constants ) encode += EncodeConstant( val )
+
+	encode += EncodeUInt32( variables.size() )
+	for( val in variables ) encode += EncodeVariable( val )
+
+	encode += EncodeUInt32( typeDecls.size() )
+	for( it in typeDecls ) encode += EncodeUInt32( it.name ) + EncodeUInt32( it.type )
+
+	encode += EncodeUInt32( interfaces.size() )
+	for( val in interfaces ) encode += EncodeInterface( val )
+
+	encode += EncodeUInt32( classes.size() )
+	for( val in classes ) encode += EncodeClass( val )
+
+	encode += EncodeUInt32( routines.size() )
+	for( val in routines ) encode += EncodeRoutine( val )
+
+	return encode;
+}
+
+
+routine main( command : string, input : string, output = '' )
+{
+#	if( output == '' ) output = input + '.out';
+	coder = DaoByteCode();
+	coder.Decode( io.read( input ) );
+
+	if( command == 'strip' ) coder.strip = 1;
+
+	if( %output ){
+		encode = coder.Encode();
+		#encode = encode.map::{ X-128 }
+		s = io.open( output, 'w+' )
+		for( ch in encode ) s.writef( '%c', ch < 128 ? ch : 127 - ch )
+		#s.write( encode )
+		s.close()
+	}
+}

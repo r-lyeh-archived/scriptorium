@@ -1,0 +1,52 @@
+
+routine QuickSort( data: array<int>, first: int, last: int )
+{
+	lower = first + 1;
+	upper = last;
+
+	#io.writeln( first, last );
+
+	if( first >= last ) return;
+
+	val = data[first];
+	data[first] = data[ (first+last)/2 ];
+	data[ (first+last)/2 ] = val;
+	pivot = data[ first ];
+
+	while( lower <= upper ){
+		while( lower < last && data[lower] < pivot ) lower += 1;
+		while( upper > first && pivot < data[upper] ) upper -= 1;
+		if( lower < upper ){
+			val = data[lower];
+			data[lower] = data[upper];
+			data[upper] = val;
+			upper -= 1;
+		}
+		lower += 1;
+	}
+	val = data[first];
+	data[first] = data[upper];
+	data[upper] = val;
+
+	#{
+	if( first+1 < upper ) QuickSort( data, first, upper-1 );
+	if( upper+1 < last ) QuickSort( data, upper+1, last );
+	return;
+	#}
+
+	if( first+10000 < upper and upper+10000 < last ){
+		fv1 = QuickSort( data, first, upper-1 ) !!
+		QuickSort( data, upper+1, last )
+		fv1.wait();
+	}else{
+		if( first+1 < upper ) QuickSort( data, first, upper-1 );
+		if( upper+1 < last ) QuickSort( data, upper+1, last );
+	}
+}
+
+a = [ 1, 3, 5, 4, 2, 6, 9, 7 ]
+a = array<int>( 2000000 ){ rand( 10000000 ) }
+
+QuickSort( a, 0, a.size()-1 );
+
+io.writeln( a[:5], a[a.size()-5:] )

@@ -1,0 +1,125 @@
+
+#{
+# The following is a simple function that can take 3 parameters,
+# where the first can be of any type, the second can only be a
+# string, and the last can only be an optional integer with default
+# value 123.
+#}
+routine FunctionA( obj, name : string, index = 123 )
+{
+	io.writeln( obj, name, index )
+}
+FunctionA( [], "abc" )
+FunctionA( {}, "def", 456 )
+
+
+#{
+# If "..." is used as the last parameter in a function definition,
+# this function can take a variable number of parameters (up to 30).
+# (Such function is called variadic function).
+#}
+routine FunctionB( name : string, ... )
+{
+	io.writeln( name )
+}
+FunctionB( "abc" )
+
+
+#{
+# To access the variadic part of the parameters inside a variadic
+# function, one has to define an alias for all the parameters using
+# the "as" keyword. So here, the "all" variable will be a tuple that
+# contains all the parameters passed to this function.
+#}
+routine FunctionC( name : string, ... as all )
+{
+	io.writeln( name, all )
+}
+FunctionC( "abc", 123, [1,2] )
+
+
+#{
+# The variadic parameter "..." can also have an explicit type,
+# to ensure it only accepts parameters of that type.
+#}
+routine FunctionD( name : string, ... :int as all )
+{
+	io.writeln( name, all )
+}
+FunctionD( "abc", 123, 456 )  # OK;
+# FunctionD( "abc", 123, [1,2] )  # ERROR;
+
+
+
+###############################
+# Some tests:
+###############################
+
+routine TestFunction( a : string, b = 123 )
+{
+	io.writeln( a, b )
+}
+
+
+routine TestVariadicFunction( a : string, ... : int as all )
+{
+	io.writeln( a, all )
+}
+
+
+########################
+## Static Checking
+########################
+
+TestFunction( "abc" )         # Test default parameter;
+TestFunction( "abc", 456.5 )  # implicit conversion;
+
+# TestFunction()  # ERROR: too few parameters;
+# TestFunction( "abc", 123, 456 )  # ERROR: too many parameters;
+
+TestVariadicFunction( "abc" )       # right parameter;
+TestVariadicFunction( "abc", 123 )  # right parameter;
+
+# TestVariadicFunction( 123 )  # ERROR: wrong first parameter;
+# TestVariadicFunction( "abc", "abc" )  # ERROR: wrong second parameter;
+
+
+##########################
+## Static Checking
+## With function type only
+##########################
+
+var TestFunction2 = TestFunction
+var TestVariadicFunction2 = TestVariadicFunction
+
+TestFunction2( "abc" )         # Test default parameter;
+TestFunction2( "abc", 456.5 )  # implicit conversion;
+
+# TestFunction2()  # ERROR: too few parameters;
+# TestFunction2( "abc", 123, 456 )  # ERROR: too many parameters;
+
+TestVariadicFunction2( "abc" )  # right parameter;
+TestVariadicFunction2( "abc", 123 )  # right parameter;
+
+# TestVariadicFunction2( 123 )  # wrong first parameter;
+# TestVariadicFunction2( "abc", "abc" )  # wrong second parameter;
+
+
+##########################
+## Dynamic Checking
+##########################
+
+var TestFunction3 : any = TestFunction
+var TestVariadicFunction3 : any = TestVariadicFunction
+
+TestFunction3( "abc" )         # Test default parameter;
+TestFunction3( "abc", 456.5 )  # implicit conversion;
+
+# TestFunction3()  # ERROR: too few parameters;
+# TestFunction3( "abc", 123, 456 )  # ERROR: too many parameters;
+
+TestVariadicFunction3( "abc" )  # right parameter;
+TestVariadicFunction3( "abc", 123 )  # right parameter;
+
+# TestVariadicFunction3( 123 )  # wrong first parameter;
+# TestVariadicFunction3( "abc", "abc" )  # wrong second parameter;

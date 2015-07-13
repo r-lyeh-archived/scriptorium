@@ -1,0 +1,126 @@
+#
+# Class decorators are classes that can be used modify other classes.
+# The modification is done by using such class as a mixin base class
+# to inject (combine) its members into the modified class, and by
+# automatically applying its method decorators to the methods of the
+# modified class.
+#
+# For such auto decorator application, only decorators with explicitly
+# specified decoration targets are automatically applied. Such targets
+# are expressed as prefix and suffix rules which can be expressed in
+# the following ways:
+# 1. Prefix~ : a prefix pattern.
+#    The decorator will be auto applied to methods that have names
+#    with such prefix;
+# 2. ~Suffix : a suffix pattern.
+#    The decorator will be auto applied to methods that have names
+#    with such suffix;
+# 3. Prefix~Suffix : a prefix and suffix pattern.
+#    The decorator will be auto applied to methods that have names
+#    with such prefix and suffix;
+# 4. ~ : an empty prefix and suffix pattern.
+#    The decorator will be auto applied to any methods.
+#
+class @Header
+{
+	static routine @Delimiter( meth(args) : routine ) for ~ {
+		io.writeln( "=======================" )
+		return meth( args, ... )
+	}
+	routine @Delimiter( meth(args) : routine ) for ~ {
+		io.writeln( "-----------------------" )
+		return meth( args, ... )
+	}
+}
+class @Decorator
+{
+	var value = 654321
+
+	routine @Test( meth(args) :routine<self:@Decorator> ) for Test {
+		io.writeln( "Decorator::Test()", value )
+		meth( args, ... );
+	}
+	routine @Prefix( meth(args) :routine<self:@Decorator> ) for Prefix~ {
+		io.writeln( "Decorator::Prefix()" )
+		meth( args, ... );
+	}
+	routine @Suffix( meth(args) :routine<self:@Decorator> ) for ~Suffix {
+		io.writeln( "Decorator::Suffix()" )
+		meth( args, ... );
+	}
+	routine @Prefix_Suffix( meth(args) :routine<self:@Decorator> ) for Prefix~Suffix {
+		io.writeln( "Decorator::Prefix_Suffix()" )
+		meth( args, ... );
+	} 
+}
+
+#
+# When multiple decorator classes are used as mixin bases in a host class,
+# the decorators of the first decorator class are applied the last.
+# An the first decorator of the same decorator class is also applied
+# the last as well.
+#
+class MyMixin ( @Header, @Decorator )
+{
+	routine Test(){
+		io.writeln( "MyMixin::Test()" )
+	}
+	routine PrefixTest(){
+		io.writeln( "MyMixin::PrefixTest()" )
+	}
+	routine TestSuffix(){
+		io.writeln( "MyMixin::TestSuffix()" )
+	}
+	routine PrefixTestSuffix(){
+		io.writeln( "MyMixin::PrefixTestSuffix()" )
+	}
+}
+
+obj = MyMixin()
+obj.Test()
+obj.PrefixTest()
+obj.TestSuffix()
+obj.PrefixTestSuffix()
+
+
+
+#
+# In Dao, a class decorator can be effectly used as an aspect for AOP,
+# if decoration target patterns are specified for auto application.
+# The target patterns are can be specified in the same way as the
+# target patterns for class method decorators.
+#
+class @AspectForAnyClass for ~  # To be applied to any classes;
+{
+	var injected : list<int> = {}
+
+	# This is not a decorator!
+	routine @AspectForAnyClass(){
+		io.writeln( "In @AspectForAnyClass():" );
+		injected = { 1, 2, 3 }
+	}
+
+	# This decorator will also be applied to the default constructors:
+	routine @DecoratorForAnyMethod( meth(args) : routine ) for ~ {
+		io.writeln( "In @DecoratorForAnyMethod():", std.about(meth) )
+		io.writeln( injected )
+		return meth( args, ... )
+	}
+}
+
+# For classes with names prefixed with My:
+class @AspectForMyClasses for My~
+{
+	routine @Method( meth(args) : routine ) for Method~ {
+		io.writeln( "In @AspectForMyClasses::@Method():", std.about(meth) )
+		return meth( args, ... )
+	}
+}
+
+class MyClass
+{
+	routine Method(){ io.writeln( "MyClass::Method()" ) }
+}
+
+k = MyClass()  # Invoke the default constructor of Klass;
+k.Method()

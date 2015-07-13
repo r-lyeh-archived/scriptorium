@@ -1,0 +1,25 @@
+
+code = 
+@[cxx]
+#include<stdio.h>
+#include<iconv.h>
+int main(void){
+	iconv_t state = iconv_open( "", "UTF-8" );
+	return 0;
+}
+@[cxx]
+
+if( DaoMake::IsPlatform( "UNIX" ) ){
+	header_path  = DaoMake::FindFile( "iconv.h" )
+	if( header_path == "" ) return;
+
+	lflags = "";
+	if( DaoMake::TestCompile( code ) == 0 ){
+		if( DaoMake::TestCompile( code, "-liconv" ) == 0 ) return;
+		lflags = "-liconv"
+	}
+
+	iconv = DaoMake::Project( "Iconv" )
+	iconv.AddSharedLibrary( "" )
+	iconv.AddIncludePath( header_path )
+}

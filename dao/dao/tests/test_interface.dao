@@ -1,0 +1,127 @@
+
+interface MethodInterface
+{
+	routine Method( a = 0 );
+}
+
+routine TestMethodInterface( inter : MethodInterface )
+{
+	inter.Method( 123 )
+}
+
+class MethodClass
+{
+	routine Method( a = 0 ){ io.writeln( a ) }
+}
+
+
+@[test()]
+TestMethodInterface( MethodClass() )
+@[test()]
+@[test()]
+123
+@[test()]
+
+
+
+interface OperatorInterface
+{
+	routine []( index : int ) => int;
+	routine .name() => string;
+}
+
+routine TestOperatorInterface( inter : OperatorInterface )
+{
+	io.writeln( inter[123] );
+	io.writeln( inter.name );
+}
+
+class OperatorClass
+{
+	routine []( index : int ){ return index }
+	routine .name(){ return "name" }
+}
+
+
+@[test()]
+TestOperatorInterface( OperatorClass() )
+@[test()]
+@[test()]
+123
+name
+@[test()]
+
+
+
+
+
+interface IteratorInterface
+{
+	routine for( iter : ForIterator );
+	routine []( iter : ForIterator )=>int;
+}
+
+routine TestIteratorInterface( inter : IteratorInterface )
+{
+	for( i in inter ) io.writeln( i )
+}
+
+class IteratorClass
+{
+	routine for( iter : ForIterator ){
+		iter.valid = 1;
+		iter.iterator = 0;
+	}
+	routine []( iter : ForIterator ){
+		id = (int)iter.iterator;
+		iter.valid = id + 1 < 5;
+		iter.iterator = id + 1;
+		return id;
+	}
+}
+
+
+@[test()]
+TestIteratorInterface( IteratorClass() )
+@[test()]
+@[test()]
+0
+1
+2
+3
+4
+@[test()]
+
+
+
+
+
+interface JointInterface : MethodInterface, OperatorInterface, IteratorInterface
+{
+}
+
+routine TestJointInterface( inter : JointInterface )
+{
+	TestMethodInterface( inter )
+	TestOperatorInterface( inter )
+	TestIteratorInterface( inter )
+}
+
+class JointClass ( MethodClass, OperatorClass, IteratorClass )
+{
+}
+
+
+@[test()]
+TestJointInterface( JointClass() )
+@[test()]
+@[test()]
+123
+123
+name
+0
+1
+2
+3
+4
+@[test()]

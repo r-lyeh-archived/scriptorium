@@ -1,0 +1,27 @@
+
+code = 
+@[cxx]
+#include<stdio.h>
+#include<readline/readline.h>
+int main(void){
+	char *chs = readline( "test" );
+	return chs != NULL;
+}
+@[cxx]
+
+if( DaoMake::IsPlatform( "UNIX" ) ){
+	header_path  = DaoMake::FindFile( "readline/readline.h" )
+	header_path2 = DaoMake::FindFile( "readline/history.h" )
+	if( header_path == "" or header_path2 == "" ) return;
+
+	lflags = "-lreadline";
+	if( DaoMake::TestCompile( code, "-lreadline", "-I." ) == 0 ){
+		if( DaoMake::TestCompile( code, "-lreadline -lncurses", "-I." ) == 0 ) return;
+		lflags = "-lreadline -lncurses";
+	}
+
+	readline = DaoMake::Project( "ReadLine" )
+	readline.AddSharedLibrary( "readline" )
+	readline.AddIncludePath( header_path )
+	readline.AddLinkingFlag( lflags )
+}

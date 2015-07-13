@@ -1,0 +1,5 @@
+load beos
+
+io.writeln( "DaoMake: using Haiku settings!" )
+
+DaoMake::Platforms["HAIKU"] = DaoMake::Platforms["BEOS"] + 1

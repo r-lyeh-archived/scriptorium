@@ -1,0 +1,26 @@
+
+io.writeln( "DaoMake: using Win32 settings!" )
+
+DaoMake::Platforms["WIN32"]     = 1
+
+DaoMake::Settings["AR"]         = "ar rcs"
+
+DaoMake::Settings["EXE-SUFFIX"]      = ".exe"
+DaoMake::Settings["DLL-SUFFIX"]      = ".dll"
+DaoMake::Settings["LIB-SUFFIX"]      = ".a"
+DaoMake::Settings["DLL-PREFIX"]      = ""
+DaoMake::Settings["LIB-PREFIX"]      = ""
+DaoMake::Settings["EXE-FLAG"]        = ""
+DaoMake::Settings["DLL-FLAG"]        = "-shared"
+DaoMake::Settings["DLL-NAME"]        = "-Wl,--out-implib,lib"
+DaoMake::Settings["DYNAMIC-EXPORT"]  = ""
+DaoMake::Settings["DYNAMIC-IMPORT"]  = ""
+DaoMake::Settings["DLL-RPATH"]       = "-Wl,-rpath="
+DaoMake::Settings["DLL-RPATH-REL"]   = "-Wl,-rpath="
+
+DaoMake::Settings["RELEASE-CFLAG"]   = "-O2"
+DaoMake::Settings["RELEASE-LFLAG"]   = ""
+DaoMake::Settings["DEBUG-CFLAG"]     = "-ggdb -O0 -DDEBUG"
+DaoMake::Settings["DEBUG-LFLAG"]     = "-ggdb"
+DaoMake::Settings["PROFILE-CFLAG"]   = "-pg"
+DaoMake::Settings["PROFILE-LFLAG"]   = "-pg"

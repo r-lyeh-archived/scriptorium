@@ -1,0 +1,13 @@
+
+header_hints = ".;"
+if( DaoMake::IsPlatform( "MACOSX" ) ){
+	header_hints += "/usr/local/Cellar/gobject-introspection/include;"
+}
+header_path = DaoMake::FindFile( "girepository.h", header_hints )
+
+if( header_path == "" ) return;
+
+gir = DaoMake::Project( "GIR" )
+gir.AddSharedLibrary( "gir" )
+gir.AddIncludePath( header_path )
+gir.AddLinkingFlag( "-lgirepository-1.0" )

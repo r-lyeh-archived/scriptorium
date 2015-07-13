@@ -1,0 +1,46 @@
+
+#{
+
+All tests are expressed as pairs of verbatim strings with tag "test":
+@[test(id)...], where "id" is optional and use only for error reporting.
+
+The first of each pair is considered as codes to be tested, and the second is
+the expected results to which the results of the first to be checked against.
+
+The expected results can be expressed in three forms (are checked in this order):
+1. Value that should be produced by the test codes;
+2. Raw printed output;
+3. String pattern that should match the printed output;
+
+The first is checked only if the test codes do not print anything,
+and the expected result is not an empty string.
+
+#}
+
+
+# A positive test that produces a tuple (1,2):
+@[test(first)]
+	a = 1
+	b = ( a, 2 )
+@[test(first)]
+@[test(first)]
+	( 1, 2 )
+@[test(first)]
+
+
+# A positive test that prints "hello world!":
+@[test(second)]
+	io.writeln( "hello world!" )
+@[test(second)]
+@[test(second)]
+	hello world!
+@[test(second)]
+
+
+# A negative test that should raise a parsing error:
+@[test(third)]
+	a : array<string>;  # array type cannot contain string
+@[test(third)]
+@[test(third)]
+	Invalid %s type %s form
+@[test(third)]

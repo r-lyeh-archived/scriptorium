@@ -8,6 +8,12 @@ if exist BENCH.md (
 del BENCH.md
 )
 
+rem @echo.
+rem @echo lisp/toylisp
+rem @pushd lisp\toylisp
+rem @..\..\bench 5 toylisp ..\..\tests\fib.py
+rem @popd
+
 @echo.
 @echo as/angelscript
 @bench 5 angelscript\as tests\fib.as
@@ -111,6 +117,10 @@ del BENCH.md
 @bench 5 python\mpython tests\fib.py
 
 @echo.
+@echo python/tinypy
+@bench 5 python\tinypy-panda\build\tinypy tests\fib.py
+
+@echo.
 @echo quakec/gmqcc
 @pushd tests\quakec
 @..\..\quakec\gmqcc\gmqcc -O3 > nul
@@ -120,6 +130,12 @@ del BENCH.md
 @echo.
 @echo ruby/mruby
 @bench 5 ruby\mruby tests\fib.rb
+
+@echo.
+@echo ruby/tinyrb
+@pushd ruby\tinyrb-ist
+@..\..\bench 5 tinyrb ..\..\tests\fib.rb
+@popd
 
 @echo.
 @echo scheme/s9

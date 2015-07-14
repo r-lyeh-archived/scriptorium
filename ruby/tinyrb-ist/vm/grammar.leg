@@ -1,0 +1,360 @@
+%{
+#include <stdlib.h>
+#include "tr.h"
+#include "internal.h"
+
+/*#define YY_DEBUG 1*/
+
+#define YYSTYPE   OBJ
+#define YYMALLOC  TR_MALLOC
+#define YYREALLOC TR_REALLOC
+#define yyvm      compiler->vm
+
+static char *charbuf;
+static char *sbuf;
+static size_t nbuf;
+static TrCompiler *compiler;
+
+#define YY_INPUT(buf, result, max_size) { \
+  int yyc; \
+  if (charbuf && *charbuf != '\0') \
+    yyc= *charbuf++; \
+  else \
+    yyc= EOF; \
+  result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1); \
+}
+
+/* TODO grow buffer */
+#define STRING_MAX   4096
+#define STRING_START sbuf = TR_ALLOC_N(char, STRING_MAX); nbuf = 0
+#define STRING_PUSH(P,L) \
+  assert(nbuf + (L) < 4096); \
+  TR_MEMCPY_N(sbuf + nbuf, (P), char, (L)); \
+  nbuf += (L)
+
+%}
+
+Root      = s:Stmts EOF                     { compiler->node = NODE(ROOT, s) }
+
+Stmts     = SEP*
+            - head:Stmt Comment?            { head = NODES(head) }
+            ( SEP - tail:Stmt Comment?      { PUSH_NODE(head, tail) }
+            | SEP - Comment
+            )* SEP?                         { $$ = head }
+          | SEP+                            { $$ = NODES_N(0) }
+
+OptStmts  = Stmts
+          | - SEP?                          { $$ = NODES_N(0) }
+
+Stmt      =  LogicOp
+			| While
+			| Until
+			| For
+			| If
+			| Unless
+			| Def
+			| Class
+			| Module
+			| Expr
+
+Expr      = Assign
+			| AsgnCall
+			| UnaryOp
+			| BinOp
+			| SpecCall
+			| Call
+			| Range
+			| Yield
+			| Return
+			| Break
+			| Value
+
+Comment   = - '#' (!EOL .)*
+
+Call      =                                 { block = rcv = 0 }
+            ( rcv:Value '.'
+            )? ( rmsg:Message '.'           { rcv = NODE2(SEND, rcv, rmsg) }
+               )* msg:Message
+                  - block:Block?            { $$ = NODE3(SEND, rcv, msg, block) }
+
+# TODO refactor head part w/ Call maybe eh?
+AsgnCall   =                                { rcv = 0 }
+            ( rcv:Value '.'
+            )? ( rmsg:Message '.'           { rcv = NODE2(SEND, rcv, rmsg) }
+               )* msg:ID - asg:ASSIGN
+                  - val:Stmt                { VM = yyvm; $$ = NODE2(SEND, rcv, NODE2(MSG, SYMCAT(msg, asg), NODES(NODE(ARG, val)))) }
+
+Receiver  = (                               { rcv = 0 }
+              rcv:Call
+            | rcv:Value
+            )                               { $$ = rcv }
+
+SpecCall  = rcv:Receiver '[' args:Args ']'  
+            - ASSIGN - val:Stmt             { PUSH_NODE(args, NODE(ARG, val)); $$ = NODE2(SEND, rcv, NODE2(MSG, TrSymbol_new(yyvm, "[]="), args)) }
+          | rcv:Receiver '[' args:Args ']'  { $$ = NODE2(SEND, rcv, NODE2(MSG, TrSymbol_new(yyvm, "[]"), args)) }
+
+BinOp     = ( rcv:SpecCall | rcv:Receiver )
+            -
+            (
+              '&&' - arg:Expr               { $$ = NODE2(AND, rcv, arg) }
+            | '||' - arg:Expr               { $$ = NODE2(OR, rcv, arg) }
+            | '+' - arg:Expr                { $$ = NODE2(ADD, rcv, arg) }
+            | '-' - arg:Expr                { $$ = NODE2(SUB, rcv, arg) }
+            | '<' - arg:Expr                { $$ = NODE2(LT, rcv, arg) }
+            | op:BINOP - arg:Expr           { $$ = NODE2(SEND, rcv, NODE2(MSG, op, NODES(NODE(ARG, arg)))) }
+            ) 
+            
+LogicOp 	= ( 
+				rcv:UnaryOp 
+				| rcv:BinOp 
+				| rcv:SpecCall 
+				| rcv:Call	 	
+				| rcv:Range 
+				| rcv:Yield 
+				| rcv:Return	
+				| rcv:Break 
+				| rcv:Value
+				)
+				- 
+				( 'and' - arg:Expr		{ $$ = NODE2(LOGICAND, rcv, arg) }
+				| 'or' - arg:Expr		{ $$ = NODE2(LOGICOR, rcv, arg) }
+				)
+				
+
+UnaryOp   = '-' rcv:Expr                    { $$ = NODE(NEG, rcv) }
+          | '!' rcv:Expr                    { $$ = NODE(NOT, rcv) }
+
+Message   = name:ID                         { args = 0 }
+              ( '(' args:Args? ')'
+              | SPACE args:Args
+              )?                            { $$ = NODE2(MSG, name, args) }
+
+Args      = - head:Expr -                   { head = NODES(NODE(ARG, head)) }
+            ( ',' - tail:Expr -             { PUSH_NODE(head, NODE(ARG, tail)) }
+            )* ( ',' - '*' splat:Expr -     { PUSH_NODE(head, NODE2(ARG, splat, 1)) }
+               )?                           { $$ = head }
+          | - '*' splat:Expr -              { $$ = NODES(NODE2(ARG, splat, 1)) }
+
+Block     = 'do' SEP
+              - body:OptStmts -
+            'end'                           { $$ = NODE(BLOCK, body) }
+          | 'do' - '|' params:Params '|' SEP
+              - body:OptStmts -
+            'end'                           { $$ = NODE2(BLOCK, body, params) }
+          # FIXME this might hang the parser and is very slow.
+          # Clash with Hash for sure.
+          #| '{' - body:OptStmts - '}'       { $$ = NODE(BLOCK, body) }
+          #| '{' - '|' params:Params '|'
+          #  - body:OptStmts - '}'           { $$ = NODE2(BLOCK, body, params) }
+
+Assign    =  name:ID - '+=' - val:Stmt  	{ $$ = NODE2(INC, name, val) }
+			| name:ID - '-=' - val:Stmt  	{ $$ = NODE2(DEC, name, val) }
+			| name:ID - ASSIGN - val:Stmt     		{ $$ = NODE2(ASSIGN, name, val) }
+			| name:CONST - ASSIGN - val:Stmt  		{ $$ = NODE2(SETCONST, name, val) }
+			| name:IVAR - ASSIGN - val:Stmt   		{ $$ = NODE2(SETIVAR, name, val) }
+			| name:CVAR - ASSIGN - val:Stmt   		{ $$ = NODE2(SETCVAR, name, val) }
+			| name:GLOBAL - ASSIGN - val:Stmt 		{ $$ = NODE2(SETGLOBAL, name, val) }
+
+While     = 'while' SPACE cond:Expr SEP
+              body:Stmts -
+            'end'                           { $$ = NODE2(WHILE, cond, body) }
+
+Until     = 'until' SPACE cond:Expr SEP
+              body:Stmts -
+            'end'                           { $$ = NODE2(UNTIL, cond, body) }
+
+For       = 'for' SPACE var:ID SPACE 'in' SPACE val:Expr SEP
+                body:Stmts -
+            'end'                           { $$ = NODE3(FOR, val, var, body) }
+
+If        = 'if' SPACE cond:Expr SEP        { else_body = 0 }
+              body:Stmts -
+            else_body:Else?
+            'end'                           { $$ = NODE3(IF, cond, body, else_body) }
+          | body:Expr - 'if' - cond:Expr    { $$ = NODE2(IF, cond, NODES(body)) }
+
+Unless    = 'unless' SPACE cond:Expr SEP    { else_body = 0 }
+              body:Stmts -
+            else_body:Else?
+            'end'                           { $$ = NODE3(UNLESS, cond, body, else_body) }
+          | body:Expr -
+              'unless' - cond:Expr          { $$ = NODE2(UNLESS, cond, NODES(body)) }
+
+Else      = 'else' SEP - body:Stmts -       { $$ = body }
+
+Method    = rcv:ID '.' name:METHOD          { $$ = NODE2(METHOD, NODE2(SEND, 0, NODE(MSG, rcv)), name) }
+          | rcv:Value '.' name:METHOD       { $$ = NODE2(METHOD, rcv, name) }
+          | name:METHOD                     { $$ = NODE2(METHOD, 0, name) }
+
+Def       = 'def' SPACE method:Method       { params = 0 }
+            (- '(' params:Params? ')')? SEP
+              body:OptStmts -
+            'end'                           { $$ = NODE3(DEF, method, params ? params : NODES_N(0), body) }
+
+Params    = head:Param                      { head = NODES(head) }
+            ( ',' tail:Param                { PUSH_NODE(head, tail) }
+            )*                              { $$ = head }
+
+Param     = - name:ID - '=' - def:Expr      { $$ = NODE3(PARAM, name, 0, def) }
+          | - name:ID -                     { $$ = NODE(PARAM, name) }
+          | - '*' name:ID -                 { $$ = NODE2(PARAM, name, 1) }
+
+Class     = 'class' SPACE name:CONST        { super = 0 }
+            (- '<' - super:CONST)? SEP
+              body:OptStmts -
+            'end'                           { $$ = NODE3(CLASS, name, super, body) }
+
+Module    = 'module' SPACE name:CONST SEP
+              body:OptStmts -
+            'end'                           { $$ = NODE3(MODULE, name, 0, body) }
+
+Range     = s:Receiver - '..' - e:Expr      { $$ = NODE3(RANGE, s, e, 0) }
+          | s:Receiver - '...' - e:Expr     { $$ = NODE3(RANGE, s, e, 1) }
+
+Yield     = 'yield' SPACE args:AryItems     { $$ = NODE(YIELD, args) }
+          | 'yield' '(' args:AryItems ')'   { $$ = NODE(YIELD, args) }
+          | 'yield'                         { $$ = NODE(YIELD, NODES_N(0)) }
+
+Return    = 'return' SPACE arg:Expr - !','  { $$ = NODE(RETURN, arg) }
+          | 'return' '(' arg:Expr ')' - !','{ $$ = NODE(RETURN, arg) }
+          | 'return' SPACE args:AryItems    { $$ = NODE(RETURN, NODE(ARRAY, args)) }
+          | 'return' '(' args:AryItems ')'  { $$ = NODE(RETURN, NODE(ARRAY, args)) }
+          | 'return'                        { $$ = NODE(RETURN, 0) }
+
+Break     = 'break'                         { $$ = NODE(BREAK, 0) }
+
+Value     = v:NUMBER                        { $$ = NODE(VALUE, v) }
+          | v:SYMBOL                        { $$ = NODE(VALUE, v) }
+          | v:REGEXP                        { $$ = NODE(VALUE, v) }
+          | v:STRING1                       { $$ = NODE(STRING, v) }
+          | v:STRING2                       { $$ = NODE(STRING, v) }
+          | v:CONST                         { $$ = NODE(CONST, v) }
+          | 'nil'                           { $$ = NODE(NIL, 0) }
+          | 'true'                          { $$ = NODE(BOOL, TR_TRUE) }
+          | 'false'                         { $$ = NODE(BOOL, TR_FALSE) }
+          | 'self'                          { $$ = NODE(SELF, 0) }
+          | name:IVAR                       { $$ = NODE(GETIVAR, name) }
+          | name:CVAR                       { $$ = NODE(GETCVAR, name) }
+          | name:GLOBAL                     { $$ = NODE(GETGLOBAL, name) } # TODO
+          | '[' - ']'                       { $$ = NODE(ARRAY, NODES_N(0)) }
+          | '[' - items:AryItems - ']'      { $$ = NODE(ARRAY, items) }
+          | '{' - '}'                       { $$ = NODE(HASH, NODES_N(0)) }
+          | '{' - items:HashItems - '}'     { $$ = NODE(HASH, items) }
+          | '(' - Expr - ')'
+
+AryItems  = - head:Expr -                   { head = NODES(head) }
+            ( ',' - tail:Expr -             { PUSH_NODE(head, tail) }
+            )*                              { $$ = head }
+
+HashItems = head:Expr - '=>' - val:Expr     { head = NODES_N(2, head, val) }
+            ( - ',' - key:Expr -            { PUSH_NODE(head, key) }
+                '=>' - val:Expr             { PUSH_NODE(head, val) }
+            )*                              { $$ = head }
+
+KEYWORD   = 'while' | 'until' | 'for' | 'do' | 'end' |
+            'if' | 'unless' | 'else' |
+            'true' | 'false' | 'nil' | 'self' |
+            'class' | 'module' | 'def' |
+            'yield' | 'return' | 'break'
+
+NAME      = [a-zA-Z0-9_]+
+ID        = !'self'                         # self is special, can never be a method name
+            < KEYWORD > &('.' | '(' | '[')  { $$ = TrSymbol_new(yyvm, yytext) } # hm, there's probably a better way
+          | < KEYWORD NAME >                { $$ = TrSymbol_new(yyvm, yytext) }
+          | !KEYWORD
+            < [a-z_] NAME?
+              ( '=' &'(' | '!'| '?' )? >    { $$ = TrSymbol_new(yyvm, yytext) }
+CONST     = < [A-Z] NAME? >                 { $$ = TrSymbol_new(yyvm, yytext) }
+BINOP     = < ( '**' | '^'  | '&'  | '|'  | '~'  |
+                '+'  | '-'  | '*'  | '/'  | '%'  | '<=>' |
+                '<<' | '>>' | '==' | '=~' | '!=' | '===' |
+                '<'  | '>'  | '<=' | '>='
+              ) >                           { $$ = TrSymbol_new(yyvm, yytext) }
+UNOP      = < ( '-@' | '!' ) >              { $$ = TrSymbol_new(yyvm, yytext) }
+LOGICOP	  = < ('and' | 'or') >					 { $$ = TrSymbol_new(yyvm, yytext) }
+METHOD    = ID | UNOP | BINOP | LOGICOP
+ASSIGN    = < '=' > &(!'=')                 { $$ = TrSymbol_new(yyvm, yytext) }
+IVAR      = < '@' NAME >                    { $$ = TrSymbol_new(yyvm, yytext) }
+CVAR      = < '@@' NAME >                   { $$ = TrSymbol_new(yyvm, yytext) }
+GLOBAL    = < '$' NAME >                    { $$ = TrSymbol_new(yyvm, yytext) }
+NUMBER    = < [0-9]+ >                      { $$ = TR_INT2FIX(atoi(yytext)) }
+SYMBOL    = ':' < (NAME | KEYWORD) >        { $$ = TrSymbol_new(yyvm, yytext) }
+
+STRING1   = '\''                            { STRING_START }
+            (
+              '\\\''                        { STRING_PUSH("'", 1) }
+            | < [^\'] >                     { STRING_PUSH(yytext, yyleng) }
+            )* '\''                         { $$ = TrString_new2(yyvm, sbuf) }
+
+ESC_CHAR  = '\\n'                           { STRING_PUSH("\n", 1) }
+          | '\\b'                           { STRING_PUSH("\b", 1) }
+          | '\\f'                           { STRING_PUSH("\f", 1) }
+          | '\\r'                           { STRING_PUSH("\r", 1) }
+          | '\\t'                           { STRING_PUSH("\t", 1) }
+          | '\\\"'                          { STRING_PUSH("\"", 1) }
+          | '\\\\'                          { STRING_PUSH("\\", 1) }
+
+STRING2   = '"'                             { STRING_START }
+            (
+              ESC_CHAR
+            | < [^\"] >                     { STRING_PUSH(yytext, yyleng) }  #" for higlighting
+            )*
+            '"'                             { $$ = TrString_new2(yyvm, sbuf) }
+
+REGEXP    = '/'                             { STRING_START }
+            (
+              ESC_CHAR
+            | < [^/] >                      { STRING_PUSH(yytext, yyleng) }
+            )*
+            '/'                             { $$ = TrRegexp_new(yyvm, sbuf, 0) }
+
+-         = [ \t]*
+SPACE     = [ ]+
+EOL       = ( '\n' | '\r\n' | '\r' )        { compiler->line++ }
+EOF       = !.
+SEP       = ( - Comment? (EOL | ';') )+
+
+%%
+
+/* Raise a syntax error. */
+OBJ yyerror() {
+  VM = yyvm;
+  OBJ msg = tr_sprintf(vm, "SyntaxError in %s at line %d", TR_STR_PTR(compiler->filename), compiler->line);
+  /* Stupid ugly code, just to build a string... I suck... */
+  if (yytext[0]) TrString_push(vm, msg, tr_sprintf(vm, " near token '%s'", yytext));
+  if (yypos < yylimit) {
+    yybuf[yylimit]= '\0';
+    TrString_push(vm, msg, tr_sprintf(vm, " before text \""));
+    while (yypos < yylimit) {
+      if ('\n' == yybuf[yypos] || '\r' == yybuf[yypos]) break;
+      char c[2] = { yybuf[yypos++], '\0' };
+      TrString_push(vm, msg, tr_sprintf(vm, c));
+    }
+    TrString_push(vm, msg, tr_sprintf(vm, "\""));
+  }
+  /* TODO msg should not be a String object */
+  tr_raise(SyntaxError, TR_STR_PTR(msg));
+}
+
+/* Compiles code to a TrBlock.
+   Returns NULL on error, error is stored in TR_EXCEPTION. */
+TrBlock *TrBlock_compile(VM, char *code, char *fn, size_t lineno) {
+  assert(!compiler && "parser not reentrant");
+  charbuf = code;
+  compiler = TrCompiler_new(vm, fn);
+  compiler->line += lineno;
+  compiler->filename = TrString_new2(vm, fn);
+  TrBlock *b = NULL;
+
+  if (!yyparse()) {
+    yyerror();
+    goto error;
+  }
+
+  TrCompiler_compile(compiler);
+  b = compiler->block;
+error:
+  charbuf = 0;
+  compiler = 0;
+  return b;
+}

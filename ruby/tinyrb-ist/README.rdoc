@@ -1,0 +1,18 @@
+= tinyrb-ist
+
+An extension of tinyrb:
+http://github.com/macournoyer/tinyrb
+
+
+== what is implemented in tinyrb-ist (that isn't on tinyrb):
+* for
+* += / -=
+* and / or
+
+
+== credits
+* Sancha Pereira
+* Cláudia Henriques, 66958
+* Miguel Aragão
+
+tinyrb is Copyright (c) Marc-Andre Cournoyer <macournoyer@gmail.com> and released under Ruby license

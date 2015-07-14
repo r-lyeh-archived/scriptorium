@@ -1,0 +1,123 @@
+\documentclass[12pt]{article}
+
+\begin{document}
+
+\title{\huge{A Brief Description of RE Module of Tinypy}}
+\author{Rockins Chen\\
+ybc2084@gmail.com\\
+Department of Computer Science and Engineering,\\
+University of Electronic Science and Technology of China,\\
+Chengdu 610054 P.R.China}
+\date{May 17, 2009}
+\maketitle
+
+\parskip 10pt
+
+\section{What's re module for tinypy? How it works?}
+
+\large{tinypy is a minimalist implementation of python in 64k of code. re module for tinypy's goal is to supply tinypy a regular expression supporting just as Python does (We will refer this module as re4tinypy in following paragraphs, as convenience. However, don't get confused with the name, the actual module name is re, not re4tinypy!). It tries to be as compatible as possible, though some unremarkable differences still be there. This short article will try to describe the interface of re4tinypy. In addition, it will also state the differences with re4python, if necessary.}
+
+
+Okay, now let's talk about how re4tinypy works? In normal situation, you should compile out a {\em re obj} first, then you can {\em match} or {\em search} on this object. re4tinypy provide a module level function for this purpose, i.e., {\em re.compile()}.
+
+
+When you match or search on {\em re obj}, an {\em match obj} will be returned if the string matched against the pattern. Note that {\em match} is different with {\em search}, this will be explained in following paragraphs. For convenience, four module level functions are enclosed in re module name space, which are actually wrapper of {\em re obj}'s method counterparts. They are {\em re.search, re.match, re.split(),} and {\em re.findall()}, respectively.
+
+
+On an {\em match obj}, you can extract {\em matched} group or groups of substring. You can find all matched substrings, as well. You can also split the string to a list of substrings with the pattern as seperation. 
+
+
+\section{Module level functions and constances}
+
+
+re4tinypy have five module level functions, {\em re.compile(), re.search(), re.match(), re.split(),} and {\em re.findall()}. Four constances are defined in module level, too. They are {\em re.AWK\_SYNTAX, re.EGREP\_SYNTAX, re.GREP\_SYNTAX, re.EMACS\_SYNTAX}.
+
+
+
+re.compile({\em pattern [,syntax=EMACS\_SYNTAX]})
+
+
+compile {\em pattern} to re4tinypy's internal representation. {\em syntax} argument is optional, in default, its value is {\em EMACS\_SYNTAX}, meaning emacs regular expression syntax is used. If the internal representation is compiled out successfully, a {\em re obj} will be returned, otherwise {\em None}.
+
+
+re.search({\em pattern, string [,syntax=EMACS\_SYNTAX]})
+
+search {\em pattern} in {\em string}. {\em syntax} argument is optional, in default, its value is {\em EMACS\_SYNTAX}, meaning emacs regular expression syntax is used. If {\em pattern} is matched at some location of {\em string}, an {\em match obj} is returned; otherwise {\em None} is returned.
+
+re.match({\em pattern, string [,syntax=EMACS\_SYNTAX]})
+
+
+match {\em pattern} in {\em string}. {\em syntax} argument is optional, in default, its value is {\em EMACS\_SYNTAX}, meaning emacs regular expression syntax is used. If {\em pattern} is matched from the {\em beginning} of of {\em string}, an {\em match obj} is returned; otherwise {\em None} is returned.
+
+Note: {\em match} is different with {\em search}. The point is: {\em match} operation requires {\em pattern} be matched precisely with zero or more characters from the beginning of {\em string}; In the other hand, this requirement is not mandatory for {\em search}.
+
+
+re.split({\em pattern, string [, maxsplit=0]})
+
+
+split {\em string} by substring which match {\em pattern}. A list of splitted string is returned. {\em maxsplit} argument is optional, meaning how many split occurrance need to consider. In default, its value is 0, indicating that all split occurrences should be considered. When {\em maxsplit} is nonzero, at most {\em maxsplit} splits is treated, and the reminder of {\em string} will be treated as the final element of returning list.
+
+
+re.findall({\em pattern, string [,syntax=EMACS\_SYNTAX]})
+
+
+find all non-overlapping occurrence of {\em pattern} in {\em string}. Matched substrings are gathered in a list and the list will be return to caller. {\em syntax} argument is optional. It defaults to \emph{  EMACS\_SYNTAX }.
+
+\section{re object}
+
+Internally, all five module level functions except {\em re.compile()} are merely wrappers of method of regular expression object, i.e., {\em reobj}. {\em re obj} is returned by {\em re.compile()}. Since we have described these functions in above section, we do not plan to focus too much on their internal counterparts. 
+
+
+reobj.search({\em string [, position=0]})
+
+
+search {\em string} on {\em reobj}. Since {\em reobj} is returned by {\em re.compile()}, pattern has been encoded in {\em reobj}. {\em position}, the second argument, is optional, which indicates the beginning position of match operation. If pattern is matched at some location of {\em string}, an {\em matchobj} will be returned, otherwise {\em None}.
+
+
+reobj.match({\em string [, position=0]})
+
+match {\em string} on {\em reobj}. Since {\em reobj} is returned by {\em re.compile()}, pattern has been encoded in {\em reobj}. {\em position}, the second argument, is optional, which indicates the beginning position of match operation. If {\em reobj} contains "\^{}" pattern character, match will start from the real beging of {\em string}, rather than from the location indicated by {\em position}. If zero or more characters of the {\em string} is matched with pattern, an {\em matchobj} will be returned, otherwise {\em None}.
+
+Note: In re4python, {\em reobj.match()} has third optional argument, {\em endpos}, which hints how far {\em string} will be searched. But re4tinypy do not support this argument.
+
+
+reobj.split({\em string [, maxsplit=0]})
+
+identical to module level function {\em re.split()}, using compiled pattern which resides in {\em reobj}.
+
+
+reobj.findall({\em string [, maxsplit=0]})
+
+identical to module level function {\em re.findall()}, using compiled pattern which resides in {\em reobj}.
+
+\section{match object}
+
+{\em reobj.search()} or {\em reobj.match()} will return an {\em matchobj} upon successful matching. An {\em matchobj} is an {\em match object}. {\em match object} provides user some methods to get matched substring or retrieve its range in {\em string}.
+
+matchobj.group({\em group1, group2, ...})
+
+return one or more subgroups of the match. When only one argument is supplied, the result is a single string; If more than one argument is given, the result is a list of strings. If no group index given, group1 defaults to 0, indicating the entire matching string. Otherwise, if group index is between [1...99], the corresponding parenthesized group is gathered in the result list. Any other group index is illegal.
+
+Note: When multiple group indices are given, re4python return a tuple, but re4tinypy return a list. In addition, re4tinypy do not support {\em group name syntax} in pattern.
+
+
+matchobj.groups()
+
+return a list containing all subgroups of the match, from 1 up to how many are in the pattern.
+
+Note: re4python support an argument for {\em matchobj.groups()}, but re4tinypy do not support it!
+
+matchobj.start({\em group})
+
+return the starting position of substring matched by {\em group}. {\em group} defaults to zero, meaning the entire matched substring is concerned. If {\em group} do not exist in the match,-1 will be returned.
+
+matchobj.end({\em group})
+
+return the ending position of substring matched by {\em group}. {\em group} defaults to zero, meaning the entire matched substring is concerned. If {\em group} do not exist in the match,-1 will be returned.
+
+
+matchobj.span({\em group})
+
+return a list containing the starting position and ending position of substring matched by {\em group}. Equal to {\em [matchobj.start(group), matchobj.end(group)]}. If {\em group} do not exist in pattern, {\em [-1, -1]} is returned. Still, {\em group} defaults to zero.
+
+\end{document}

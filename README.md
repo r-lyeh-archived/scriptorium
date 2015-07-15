@@ -4,7 +4,7 @@ scriptorium
 - quick and dirty benchmark suite (dont take it too serious)
 - benchmarked latest versions at the time of writing (Jul 2015)
 
-### languages/implementations evaluated (33)
+### languages/implementations evaluated (34)
 - angelscript
 - angelscript (angelscript-jit)
 - c (c4)
@@ -13,6 +13,7 @@ scriptorium
 - chaiscript
 - dao
 - gamemonkey 
+- gml
 - javascript (42tiny-js)
 - javascript (duktape)
 - jtc
@@ -39,56 +40,58 @@ scriptorium
 - tcl (picol)
 - wren
 
+### rank
+|Language|Time|Relative Lua speed|Score|
+|:-------|---:|:----------------:|----:|
+|[c/vc](https://www.visualstudio.com/)|0.0741186 s.|![100%](http://progressed.io/bar/100?title=x18)|1808 pt|
+|[lua/luajit](https://github.com/LuaDist/luajit)|0.111428 s.|![100%](http://progressed.io/bar/100?title=x12)|1203 pt|
+|[c/libtcc](http://bellard.org/tcc/)|0.151179 s.|![100%](http://progressed.io/bar/100?title=x08)|886 pt|
+|[pawn/asm](http://www.compuphase.com/pawn/pawn.htm)|0.38402 s.|![100%](http://progressed.io/bar/100?title=x03)|349 pt|
+|[pawn](http://www.compuphase.com/pawn/pawn.htm)|0.719387 s.|![100%](http://progressed.io/bar/100)|186 pt|
+|[neko/nekovm](https://github.com/HaxeFoundation/neko)|1.10385 s.|![100%](http://progressed.io/bar/100)|121 pt|
+|[lua](https://github.com/LuaDist/lua)|1.34052 s.|![100%](http://progressed.io/bar/100)|100 pt|
+|[ruby/tinyrb(ist)](https://github.com/sanchapereira/tinyrb-ist)|1.44126 s.|![93.0103%](http://progressed.io/bar/93)|93 pt|
+|[gamemonkey](http://www.gmscript.com/)|1.69064 s.|![79.2907%](http://progressed.io/bar/79)|79 pt|
+|[as/angelscript-jit](https://github.com/BlindMindStudios/AngelScript-JIT-Compiler)|1.85891 s.|![72.1132%](http://progressed.io/bar/72)|72 pt|
+|[wren](https://github.com/munificent/wren)|1.99672 s.|![67.1361%](http://progressed.io/bar/67)|67 pt|
+|[lily](https://github.com/jesserayadkins/lily)|2.00502 s.|![66.8582%](http://progressed.io/bar/66)|66 pt|
+|[as/angelscript](http://www.angelcode.com/angelscript/)|2.03945 s.|![65.7295%](http://progressed.io/bar/65)|65 pt|
+|[ruby/mruby](https://github.com/mruby/mruby)|2.09807 s.|![63.893%](http://progressed.io/bar/63)|63 pt|
+|[squirrel](http://squirrel-lang.org/)|2.12571 s.|![63.0622%](http://progressed.io/bar/63)|63 pt|
+|[c/c4](https://github.com/rswier/c4)|2.53838 s.|![52.8101%](http://progressed.io/bar/52)|52 pt|
+|[python/micropython](https://github.com/micropython/micropython)|2.84204 s.|![47.1675%](http://progressed.io/bar/47)|47 pt|
+|[dao](https://github.com/daokoder/dao)|2.87563 s.|![46.6166%](http://progressed.io/bar/46)|46 pt|
+|[quakec/gmqcc](https://github.com/graphitemaster/gmqcc)|3.06013 s.|![43.806%](http://progressed.io/bar/43)|43 pt|
+|[objectscript](https://github.com/unitpoint/objectscript)|3.10825 s.|![43.1278%](http://progressed.io/bar/43)|43 pt|
+|[lisp/minilisp](https://github.com/rui314/minilisp)|6.95091 s.|![19.2855%](http://progressed.io/bar/19)|19 pt|
+|[js/duktape](https://github.com/svaarala/duktape)|9.54355 s.|![14.0463%](http://progressed.io/bar/14)|14 pt|
+|[gml](https://github.com/graphitemaster/gml)|16.4427 s.|![8.15268%](http://progressed.io/bar/8)|8 pt|
+|[psl](https://github.com/Silica/PSL)|17.6445 s.|![7.59738%](http://progressed.io/bar/7)|7 pt|
+|[python/tinypy(panda)](https://github.com/dkasak/tinypy-panda)|21.7993 s.|![6.14937%](http://progressed.io/bar/6)|6 pt|
+|[scheme/s9](http://www.t3x.org/s9fes/)|33.1601 s.|![4.04257%](http://progressed.io/bar/4)|4 pt|
+|[jx9](http://jx9.symisc.net/)|43.5976 s.|![3.07476%](http://progressed.io/bar/3)|3 pt|
+|[jtc](https://github.com/progschj/jtc)|47.021 s.|![2.8509%](http://progressed.io/bar/2)|2 pt|
+|[scheme/tinyscheme](http://tinyscheme.sourceforge.net/home.html)|65.398 s.|![2.04979%](http://progressed.io/bar/2)|2 pt|
+|[lisp/paren](https://bitbucket.org/ktg/paren)|72.9008 s.|![1.83883%](http://progressed.io/bar/1)|1 pt|
+|[lisp/lispy90](http://howtowriteaprogram.blogspot.com.es/2010/11/lisp-interpreter-in-90-lines-of-c.html)|91.7667 s.|![1.46079%](http://progressed.io/bar/1)|1 pt|
+|[tcl/picol](http://wiki.tcl.tk/17893)|151.527 s.|![0.884674%](http://progressed.io/bar/0)|0 pt|
+|[chaiscript](https://github.com/ChaiScript/ChaiScript)|175.038 s.|![0.765845%](http://progressed.io/bar/0)|0 pt|
+|[js/42tiny-js](https://github.com/ardi69/42tiny-js)|227.17 s.|![0.590096%](http://progressed.io/bar/0)|0 pt|
+
+- AMD A10 3.8 GHz, 8 GiB, Windows 7 64bit.
+- Compiled on VS2015 RC if possible, VS2013 elsewhere.
+
 ### language requirements
 - must embed from C++.
 - must compile on vs2015 (or vs2013 at least).
 - must link statically.
 - must not require (heavy) makefiles/cygwin/build-systems to build.
+- must be self-contained (no LLVM).
 - must use jit/optimizations if available.
 - must compare fair to other languages. for example:
   - must not use yield/coroutines on recursive fibonacci test.
   - must disable threading if possible (not all languages are thread-safe)
   - etc
-
-### results
-|Language|Time|Relative Lua speed|Score|
-|:-------|---:|:----------------:|----:|
-|c/vc|0.0655255 s.|![100%](http://progressed.io/bar/100)|2323 pt|
-|lua/luajit-2.0/src/luajit|0.0906679 s.|![100%](http://progressed.io/bar/100)|1679 pt|
-|c/tcc-0.9.26/win32/tcc|0.127398 s.|![100%](http://progressed.io/bar/100)|1195 pt|
-|pawn/pawn-asm|0.460578 s.|![100%](http://progressed.io/bar/100)|330 pt|
-|pawn/pawn|0.858627 s.|![100%](http://progressed.io/bar/100)|177 pt|
-|neko/neko|1.3005 s.|![100%](http://progressed.io/bar/100)|117 pt|
-|lua|1.52243 s.|![100%](http://progressed.io/bar/100)|100 pt|
-|tinyrb|1.55396 s.|![97.971%](http://progressed.io/bar/97)|97 pt|
-|gamemonkey/bin/gme64|1.71352 s.|![88.8481%](http://progressed.io/bar/88)|88 pt|
-|angelscript/as|1.96192 s.|![77.599%](http://progressed.io/bar/77)|77 pt|
-|angelscript/asjit|2.00607 s.|![75.8912%](http://progressed.io/bar/75)|75 pt|
-|lily/lily|2.03696 s.|![74.7403%](http://progressed.io/bar/74)|74 pt|
-|wren/wren|2.24041 s.|![67.9532%](http://progressed.io/bar/67)|67 pt|
-|ruby/mruby|2.40104 s.|![63.4071%](http://progressed.io/bar/63)|63 pt|
-|c/c4/c4|2.88247 s.|![52.8169%](http://progressed.io/bar/52)|52 pt|
-|dao/dao|2.90203 s.|![52.4609%](http://progressed.io/bar/52)|52 pt|
-|squirrel/sq3|3.1019 s.|![49.0806%](http://progressed.io/bar/49)|49 pt|
-|quakec/gmqcc/qcvm|3.44478 s.|![44.1953%](http://progressed.io/bar/44)|44 pt|
-|python/mpython|3.564 s.|![42.7169%](http://progressed.io/bar/42)|42 pt|
-|os/os|3.7224 s.|![40.8992%](http://progressed.io/bar/40)|40 pt|
-|lisp/minilisp/minilisp|7.4961 s.|![20.3096%](http://progressed.io/bar/20)|20 pt|
-|javascript/duktape/duktape|9.21308 s.|![16.5247%](http://progressed.io/bar/16)|16 pt|
-|psl/psl|19.4708 s.|![7.81904%](http://progressed.io/bar/7)|7 pt|
-|python/tinypy-panda/build/tinypy|22.3401 s.|![6.81479%](http://progressed.io/bar/6)|6 pt|
-|s9|36.9632 s.|![4.11877%](http://progressed.io/bar/4)|4 pt|
-|jx9/jx9|41.3571 s.|![3.68118%](http://progressed.io/bar/3)|3 pt|
-|jtc/jtc|49.5935 s.|![3.06982%](http://progressed.io/bar/3)|3 pt|
-|scheme|72.6125 s.|![2.09665%](http://progressed.io/bar/2)|2 pt|
-|paren-1.9.6|78.547 s.|![1.93824%](http://progressed.io/bar/1)|1 pt|
-|lisp/lispy90/lispy90|101.345 s.|![1.50223%](http://progressed.io/bar/1)|1 pt|
-|tcl/picol/picol|163.352 s.|![0.931993%](http://progressed.io/bar/0)|0 pt|
-|chaiscript/chai|185.719 s.|![0.819749%](http://progressed.io/bar/0)|0 pt|
-|javascript/42tiny-js/42tinyjs|232.703 s.|![0.654237%](http://progressed.io/bar/0)|0 pt|
-
-- AMD A10 3.8 GHz, 8 GiB, Windows 7 64bit.
-- Compiled on VS2015 RC if possible, VS2013 elsewhere.
 
 ### to add (soon)
 - @todo {

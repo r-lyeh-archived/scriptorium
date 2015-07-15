@@ -34,6 +34,7 @@ struct timing {
 #include <string>
 #include <fstream>
 #include <set>
+#include <map>
 #include <vector>
 #include <sstream>
 
@@ -58,37 +59,43 @@ std::string base( const std::string &app = std::string() ) {
 }
 
 int main( int argc, const char **argv ) {
+    int ret = 0;
 
-    if( argc <= 2 ) {
-        return 0;
-    }
-
-    int N = std::strtoul( argv[1], NULL, NULL );
-
-    std::string cmd, sep;
-    for( int i = 2; i < argc; ++i ) {
-        cmd += sep + argv[i];
-        sep = ' ';
-    }
-    int ret;
-    auto overhead = timing::bench( [&]{ 
-        // spinning
-        for( auto i = 0; i < N; ++i ) 
-        ret = system((cmd+"! 1> nul 2> nul").c_str());
-    } );
-    auto took = timing::bench( [&]{ 
-        // avg time
-        for( auto i = 0; i < N - 1; ++i )
-        system((cmd+" 1> nul 2> nul").c_str());
-        ret = system(cmd.c_str());
-    } );
-    std::cout << (std::abs(took - overhead) / N) << " s." << std::endl;
-
-    // append to 'bench.csv'
+    // benchmark
+    if( argc > 1 )
     {
-        std::ofstream ofs( base("/bench.csv").c_str(), std::ios::binary | std::ios::app );
-        if( ofs.good() ) {
-            ofs << argv[2] << "," << ( std::abs(took - overhead) / N ) << std::endl;
+        int N = 0;
+        std::string cmd, sep, desc;
+        for( int i = 1; i < argc; ++i ) {
+            if( argv[i][0] >= '0' && argv[i][0] <= '9' ) {
+                 N = std::strtoul( argv[i], NULL, NULL );
+            }
+            else
+            if( argv[i][0] == '/' && argv[i][1] == '/' ) {
+                desc = &argv[i][2];
+            }
+            else {
+                cmd += sep + argv[i];
+                sep = ' ';
+
+                if( desc.empty() ) desc = argv[i];
+            }
+        }
+        auto overhead = 0; // measure fib(0)
+        auto took = timing::bench( [&]{ 
+            // avg time
+            for( auto i = 0; i < N - 1; ++i )
+            system((cmd+" 1> nul 2> nul").c_str());
+            ret = system(cmd.c_str());
+        } );
+        std::cout << (std::abs(took - overhead) / N) << " s." << std::endl;
+
+        // append to 'bench.csv'
+        {
+            std::ofstream ofs( base("/bench.csv").c_str(), std::ios::binary | std::ios::app );
+            if( ofs.good() ) {
+                ofs << desc << "," << ( std::abs(took - overhead) / N ) << std::endl;
+            }
         }
     }
 
@@ -118,12 +125,19 @@ int main( int argc, const char **argv ) {
 
             bool operator <( const idx &other ) const {
                 if( time < other.time ) return true;
-                if( time > other.time ) return false;
                 return name < other.name;
+            }
+
+            bool operator==( const idx &other ) const {
+                return name == other.name;
+            }
+            bool operator!=( const idx &other ) const {
+                return name != other.name;
             }
         };
 
-        std::set< idx > all;
+        std::map< std::string, float > unique;
+        std::set< idx > sort;
 
         {
             std::ifstream ifs( base("/bench.csv").c_str(), std::ios::binary);
@@ -137,28 +151,39 @@ int main( int argc, const char **argv ) {
                 auto tokens = tokenize( line, "," );
                 if( tokens.size() == 2 ) {
                     if( tokens[0] == "fib" || tokens[0] == "fib.exe" ) tokens[0] = "c/vc";
-                    all.insert( idx { tokens[0], std::strtof( tokens[1].c_str(), NULL ) } ); 
+                    float time = std::strtof( tokens[1].c_str(), NULL );
+                    float prev = (unique[ tokens[0] ] = unique[ tokens[0] ]);
+                    unique[ tokens[0] ] = prev ? (std::min)( prev, time ) : time;
                 }
+            }
+            for( auto &it : unique ) {
+                sort.insert( idx{ it.first, it.second } );
             }
         }
 
-#if 0
-        auto min = float(all.rbegin()->time);
-#else
-        auto cmin = all.begin(); //find("lua")->time; //float(all.begin()->time);
-        while( cmin != all.end() && cmin->name != "lua" ) cmin++;
-        auto min = float(cmin->time);
+        auto min = float(sort.begin()->time);
+        auto max = float(sort.rbegin()->time);
+
+#if 1
+        auto cmin = sort.begin(); //find("lua")->time; //float(sort.begin()->time);
+        while( cmin != sort.end() && cmin->name.find("[lua]") == std::string::npos ) cmin++;
+        min = float(cmin->time);
 #endif
-        auto max = float(all.rbegin()->time);
 
         std::ofstream ofs( base("BENCH.md").c_str(), std::ios::binary);
         ofs << "|Language|Time|Relative Lua speed|Score|" << std::endl;
         ofs << "|:-------|---:|:----------------:|----:|" << std::endl;
-        for( auto &it : all ) {
+        for( auto &it : sort ) {
             float speed = it.relative_speed(min, max);
             int score( speed );
+            int factor( speed / 100 );
             speed = speed > 100 ? 100 : speed;
-            ofs << '|' << it.name << "|" << it.time << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << ")|" << score << " pt|" << std::endl;
+            if( factor > 1 ) {
+                char buf[16]; sprintf(buf, "%02d", factor);
+                ofs << '|' << it.name << "|" << it.time << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << "?title=x" << buf << ")|" << score << " pt|" << std::endl;
+            } else {
+                ofs << '|' << it.name << "|" << it.time << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << ")|" << score << " pt|" << std::endl;
+            }
         }
     }
 

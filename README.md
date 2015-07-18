@@ -4,7 +4,7 @@ scriptorium
 - quick and dirty benchmark suite (dont take it too serious)
 - benchmarked latest versions at the time of writing (Jul 2015)
 
-### languages/implementations evaluated (34)
+### Languages or implementations evaluated: 34
 - angelscript
 - angelscript (angelscript-jit)
 - c (c4)
@@ -40,48 +40,48 @@ scriptorium
 - tcl (picol)
 - wren
 
-### rank
+### Ranking
 |Language|Time|Relative Lua speed|Score|
 |:-------|---:|:----------------:|----:|
-|[c/vc](https://www.visualstudio.com/)|0.0741186 s.|![100%](http://progressed.io/bar/100?title=x18)|1808 pt|
-|[lua/luajit](https://github.com/LuaDist/luajit)|0.111428 s.|![100%](http://progressed.io/bar/100?title=x12)|1203 pt|
-|[c/libtcc](http://bellard.org/tcc/)|0.151179 s.|![100%](http://progressed.io/bar/100?title=x08)|886 pt|
-|[pawn/asm](http://www.compuphase.com/pawn/pawn.htm)|0.38402 s.|![100%](http://progressed.io/bar/100?title=x03)|349 pt|
-|[pawn](http://www.compuphase.com/pawn/pawn.htm)|0.719387 s.|![100%](http://progressed.io/bar/100)|186 pt|
-|[neko/nekovm](https://github.com/HaxeFoundation/neko)|1.10385 s.|![100%](http://progressed.io/bar/100)|121 pt|
-|[lua](https://github.com/LuaDist/lua)|1.34052 s.|![100%](http://progressed.io/bar/100)|100 pt|
-|[ruby/tinyrb(ist)](https://github.com/sanchapereira/tinyrb-ist)|1.44126 s.|![93.0103%](http://progressed.io/bar/93)|93 pt|
-|[gamemonkey](http://www.gmscript.com/)|1.69064 s.|![79.2907%](http://progressed.io/bar/79)|79 pt|
-|[as/angelscript-jit](https://github.com/BlindMindStudios/AngelScript-JIT-Compiler)|1.85891 s.|![72.1132%](http://progressed.io/bar/72)|72 pt|
-|[wren](https://github.com/munificent/wren)|1.99672 s.|![67.1361%](http://progressed.io/bar/67)|67 pt|
-|[lily](https://github.com/jesserayadkins/lily)|2.00502 s.|![66.8582%](http://progressed.io/bar/66)|66 pt|
-|[as/angelscript](http://www.angelcode.com/angelscript/)|2.03945 s.|![65.7295%](http://progressed.io/bar/65)|65 pt|
-|[ruby/mruby](https://github.com/mruby/mruby)|2.09807 s.|![63.893%](http://progressed.io/bar/63)|63 pt|
-|[squirrel](http://squirrel-lang.org/)|2.12571 s.|![63.0622%](http://progressed.io/bar/63)|63 pt|
-|[c/c4](https://github.com/rswier/c4)|2.53838 s.|![52.8101%](http://progressed.io/bar/52)|52 pt|
-|[python/micropython](https://github.com/micropython/micropython)|2.84204 s.|![47.1675%](http://progressed.io/bar/47)|47 pt|
-|[dao](https://github.com/daokoder/dao)|2.87563 s.|![46.6166%](http://progressed.io/bar/46)|46 pt|
-|[quakec/gmqcc](https://github.com/graphitemaster/gmqcc)|3.06013 s.|![43.806%](http://progressed.io/bar/43)|43 pt|
-|[objectscript](https://github.com/unitpoint/objectscript)|3.10825 s.|![43.1278%](http://progressed.io/bar/43)|43 pt|
-|[lisp/minilisp](https://github.com/rui314/minilisp)|6.95091 s.|![19.2855%](http://progressed.io/bar/19)|19 pt|
-|[js/duktape](https://github.com/svaarala/duktape)|9.54355 s.|![14.0463%](http://progressed.io/bar/14)|14 pt|
-|[gml](https://github.com/graphitemaster/gml)|16.4427 s.|![8.15268%](http://progressed.io/bar/8)|8 pt|
-|[psl](https://github.com/Silica/PSL)|17.6445 s.|![7.59738%](http://progressed.io/bar/7)|7 pt|
-|[python/tinypy(panda)](https://github.com/dkasak/tinypy-panda)|21.7993 s.|![6.14937%](http://progressed.io/bar/6)|6 pt|
-|[scheme/s9](http://www.t3x.org/s9fes/)|33.1601 s.|![4.04257%](http://progressed.io/bar/4)|4 pt|
-|[jx9](http://jx9.symisc.net/)|43.5976 s.|![3.07476%](http://progressed.io/bar/3)|3 pt|
+|[c/vc](https://www.visualstudio.com/)| 0.074 s.|![100%](http://progressed.io/bar/100?title=x18.0)|1808 pt|
+|[lua/luajit](https://github.com/LuaDist/luajit)| 0.111 s.|![100%](http://progressed.io/bar/100?title=x12.0)|1203 pt|
+|[c/libtcc](http://bellard.org/tcc/)| 0.151 s.|![100%](http://progressed.io/bar/100?title=x08.8)|886 pt|
+|[pawn/asm](http://www.compuphase.com/pawn/pawn.htm)| 0.384 s.|![100%](http://progressed.io/bar/100?title=x03.4)|349 pt|
+|[pawn](http://www.compuphase.com/pawn/pawn.htm)| 0.719 s.|![100%](http://progressed.io/bar/100?title=x01.8)|186 pt|
+|[neko/nekovm](https://github.com/HaxeFoundation/neko)| 1.104 s.|![100%](http://progressed.io/bar/100?title=x01.2)|121 pt|
+|[lua](https://github.com/LuaDist/lua)| 1.341 s.|![100%](http://progressed.io/bar/100)|100 pt|
+|[ruby/tinyrb(ist)](https://github.com/sanchapereira/tinyrb-ist)| 1.441 s.|![93.0103%](http://progressed.io/bar/93)|93 pt|
+|[gamemonkey](http://www.gmscript.com/)| 1.691 s.|![79.2907%](http://progressed.io/bar/79)|79 pt|
+|[as/angelscript-jit](https://github.com/BlindMindStudios/AngelScript-JIT-Compiler)| 1.859 s.|![72.1132%](http://progressed.io/bar/72)|72 pt|
+|[wren](https://github.com/munificent/wren)| 1.997 s.|![67.1361%](http://progressed.io/bar/67)|67 pt|
+|[lily](https://github.com/jesserayadkins/lily)| 2.005 s.|![66.8582%](http://progressed.io/bar/66)|66 pt|
+|[as/angelscript](http://www.angelcode.com/angelscript/)| 2.039 s.|![65.7295%](http://progressed.io/bar/65)|65 pt|
+|[ruby/mruby](https://github.com/mruby/mruby)| 2.098 s.|![63.893%](http://progressed.io/bar/63)|63 pt|
+|[squirrel](http://squirrel-lang.org/)| 2.126 s.|![63.0622%](http://progressed.io/bar/63)|63 pt|
+|[c/c4](https://github.com/rswier/c4)| 2.538 s.|![52.8101%](http://progressed.io/bar/52)|52 pt|
+|[python/micropython](https://github.com/micropython/micropython)| 2.842 s.|![47.1675%](http://progressed.io/bar/47)|47 pt|
+|[dao](https://github.com/daokoder/dao)| 2.876 s.|![46.6166%](http://progressed.io/bar/46)|46 pt|
+|[quakec/gmqcc](https://github.com/graphitemaster/gmqcc)| 3.060 s.|![43.806%](http://progressed.io/bar/43)|43 pt|
+|[objectscript](https://github.com/unitpoint/objectscript)| 3.108 s.|![43.1278%](http://progressed.io/bar/43)|43 pt|
+|[lisp/minilisp](https://github.com/rui314/minilisp)| 6.951 s.|![19.2855%](http://progressed.io/bar/19)|19 pt|
+|[js/duktape](https://github.com/svaarala/duktape)| 9.544 s.|![14.0463%](http://progressed.io/bar/14)|14 pt|
+|[gml](https://github.com/graphitemaster/gml)|16.443 s.|![8.15268%](http://progressed.io/bar/8)|8 pt|
+|[psl](https://github.com/Silica/PSL)|17.645 s.|![7.59738%](http://progressed.io/bar/7)|7 pt|
+|[python/tinypy(panda)](https://github.com/dkasak/tinypy-panda)|21.799 s.|![6.14937%](http://progressed.io/bar/6)|6 pt|
+|[scheme/s9](http://www.t3x.org/s9fes/)|33.160 s.|![4.04257%](http://progressed.io/bar/4)|4 pt|
+|[jx9](http://jx9.symisc.net/)|43.598 s.|![3.07476%](http://progressed.io/bar/3)|3 pt|
 |[jtc](https://github.com/progschj/jtc)|47.021 s.|![2.8509%](http://progressed.io/bar/2)|2 pt|
 |[scheme/tinyscheme](http://tinyscheme.sourceforge.net/home.html)|65.398 s.|![2.04979%](http://progressed.io/bar/2)|2 pt|
-|[lisp/paren](https://bitbucket.org/ktg/paren)|72.9008 s.|![1.83883%](http://progressed.io/bar/1)|1 pt|
-|[lisp/lispy90](http://howtowriteaprogram.blogspot.com.es/2010/11/lisp-interpreter-in-90-lines-of-c.html)|91.7667 s.|![1.46079%](http://progressed.io/bar/1)|1 pt|
+|[lisp/paren](https://bitbucket.org/ktg/paren)|72.901 s.|![1.83883%](http://progressed.io/bar/1)|1 pt|
+|[lisp/lispy90](http://howtowriteaprogram.blogspot.com.es/2010/11/lisp-interpreter-in-90-lines-of-c.html)|91.767 s.|![1.46079%](http://progressed.io/bar/1)|1 pt|
 |[tcl/picol](http://wiki.tcl.tk/17893)|151.527 s.|![0.884674%](http://progressed.io/bar/0)|0 pt|
 |[chaiscript](https://github.com/ChaiScript/ChaiScript)|175.038 s.|![0.765845%](http://progressed.io/bar/0)|0 pt|
-|[js/42tiny-js](https://github.com/ardi69/42tiny-js)|227.17 s.|![0.590096%](http://progressed.io/bar/0)|0 pt|
+|[js/42tiny-js](https://github.com/ardi69/42tiny-js)|227.170 s.|![0.590096%](http://progressed.io/bar/0)|0 pt|
 
 - AMD A10 3.8 GHz, 8 GiB, Windows 7 64bit.
 - Compiled on VS2015 RC if possible, VS2013 elsewhere.
 
-### language requirements
+### Language requirements
 - must embed from C++.
 - must compile on vs2015 (or vs2013 at least).
 - must link statically.
@@ -93,7 +93,7 @@ scriptorium
   - must disable threading if possible (not all languages are thread-safe)
   - etc
 
-### to add (soon)
+### To add (soon)
 - @todo {
 - add exe size
 - add iteration benchmarks
@@ -122,7 +122,7 @@ scriptorium
   - ...
 - }
 
-### possible output 
+### Possible output 
 ```lisp
 as/angelscript
 fib: 5702887
@@ -261,7 +261,7 @@ elapsed: 2.128
 2.24041 s.
 ```
 
-### upcoming
+### Upcoming
 - creating a class to handle them all ([relevant](https://xkcd.com/927/))
 - http://qore.org/downloads ?
 - https://code.google.com/p/tart/
@@ -290,6 +290,6 @@ elapsed: 2.128
 - https://github.com/zeux/aike
 - https://github.com/dkasak/tinypy-panda (or https://github.com/kjk/tinypy-kjk)
 
-### license
+### License
 - initial tests by [Lewis Van Winkle (2009)](http://codeplea.com/game-scripting-languages) (unlicensed?)
-- code & other tests by r-lyeh, unlicensed
+- makefiles, bench code & other tests put into public domain (@r-lyeh)

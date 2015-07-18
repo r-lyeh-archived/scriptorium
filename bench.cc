@@ -178,11 +178,12 @@ int main( int argc, const char **argv ) {
             int score( speed );
             int factor( speed / 100 );
             speed = speed > 100 ? 100 : speed;
-            if( factor > 1 ) {
-                char buf[16]; sprintf(buf, "%02d", factor);
-                ofs << '|' << it.name << "|" << it.time << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << "?title=x" << buf << ")|" << score << " pt|" << std::endl;
+            char time_str[16];   sprintf(time_str, "%6.3f", it.time);
+            char factor_str[16]; sprintf(factor_str, "%02d.%01d", score/100, (score%100) / 10 );
+            if( score > 100 ) {
+                ofs << '|' << it.name << "|" << time_str << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << "?title=x" << factor_str << ")|" << score << " pt|" << std::endl;
             } else {
-                ofs << '|' << it.name << "|" << it.time << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << ")|" << score << " pt|" << std::endl;
+                ofs << '|' << it.name << "|" << time_str << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << ")|" << score << " pt|" << std::endl;
             }
         }
     }

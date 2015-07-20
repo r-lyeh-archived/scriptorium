@@ -1,0 +1,5 @@
+#define sexp_so_extension ".dll"
+#define sexp_default_module_path "/usr/local/share/chibi:/usr/local/lib/chibi"
+#define sexp_platform "mingw"
+#define sexp_version "0.7.3"
+#define sexp_release_name "nitrogen"

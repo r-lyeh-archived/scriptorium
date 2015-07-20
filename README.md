@@ -4,7 +4,7 @@ scriptorium
 - quick and dirty benchmark suite (dont take it too serious)
 - benchmarked latest versions at the time of writing (Jul 2015)
 
-### Languages or implementations evaluated: 34
+### Languages or implementations evaluated: 35
 - angelscript
 - angelscript (angelscript-jit)
 - c (c4)
@@ -34,6 +34,7 @@ scriptorium
 - quakec (gmqcc)
 - ruby (mruby)
 - ruby (tinyrb)
+- scheme (chibi)
 - scheme (s9)
 - scheme (tinyscheme)
 - squirrel (squirrel3)
@@ -48,6 +49,7 @@ scriptorium
 |[c/libtcc](http://bellard.org/tcc/)| 0.151 s.|![100%](http://progressed.io/bar/100?title=x08.8)|886 pt|
 |[pawn/asm](http://www.compuphase.com/pawn/pawn.htm)| 0.384 s.|![100%](http://progressed.io/bar/100?title=x03.4)|349 pt|
 |[pawn](http://www.compuphase.com/pawn/pawn.htm)| 0.719 s.|![100%](http://progressed.io/bar/100?title=x01.8)|186 pt|
+|[scheme/chibi](https://github.com/ashinn/chibi-scheme)| 1.009 s.|![100%](http://progressed.io/bar/100?title=x01.3)|132 pt|
 |[neko/nekovm](https://github.com/HaxeFoundation/neko)| 1.104 s.|![100%](http://progressed.io/bar/100?title=x01.2)|121 pt|
 |[lua](https://github.com/LuaDist/lua)| 1.341 s.|![100%](http://progressed.io/bar/100)|100 pt|
 |[ruby/tinyrb(ist)](https://github.com/sanchapereira/tinyrb-ist)| 1.441 s.|![93.0103%](http://progressed.io/bar/93)|93 pt|

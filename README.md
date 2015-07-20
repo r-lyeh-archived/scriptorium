@@ -4,7 +4,7 @@ scriptorium
 - quick and dirty benchmark suite (dont take it too serious)
 - benchmarked latest versions at the time of writing (Jul 2015)
 
-### Languages or implementations evaluated: 35
+### Languages or implementations evaluated: 36
 - angelscript
 - angelscript (angelscript-jit)
 - c (c4)
@@ -35,6 +35,7 @@ scriptorium
 - ruby (mruby)
 - ruby (tinyrb)
 - scheme (chibi)
+- scheme (s7)
 - scheme (s9)
 - scheme (tinyscheme)
 - squirrel (squirrel3)
@@ -60,6 +61,7 @@ scriptorium
 |[as/angelscript](http://www.angelcode.com/angelscript/)| 2.039 s.|![65.7295%](http://progressed.io/bar/65)|65 pt|
 |[ruby/mruby](https://github.com/mruby/mruby)| 2.098 s.|![63.893%](http://progressed.io/bar/63)|63 pt|
 |[squirrel](http://squirrel-lang.org/)| 2.126 s.|![63.0622%](http://progressed.io/bar/63)|63 pt|
+|[scheme/s7](https://ccrma.stanford.edu/software/snd/snd/s7.html)| 2.136 s.|![62.7708%](http://progressed.io/bar/62)|62 pt|
 |[c/c4](https://github.com/rswier/c4)| 2.538 s.|![52.8101%](http://progressed.io/bar/52)|52 pt|
 |[python/micropython](https://github.com/micropython/micropython)| 2.842 s.|![47.1675%](http://progressed.io/bar/47)|47 pt|
 |[dao](https://github.com/daokoder/dao)| 2.876 s.|![46.6166%](http://progressed.io/bar/46)|46 pt|

@@ -1,0 +1,4 @@
+syntax: glob
+Debug
+jog.sdf
+jog.vcxproj.user

@@ -134,6 +134,18 @@ rem @popd
 @popd
 
 @echo.
+@echo scheme/chibi
+@pushd scheme\chibi-scheme\
+@..\..\bench 5 chibi ..\..\tests\fib.scm //[scheme/chibi](https://github.com/ashinn/chibi-scheme)
+@popd
+
+@echo.
+@echo scheme/s7
+@pushd scheme\s7\
+@..\..\bench 5 s7 ..\..\tests\fib.scm //[scheme/s7](https://ccrma.stanford.edu/software/snd/snd/s7.html)
+@popd
+
+@echo.
 @echo scheme/s9
 @pushd scheme\s9
 @..\..\bench 1 s9 ..\..\tests\fib.scm //[scheme/s9](http://www.t3x.org/s9fes/)
@@ -156,3 +168,12 @@ rem @popd
 @echo.
 @echo wren
 @bench 5 wren\wren tests\fib.wren //[wren](https://github.com/munificent/wren)
+
+@echo.
+@echo c/picoc
+@bench 5 c\picoc\picoc tests\fib.c //[C/picoC](https://github.com/zsaleeba/picoc)
+
+@echo.
+@echo c/oc
+@c\oc\parse < tests\fib.oc > tests\fib.ooc 
+@bench 5 c\oc\interp < tests\fib.ooc //[C/OC](http://exmortis.narod.ru/src_pcode_eng.html)

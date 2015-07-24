@@ -1,0 +1,271 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		302A39E21293841200852337 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 302A39E11293841200852337 /* test.cpp */; };
+		302A39F41293842200852337 /* jog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 302A39EB1293842200852337 /* jog.cpp */; };
+		302A39F51293842200852337 /* jog_analyzer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 302A39ED1293842200852337 /* jog_analyzer.cpp */; };
+		302A39F61293842200852337 /* jog_native.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 302A39EE1293842200852337 /* jog_native.cpp */; };
+		302A39F71293842200852337 /* jog_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 302A39EF1293842200852337 /* jog_parser.cpp */; };
+		302A39F81293842200852337 /* jog_scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 302A39F01293842200852337 /* jog_scanner.cpp */; };
+		302A39F91293842200852337 /* jog_vm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 302A39F11293842200852337 /* jog_vm.cpp */; };
+		8DD76F6A0486A84900D96B5E /* jog.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6859E8B029090EE04C91782 /* jog.1 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DD76F690486A84900D96B5E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				8DD76F6A0486A84900D96B5E /* jog.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		302A39E11293841200852337 /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test.cpp; path = ../../test.cpp; sourceTree = SOURCE_ROOT; };
+		302A39E41293842200852337 /* array_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = array_list.h; sourceTree = "<group>"; };
+		302A39E61293842200852337 /* .jog.cpp.swp */ = {isa = PBXFileReference; lastKnownFileType = file; path = .jog.cpp.swp; sourceTree = "<group>"; };
+		302A39E71293842200852337 /* .jog.h.swp */ = {isa = PBXFileReference; lastKnownFileType = file; path = .jog.h.swp; sourceTree = "<group>"; };
+		302A39E81293842200852337 /* .jog_analyzer.cpp.swp */ = {isa = PBXFileReference; lastKnownFileType = file; path = .jog_analyzer.cpp.swp; sourceTree = "<group>"; };
+		302A39E91293842200852337 /* .jog_native.cpp.swp */ = {isa = PBXFileReference; lastKnownFileType = file; path = .jog_native.cpp.swp; sourceTree = "<group>"; };
+		302A39EA1293842200852337 /* .jog_vm.cpp.swp */ = {isa = PBXFileReference; lastKnownFileType = file; path = .jog_vm.cpp.swp; sourceTree = "<group>"; };
+		302A39EB1293842200852337 /* jog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jog.cpp; sourceTree = "<group>"; };
+		302A39EC1293842200852337 /* jog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jog.h; sourceTree = "<group>"; };
+		302A39ED1293842200852337 /* jog_analyzer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jog_analyzer.cpp; sourceTree = "<group>"; };
+		302A39EE1293842200852337 /* jog_native.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jog_native.cpp; sourceTree = "<group>"; };
+		302A39EF1293842200852337 /* jog_parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jog_parser.cpp; sourceTree = "<group>"; };
+		302A39F01293842200852337 /* jog_scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jog_scanner.cpp; sourceTree = "<group>"; };
+		302A39F11293842200852337 /* jog_vm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jog_vm.cpp; sourceTree = "<group>"; };
+		302A39F21293842200852337 /* ref_counted.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ref_counted.h; sourceTree = "<group>"; };
+		302A39F31293842200852337 /* string_builder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = string_builder.h; sourceTree = "<group>"; };
+		8DD76F6C0486A84900D96B5E /* jog */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = jog; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6859E8B029090EE04C91782 /* jog.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = jog.1; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* jog */ = {
+			isa = PBXGroup;
+			children = (
+				302A39E31293842200852337 /* libraries */,
+				302A39E11293841200852337 /* test.cpp */,
+				08FB7795FE84155DC02AAC07 /* Source */,
+				C6859E8C029090F304C91782 /* Documentation */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+			);
+			name = jog;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7796FE84155DC02AAC07 /* main.cpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DD76F6C0486A84900D96B5E /* jog */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		302A39E31293842200852337 /* libraries */ = {
+			isa = PBXGroup;
+			children = (
+				302A39E41293842200852337 /* array_list.h */,
+				302A39E51293842200852337 /* jog */,
+				302A39F21293842200852337 /* ref_counted.h */,
+				302A39F31293842200852337 /* string_builder.h */,
+			);
+			name = libraries;
+			path = ../../libraries;
+			sourceTree = SOURCE_ROOT;
+		};
+		302A39E51293842200852337 /* jog */ = {
+			isa = PBXGroup;
+			children = (
+				302A39E61293842200852337 /* .jog.cpp.swp */,
+				302A39E71293842200852337 /* .jog.h.swp */,
+				302A39E81293842200852337 /* .jog_analyzer.cpp.swp */,
+				302A39E91293842200852337 /* .jog_native.cpp.swp */,
+				302A39EA1293842200852337 /* .jog_vm.cpp.swp */,
+				302A39EB1293842200852337 /* jog.cpp */,
+				302A39EC1293842200852337 /* jog.h */,
+				302A39ED1293842200852337 /* jog_analyzer.cpp */,
+				302A39EE1293842200852337 /* jog_native.cpp */,
+				302A39EF1293842200852337 /* jog_parser.cpp */,
+				302A39F01293842200852337 /* jog_scanner.cpp */,
+				302A39F11293842200852337 /* jog_vm.cpp */,
+			);
+			path = jog;
+			sourceTree = "<group>";
+		};
+		C6859E8C029090F304C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				C6859E8B029090EE04C91782 /* jog.1 */,
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76F620486A84900D96B5E /* jog */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "jog" */;
+			buildPhases = (
+				8DD76F640486A84900D96B5E /* Sources */,
+				8DD76F660486A84900D96B5E /* Frameworks */,
+				8DD76F690486A84900D96B5E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = jog;
+			productInstallPath = "$(HOME)/bin";
+			productName = jog;
+			productReference = 8DD76F6C0486A84900D96B5E /* jog */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "jog" */;
+			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 08FB7794FE84155DC02AAC07 /* jog */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DD76F620486A84900D96B5E /* jog */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76F640486A84900D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				302A39E21293841200852337 /* test.cpp in Sources */,
+				302A39F41293842200852337 /* jog.cpp in Sources */,
+				302A39F51293842200852337 /* jog_analyzer.cpp in Sources */,
+				302A39F61293842200852337 /* jog_native.cpp in Sources */,
+				302A39F71293842200852337 /* jog_parser.cpp in Sources */,
+				302A39F81293842200852337 /* jog_scanner.cpp in Sources */,
+				302A39F91293842200852337 /* jog_vm.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB923208733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = jog;
+			};
+			name = Debug;
+		};
+		1DEB923308733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = jog;
+			};
+			name = Release;
+		};
+		1DEB923608733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		1DEB923708733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "jog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923208733DC60010E9CD /* Debug */,
+				1DEB923308733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "jog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923608733DC60010E9CD /* Debug */,
+				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

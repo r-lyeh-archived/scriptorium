@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jog", "jog\jog.vcproj", "{245BF0A0-7004-45A8-A37D-32D7985ACB21}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{245BF0A0-7004-45A8-A37D-32D7985ACB21}.Debug|Win32.ActiveCfg = Debug|Win32
+		{245BF0A0-7004-45A8-A37D-32D7985ACB21}.Debug|Win32.Build.0 = Debug|Win32
+		{245BF0A0-7004-45A8-A37D-32D7985ACB21}.Release|Win32.ActiveCfg = Release|Win32
+		{245BF0A0-7004-45A8-A37D-32D7985ACB21}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

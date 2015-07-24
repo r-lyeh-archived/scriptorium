@@ -4,16 +4,18 @@ scriptorium
 - quick and dirty benchmark suite (dont take it too serious)
 - benchmarked latest versions at the time of writing (Jul 2015)
 
-### Languages or implementations evaluated: 36
+### Languages or implementations evaluated: 38
 - angelscript
 - angelscript (angelscript-jit)
 - c (c4)
 - c (native)
+- c (picoc)
 - c (tcclib)
 - chaiscript
 - dao
 - gamemonkey 
 - gml
+- java (jog)
 - javascript (42tiny-js)
 - javascript (duktape)
 - jtc
@@ -67,12 +69,14 @@ scriptorium
 |[dao](https://github.com/daokoder/dao)| 2.876 s.|![46.6166%](http://progressed.io/bar/46)|46 pt|
 |[quakec/gmqcc](https://github.com/graphitemaster/gmqcc)| 3.060 s.|![43.806%](http://progressed.io/bar/43)|43 pt|
 |[objectscript](https://github.com/unitpoint/objectscript)| 3.108 s.|![43.1278%](http://progressed.io/bar/43)|43 pt|
+|[Java/Jog](https://code.google.com/p/jog-interpreter)| 4.675 s.|![28.672%](http://progressed.io/bar/28)|28 pt|
 |[lisp/minilisp](https://github.com/rui314/minilisp)| 6.951 s.|![19.2855%](http://progressed.io/bar/19)|19 pt|
 |[js/duktape](https://github.com/svaarala/duktape)| 9.544 s.|![14.0463%](http://progressed.io/bar/14)|14 pt|
 |[gml](https://github.com/graphitemaster/gml)|16.443 s.|![8.15268%](http://progressed.io/bar/8)|8 pt|
 |[psl](https://github.com/Silica/PSL)|17.645 s.|![7.59738%](http://progressed.io/bar/7)|7 pt|
 |[python/tinypy(panda)](https://github.com/dkasak/tinypy-panda)|21.799 s.|![6.14937%](http://progressed.io/bar/6)|6 pt|
 |[scheme/s9](http://www.t3x.org/s9fes/)|33.160 s.|![4.04257%](http://progressed.io/bar/4)|4 pt|
+|[C/picoC](https://github.com/zsaleeba/picoc)|36.625 s.|![3.66016%](http://progressed.io/bar/3)|3 pt|
 |[jx9](http://jx9.symisc.net/)|43.598 s.|![3.07476%](http://progressed.io/bar/3)|3 pt|
 |[jtc](https://github.com/progschj/jtc)|47.021 s.|![2.8509%](http://progressed.io/bar/2)|2 pt|
 |[scheme/tinyscheme](http://tinyscheme.sourceforge.net/home.html)|65.398 s.|![2.04979%](http://progressed.io/bar/2)|2 pt|
@@ -97,7 +101,8 @@ scriptorium
   - must disable threading if possible (not all languages are thread-safe)
   - etc
 
-### To add (soon)
+### Upcoming 
+- creating a class to handle them all ([relevant](https://xkcd.com/927/))
 - @todo {
 - add exe size
 - add iteration benchmarks
@@ -265,17 +270,22 @@ elapsed: 2.128
 2.24041 s.
 ```
 
-### Upcoming
-- creating a class to handle them all ([relevant](https://xkcd.com/927/))
+### To evaluate
+- http://catpad.net/michael/jvm/
+- http://jamvm.sourceforge.net/
+- http://oss.readytalk.com/avian/
 - http://qore.org/downloads ?
+- http://www.codeproject.com/Articles/24029/Home-Made-Java-Virtual-Machine
+- http://www.harbaum.org/till/nanovm/index.shtml
+- http://www.kiffer.be/open-mika.html
 - https://code.google.com/p/tart/
 - https://github.com/aardappel/lobster
 - https://github.com/andyfischer/circa
 - https://github.com/chameco/Solid
 - https://github.com/clever-lang/clever
+- https://github.com/dkasak/tinypy-panda (or https://github.com/kjk/tinypy-kjk)
 - https://github.com/evanw/skew
 - https://github.com/ex/Killa
-- https://github.com/graphitemaster/gml
 - https://github.com/gregtour/duck-lang
 - https://github.com/H2CO3/Sparkling
 - https://github.com/JarrettBillingsley/Croc
@@ -285,6 +295,7 @@ elapsed: 2.128
 - https://github.com/LukasBanana/XieXie-2
 - https://github.com/nim-lang/Nim (or https://github.com/nim-lang/csources)
 - https://github.com/noct/expr
+- https://github.com/parrot/parrot
 - https://github.com/perl11/potion
 - https://github.com/proglangclass/vm
 - https://github.com/red/red
@@ -292,7 +303,14 @@ elapsed: 2.128
 - https://github.com/stevedekorte/io
 - https://github.com/timburks/nu
 - https://github.com/zeux/aike
-- https://github.com/dkasak/tinypy-panda (or https://github.com/kjk/tinypy-kjk)
+- c4 jit
+- lejos
+- mono
+- pcode
+- qforth
+- robovm
+- tinyvm
+- uj 
 
 ### License
 - initial tests by [Lewis Van Winkle (2009)](http://codeplea.com/game-scripting-languages) (unlicensed?)

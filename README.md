@@ -4,10 +4,11 @@ scriptorium
 - quick and dirty benchmark suite (dont take it too serious)
 - benchmarked latest versions at the time of writing (Jul 2015)
 
-### Languages or implementations evaluated: 38
+### Languages or implementations evaluated: 39
 - angelscript
 - angelscript (angelscript-jit)
 - c (c4)
+- c (c4-jit)
 - c (native)
 - c (picoc)
 - c (tcclib)
@@ -49,6 +50,7 @@ scriptorium
 |:-------|---:|:----------------:|----:|
 |[c/vc](https://www.visualstudio.com/)| 0.074 s.|![100%](http://progressed.io/bar/100?title=x18.0)|1808 pt|
 |[lua/luajit](https://github.com/LuaDist/luajit)| 0.111 s.|![100%](http://progressed.io/bar/100?title=x12.0)|1203 pt|
+|[c/c4-jit](https://github.com/EarlGray/c4)| 0.136 s.|![100%](http://progressed.io/bar/100?title=x09.8)|986 pt|
 |[c/libtcc](http://bellard.org/tcc/)| 0.151 s.|![100%](http://progressed.io/bar/100?title=x08.8)|886 pt|
 |[pawn/asm](http://www.compuphase.com/pawn/pawn.htm)| 0.384 s.|![100%](http://progressed.io/bar/100?title=x03.4)|349 pt|
 |[pawn](http://www.compuphase.com/pawn/pawn.htm)| 0.719 s.|![100%](http://progressed.io/bar/100?title=x01.8)|186 pt|
@@ -283,7 +285,6 @@ elapsed: 2.128
 - https://github.com/andyfischer/circa
 - https://github.com/chameco/Solid
 - https://github.com/clever-lang/clever
-- https://github.com/dkasak/tinypy-panda (or https://github.com/kjk/tinypy-kjk)
 - https://github.com/evanw/skew
 - https://github.com/ex/Killa
 - https://github.com/gregtour/duck-lang
@@ -303,14 +304,13 @@ elapsed: 2.128
 - https://github.com/stevedekorte/io
 - https://github.com/timburks/nu
 - https://github.com/zeux/aike
-- c4 jit
-- lejos
-- mono
-- pcode
-- qforth
-- robovm
-- tinyvm
-- uj 
+- http://www.mono-project.com/
+- https://en.wikipedia.org/wiki/P-code
+- http://www.dwheeler.com/6502/oneelkruns/qforth.html
+- http://robovm.com/
+- http://www.lejos.org/ (or http://tinyvm.sourceforge.net/)
+- https://github.com/jakogut/tinyvm
+- http://dmitry.gr/index.php?r=05.Projects&proj=12.%20uJ%20-%20a%20micro%20JVM 
 
 ### License
 - initial tests by [Lewis Van Winkle (2009)](http://codeplea.com/game-scripting-languages) (unlicensed?)

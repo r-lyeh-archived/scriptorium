@@ -1,13 +1,8 @@
 @echo.
-@echo scheme/chibi
-@pushd scheme\chibi-scheme\
-@..\..\bench 5 chibi ..\..\tests\fib.scm //[scheme/chibi](https://github.com/ashinn/chibi-scheme)
-@popd
+@echo c/c4-jit
+@bench 5 c\c4jit\c4jit tests\fib.c //[c/c4-jit](https://github.com/EarlGray/c4)
 
 @echo.
-@echo scheme/s7
-@pushd scheme\s7\
-@..\..\bench 5 s7 ..\..\tests\fib.scm //[scheme/s7](https://ccrma.stanford.edu/software/snd/snd/s7.html)
-@popd
-
-
+@echo c/oc
+@c\oc\parse < tests\fib.oc > tests\fib.ooc 
+rem @bench 5 c\oc\interp //[C/OC](http://exmortis.narod.ru/src_pcode_eng.html) < tests\fib.ooc 

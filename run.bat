@@ -19,6 +19,10 @@ rem @popd
 @bench 5 c\c4\c4 tests\fib.c //[c/c4](https://github.com/rswier/c4)
 
 @echo.
+@echo c/c4-jit
+@bench 5 c\c4jit\c4jit tests\fib.c //[c/c4-jit](https://github.com/EarlGray/c4)
+
+@echo.
 @echo c/tcc
 @bench 5 c\tcc-0.9.26\win32\tcc tests\fib.c -run //[c/libtcc](http://bellard.org/tcc/)
 
@@ -42,6 +46,12 @@ rem @popd
 @echo.
 @echo gml
 @bench 1 gml\gml tests\fib.gml --no-history //[gml](https://github.com/graphitemaster/gml)
+
+@echo.
+@echo java/jog
+@pushd java\jog
+@..\..\bench 5 jog ..\..\tests\fib.java //[Java/Jog](https://code.google.com/p/jog-interpreter)
+@popd 
 
 @echo.
 @echo js/42tiny-js

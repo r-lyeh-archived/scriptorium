@@ -1,0 +1,7 @@
+*.o
+profile
+valgrind*
+cachegrind*
+callgrind*
+core*
+

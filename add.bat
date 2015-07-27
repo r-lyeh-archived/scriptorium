@@ -1,6 +1,6 @@
 @echo.
-@echo c/c4-jit
-@bench 5 c\c4jit\c4jit tests\fib.c //[c/c4-jit](https://github.com/EarlGray/c4)
+@echo tinyvm
+@bench 5 tinyvm\tvm tests\fib.tvm //TinyVM,[tinyvm](https://github.com/jakogut/tinyvm)
 
 @echo.
 @echo c/oc

@@ -149,11 +149,12 @@ int main( int argc, const char **argv ) {
                     if( ch == '\\' ) ch = '/';
                 }
                 auto tokens = tokenize( line, "," );
-                if( tokens.size() == 2 ) {
-                    if( tokens[0] == "fib" || tokens[0] == "fib.exe" ) tokens[0] = "c/vc";
-                    float time = std::strtof( tokens[1].c_str(), NULL );
-                    float prev = (unique[ tokens[0] ] = unique[ tokens[0] ]);
-                    unique[ tokens[0] ] = prev ? (std::min)( prev, time ) : time;
+                if( tokens.size() == 3 ) {
+                    if( tokens[1] == "fib" || tokens[1] == "fib.exe" ) tokens[1] = "c/vc";
+                    float time = std::strtof( tokens[2].c_str(), NULL );
+                    tokens[1] = tokens[0] + "|" + tokens[1];
+                    float prev = (unique[ tokens[1] ] = unique[ tokens[1] ]);
+                    unique[ tokens[1] ] = prev ? (std::min)( prev, time ) : time;
                 }
             }
             for( auto &it : unique ) {
@@ -171,8 +172,9 @@ int main( int argc, const char **argv ) {
 #endif
 
         std::ofstream ofs( base("BENCH.md").c_str(), std::ios::binary);
-        ofs << "|Language|Time|Relative Lua speed|Score|" << std::endl;
-        ofs << "|:-------|---:|:----------------:|----:|" << std::endl;
+        ofs << "|Rank|Language|Flavor|Time|Relative Lua speed|Score|" << std::endl;
+        ofs << "|---:|:-------|:-----|---:|:----------------:|----:|" << std::endl;
+        auto rank = 0;
         for( auto &it : sort ) {
             float speed = it.relative_speed(min, max);
             int score( speed );
@@ -180,10 +182,13 @@ int main( int argc, const char **argv ) {
             speed = speed > 100 ? 100 : speed;
             char time_str[16];   sprintf(time_str, "%6.3f", it.time);
             char factor_str[16]; sprintf(factor_str, "%02d.%01d", score/100, (score%100) / 10 );
+
+            ofs << '|' << (++rank) << '|' << it.name << "|" << time_str << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed);
+
             if( score > 100 ) {
-                ofs << '|' << it.name << "|" << time_str << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << "?title=x" << factor_str << ")|" << score << " pt|" << std::endl;
+                ofs << "?title=x" << factor_str << ")|" << score << " pt|" << std::endl;
             } else {
-                ofs << '|' << it.name << "|" << time_str << " s.|![" << speed << "%](http://progressed.io/bar/" << int(speed) << ")|" << score << " pt|" << std::endl;
+                ofs << ")|" << score << " pt|" << std::endl;
             }
         }
     }

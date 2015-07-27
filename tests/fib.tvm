@@ -1,0 +1,25 @@
+start:
+	jmp main
+
+fib:
+	cmp eax, 2
+	jge fibr
+
+	add ebx, eax
+	ret
+
+fibr:
+	push eax
+	dec eax
+	call fib
+
+	dec eax
+	call fib
+	pop eax
+	ret
+
+main:
+	mov eax, 34
+	mov ebx, 0
+	call fib
+	prn ebx

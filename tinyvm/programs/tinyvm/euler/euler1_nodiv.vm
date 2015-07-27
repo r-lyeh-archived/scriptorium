@@ -1,0 +1,35 @@
+
+# This algorithm was copied from an x86 solution to the first Project Euler problem.
+# It was authored by rayfil.
+#
+# http://projecteuler.net/thread=1
+#
+# Note that the problem has been extended to find all multiples under 1 million.
+# This is to make the execution time more significant and measurable.
+
+# Specify a label named "start," and it will become the entrypoint for the program.
+
+start:	mov ebx, 1000000
+	xor edx, edx
+	
+	mov eax, 3
+loop0:	add edx, eax
+	add eax, 3
+	cmp eax, ebx
+	jl loop0
+
+# A line prepended with a pound sign is commented out
+
+	mov eax, 5
+loop1:	add edx, eax
+	add eax, 15
+	cmp eax, ebx
+	jl loop1
+
+	mov eax, 10
+loop2:	add edx, eax
+	add eax, 15
+	cmp eax, ebx
+	jl loop2
+
+	prn edx

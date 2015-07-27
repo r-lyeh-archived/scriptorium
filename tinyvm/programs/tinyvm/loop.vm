@@ -1,0 +1,5 @@
+loop:	inc eax
+	cmp eax, 1000|h
+	prn eax
+
+	jl loop

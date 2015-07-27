@@ -1,0 +1,17 @@
+TODO:
+
+	(Basic)
+	- NASM style local labels
+	- Implement defining bytes/words/dwords
+	- Add C style defines to preprocessor
+	- Move parsed TVM program code into the VM's virtual address space
+
+	(Advanced)
+	- Fix/refactor the debugger (it doesn't work)
+	- Interrupts
+	- SDL or GLFW based screen for outputting the contents of a framebuffer
+	- JIT compilation
+	- C interface
+	- C Library written in TVM code
+
+Please send patches to Joseph Kogut <joseph.kogut(at)gmail.com>

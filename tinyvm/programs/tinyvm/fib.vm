@@ -1,0 +1,17 @@
+start:
+	mov eax, 1
+	mov ebx, 0
+
+loop:	add eax, ebx
+	add ebx, eax
+
+	prn eax
+	prn ebx
+
+	cmp eax, 0
+	jl end
+
+	cmp ebx, 0
+	jg loop
+
+end:

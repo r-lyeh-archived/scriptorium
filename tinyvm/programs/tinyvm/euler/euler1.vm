@@ -1,0 +1,29 @@
+start:
+	mov esi, 1000000
+	mov eax, 0
+
+L0:
+	mov ebx, eax
+	mod ebx, 3
+	rem ebx
+	cmp ebx, 0
+	jne L1
+
+	add edx, eax
+	je check
+
+L1:
+	mov ebx, eax
+	mod ebx, 5
+	rem ebx
+	cmp ebx, 0
+	jne check
+
+	add edx, eax
+
+check:	
+	inc eax
+	cmp eax, esi
+	jl L0
+
+	prn edx

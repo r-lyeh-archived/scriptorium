@@ -58,12 +58,20 @@ rem @popd
 @popd 
 
 @echo.
+@echo jetscript
+@bench 5 jetscript\jet tests\fib.jet //JetScript,[JetScript](https://github.com/matt-attack/JetScript)
+
+@echo.
 @echo js/42tiny-js
 @bench 1 javascript\42tiny-js\42tinyjs tests\fib.js //JavaScript,[42tiny-js](https://github.com/ardi69/42tiny-js)
 
 @echo.
 @echo js/duktape
 @bench 5 javascript\duktape\duktape tests\fib.js //JavaScript,[duktape](https://github.com/svaarala/duktape)
+
+@echo.
+@echo js/v7
+@bench 1 javascript\v7\v7 tests\fib.js //JavaScript,[v7](https://github.com/cesanta/v7)
 
 @echo.
 @echo jtc/jtc

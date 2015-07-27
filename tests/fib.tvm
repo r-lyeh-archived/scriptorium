@@ -1,6 +1,3 @@
-start:
-	jmp main
-
 fib:
 	cmp eax, 2
 	jge fibr
@@ -18,7 +15,7 @@ fibr:
 	pop eax
 	ret
 
-main:
+start:
 	mov eax, 34
 	mov ebx, 0
 	call fib

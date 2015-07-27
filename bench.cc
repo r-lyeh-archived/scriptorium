@@ -94,7 +94,7 @@ int main( int argc, const char **argv ) {
         {
             std::ofstream ofs( base("/bench.csv").c_str(), std::ios::binary | std::ios::app );
             if( ofs.good() ) {
-                ofs << desc << "," << ( std::abs(took - overhead) / N ) << std::endl;
+                ofs << desc << "," << ( std::abs(took - overhead) / N ) << "\r\n"; //std::endl;
             }
         }
     }

@@ -3,7 +3,7 @@ Scriptorium :scroll:
 
 - Game Scripting Languages benchmarked.
 - Using latest versions at the time of writing (Jul 2015)
-- Total solutions evaluated: 42
+- Total solutions evaluated: 43
 
 ### Results 
 |Rank|Language|Flavor|Time|Relative Lua speed|Score|
@@ -36,20 +36,21 @@ Scriptorium :scroll:
 |26|JetScript|[JetScript](https://github.com/matt-attack/JetScript)| 4.810 s.|![27.8671%](http://progressed.io/bar/27)|27 pt|
 |27|Lisp|[minilisp](https://github.com/rui314/minilisp)| 6.951 s.|![19.2855%](http://progressed.io/bar/19)|19 pt|
 |28|JavaScript|[duktape](https://github.com/svaarala/duktape)| 9.544 s.|![14.0463%](http://progressed.io/bar/14)|14 pt|
-|29|GML|[gml](https://github.com/graphitemaster/gml)|16.443 s.|![8.15268%](http://progressed.io/bar/8)|8 pt|
-|30|PSL|[psl](https://github.com/Silica/PSL)|17.645 s.|![7.59738%](http://progressed.io/bar/7)|7 pt|
-|31|Python|[tinypy(panda)](https://github.com/dkasak/tinypy-panda)|21.799 s.|![6.14937%](http://progressed.io/bar/6)|6 pt|
-|32|Scheme|[s9](http://www.t3x.org/s9fes/)|33.160 s.|![4.04257%](http://progressed.io/bar/4)|4 pt|
-|33|C|[picoC](https://github.com/zsaleeba/picoc)|36.625 s.|![3.66016%](http://progressed.io/bar/3)|3 pt|
-|34|JX9|[jx9](http://jx9.symisc.net/)|43.598 s.|![3.07476%](http://progressed.io/bar/3)|3 pt|
-|35|JTC|[jtc](https://github.com/progschj/jtc)|47.021 s.|![2.8509%](http://progressed.io/bar/2)|2 pt|
-|36|JavaScript|[v7](https://github.com/cesanta/v7)|51.940 s.|![2.58089%](http://progressed.io/bar/2)|2 pt|
-|37|Scheme|[tinyscheme](http://tinyscheme.sourceforge.net/home.html)|65.398 s.|![2.04979%](http://progressed.io/bar/2)|2 pt|
-|38|Lisp|[paren](https://bitbucket.org/ktg/paren)|72.901 s.|![1.83883%](http://progressed.io/bar/1)|1 pt|
-|39|Lisp|[lispy90](http://howtowriteaprogram.blogspot.com.es/2010/11/lisp-interpreter-in-90-lines-of-c.html)|91.767 s.|![1.46079%](http://progressed.io/bar/1)|1 pt|
-|40|Tcl|[picol](http://wiki.tcl.tk/17893)|151.527 s.|![0.884674%](http://progressed.io/bar/0)|0 pt|
-|41|ChaiScript|[chaiscript](https://github.com/ChaiScript/ChaiScript)|175.038 s.|![0.765845%](http://progressed.io/bar/0)|0 pt|
-|42|JavaScript|[42tiny-js](https://github.com/ardi69/42tiny-js)|227.170 s.|![0.590096%](http://progressed.io/bar/0)|0 pt|
+|29|Tcl|[jim](https://github.com/antirez/Jim)|12.280 s.|![10.9162%](http://progressed.io/bar/10)|10 pt|
+|30|GML|[gml](https://github.com/graphitemaster/gml)|16.443 s.|![8.15268%](http://progressed.io/bar/8)|8 pt|
+|31|PSL|[psl](https://github.com/Silica/PSL)|17.645 s.|![7.59738%](http://progressed.io/bar/7)|7 pt|
+|32|Python|[tinypy(panda)](https://github.com/dkasak/tinypy-panda)|21.799 s.|![6.14937%](http://progressed.io/bar/6)|6 pt|
+|33|Scheme|[s9](http://www.t3x.org/s9fes/)|33.160 s.|![4.04257%](http://progressed.io/bar/4)|4 pt|
+|34|C|[picoC](https://github.com/zsaleeba/picoc)|36.625 s.|![3.66016%](http://progressed.io/bar/3)|3 pt|
+|35|JX9|[jx9](http://jx9.symisc.net/)|43.598 s.|![3.07476%](http://progressed.io/bar/3)|3 pt|
+|36|JTC|[jtc](https://github.com/progschj/jtc)|47.021 s.|![2.8509%](http://progressed.io/bar/2)|2 pt|
+|37|JavaScript|[v7](https://github.com/cesanta/v7)|51.940 s.|![2.58089%](http://progressed.io/bar/2)|2 pt|
+|38|Scheme|[tinyscheme](http://tinyscheme.sourceforge.net/home.html)|65.398 s.|![2.04979%](http://progressed.io/bar/2)|2 pt|
+|39|Lisp|[paren](https://bitbucket.org/ktg/paren)|72.901 s.|![1.83883%](http://progressed.io/bar/1)|1 pt|
+|40|Lisp|[lispy90](http://howtowriteaprogram.blogspot.com.es/2010/11/lisp-interpreter-in-90-lines-of-c.html)|91.767 s.|![1.46079%](http://progressed.io/bar/1)|1 pt|
+|41|Tcl|[picol](http://wiki.tcl.tk/17893)|151.527 s.|![0.884674%](http://progressed.io/bar/0)|0 pt|
+|42|ChaiScript|[chaiscript](https://github.com/ChaiScript/ChaiScript)|175.038 s.|![0.765845%](http://progressed.io/bar/0)|0 pt|
+|43|JavaScript|[42tiny-js](https://github.com/ardi69/42tiny-js)|227.170 s.|![0.590096%](http://progressed.io/bar/0)|0 pt|
 
 - AMD A10 3.8 GHz, 8 GiB, Windows 7 64bit.
 - Compiled on VS2015 RC if possible, VS2013 elsewhere.

@@ -188,6 +188,10 @@ rem @popd
 @bench 1 tcl\picol\picol tests\fib.tcl //Tcl,[picol](http://wiki.tcl.tk/17893)
 
 @echo.
+@echo tcl/jim
+@bench 5 tcl\jim\jimsh tests\fib.tcl //Tcl,[jim](https://github.com/antirez/Jim)
+
+@echo.
 @echo tinyvm
 @bench 5 tinyvm\tvm tests\fib.tvm //TinyVM,[tinyvm](https://github.com/jakogut/tinyvm)
 

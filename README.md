@@ -139,6 +139,10 @@ Scriptorium :scroll:
 - http://robovm.com/
 - http://www.lejos.org/ (or http://tinyvm.sourceforge.net/)
 - http://dmitry.gr/index.php?r=05.Projects&proj=12.%20uJ%20-%20a%20micro%20JVM 
+- https://github.com/dart-lang/fletch
+- https://github.com/RuntimeCompiledCPlusPlus/RuntimeCompiledCPlusPlus
+- https://github.com/NETMF/netmf-interpreter
+- https://github.com/symisc/PH7/
 
 ### License
 - initial tests by [Lewis Van Winkle (2009)](http://codeplea.com/game-scripting-languages) (Public Domain)

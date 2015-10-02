@@ -127,6 +127,10 @@ rem @popd
 @bench 5 pawn\pawn-asm fib.amx //Pawn,[pawn-asm](http://www.compuphase.com/pawn/pawn.htm)
 
 @echo.
+@echo php/ph7
+@bench 1 php\ph7\ph7 tests\fib.php //PHP,[ph7](https://github.com/symisc/PH7)
+
+@echo.
 @echo psl/psl
 @bench 1 psl\psl tests\fib.psl //PSL,[psl](https://github.com/Silica/PSL)
 

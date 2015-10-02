@@ -3,7 +3,7 @@ Scriptorium :scroll:
 
 - Game Scripting Languages benchmarked.
 - Using latest versions at the time of writing (Jul 2015)
-- Total solutions evaluated: 43
+- Total solutions evaluated: 44
 
 ### Results 
 |Rank|Language|Flavor|Time|Relative Lua speed|Score|
@@ -43,14 +43,15 @@ Scriptorium :scroll:
 |33|Scheme|[s9](http://www.t3x.org/s9fes/)|33.160 s.|![4.04257%](http://progressed.io/bar/4)|4 pt|
 |34|C|[picoC](https://github.com/zsaleeba/picoc)|36.625 s.|![3.66016%](http://progressed.io/bar/3)|3 pt|
 |35|JX9|[jx9](http://jx9.symisc.net/)|43.598 s.|![3.07476%](http://progressed.io/bar/3)|3 pt|
-|36|JTC|[jtc](https://github.com/progschj/jtc)|47.021 s.|![2.8509%](http://progressed.io/bar/2)|2 pt|
-|37|JavaScript|[v7](https://github.com/cesanta/v7)|51.940 s.|![2.58089%](http://progressed.io/bar/2)|2 pt|
-|38|Scheme|[tinyscheme](http://tinyscheme.sourceforge.net/home.html)|65.398 s.|![2.04979%](http://progressed.io/bar/2)|2 pt|
-|39|Lisp|[paren](https://bitbucket.org/ktg/paren)|72.901 s.|![1.83883%](http://progressed.io/bar/1)|1 pt|
-|40|Lisp|[lispy90](http://howtowriteaprogram.blogspot.com.es/2010/11/lisp-interpreter-in-90-lines-of-c.html)|91.767 s.|![1.46079%](http://progressed.io/bar/1)|1 pt|
-|41|Tcl|[picol](http://wiki.tcl.tk/17893)|151.527 s.|![0.884674%](http://progressed.io/bar/0)|0 pt|
-|42|ChaiScript|[chaiscript](https://github.com/ChaiScript/ChaiScript)|175.038 s.|![0.765845%](http://progressed.io/bar/0)|0 pt|
-|43|JavaScript|[42tiny-js](https://github.com/ardi69/42tiny-js)|227.170 s.|![0.590096%](http://progressed.io/bar/0)|0 pt|
+|36|PHP|[ph7](https://github.com/symisc/PH7)|46.029 s.|![2.91235%](http://progressed.io/bar/2)|2 pt|
+|37|JTC|[jtc](https://github.com/progschj/jtc)|47.021 s.|![2.8509%](http://progressed.io/bar/2)|2 pt|
+|38|JavaScript|[v7](https://github.com/cesanta/v7)|51.940 s.|![2.58089%](http://progressed.io/bar/2)|2 pt|
+|39|Scheme|[tinyscheme](http://tinyscheme.sourceforge.net/home.html)|65.398 s.|![2.04979%](http://progressed.io/bar/2)|2 pt|
+|40|Lisp|[paren](https://bitbucket.org/ktg/paren)|72.901 s.|![1.83883%](http://progressed.io/bar/1)|1 pt|
+|41|Lisp|[lispy90](http://howtowriteaprogram.blogspot.com.es/2010/11/lisp-interpreter-in-90-lines-of-c.html)|91.767 s.|![1.46079%](http://progressed.io/bar/1)|1 pt|
+|42|Tcl|[picol](http://wiki.tcl.tk/17893)|151.527 s.|![0.884674%](http://progressed.io/bar/0)|0 pt|
+|43|ChaiScript|[chaiscript](https://github.com/ChaiScript/ChaiScript)|175.038 s.|![0.765845%](http://progressed.io/bar/0)|0 pt|
+|44|JavaScript|[42tiny-js](https://github.com/ardi69/42tiny-js)|227.170 s.|![0.590096%](http://progressed.io/bar/0)|0 pt|
 
 - AMD A10 3.8 GHz, 8 GiB, Windows 7 64bit.
 - Compiled on VS2015 RC if possible, VS2013 elsewhere.
@@ -142,7 +143,6 @@ Scriptorium :scroll:
 - https://github.com/dart-lang/fletch
 - https://github.com/RuntimeCompiledCPlusPlus/RuntimeCompiledCPlusPlus
 - https://github.com/NETMF/netmf-interpreter
-- https://github.com/symisc/PH7/
 
 ### License
 - initial tests by [Lewis Van Winkle (2009)](http://codeplea.com/game-scripting-languages) (Public Domain)

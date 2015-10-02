@@ -96,10 +96,9 @@ TinyVM,[tinyvm](https://github.com/jakogut/tinyvm),0.801847
 TinyVM,[tinyvm](https://github.com/jakogut/tinyvm),0.804102
 JetScript,[JetScript](https://github.com/matt-attack/JetScript),4.8104
 JavaScript,[v7](https://github.com/cesanta/v7),51.9403
-javascript\duktape\duktape.exe,inf
-javascript\duktape\duktape.exe,inf
 javascript\duktape\duktape.exe,9.49006
 javascript\duktape\duktape.exe,9.13736
 javascript\duktape\duktape.exe,9.06293
 javascript\duktape\duktape.exe,9.71474
 Tcl,[jim](https://github.com/antirez/Jim),12.2801
+PHP,[ph7](https://github.com/symisc/PH7),46.0288

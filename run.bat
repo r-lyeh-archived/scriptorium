@@ -196,6 +196,10 @@ rem @popd
 @bench 5 tcl\jim\jimsh tests\fib.tcl //Tcl,[jim](https://github.com/antirez/Jim)
 
 @echo.
+@echo terra
+@bench 5 terra\terra tests\fib.t //Terra,[terra](https://github.com/zdevito/terra/)
+
+@echo.
 @echo tinyvm
 @bench 5 tinyvm\tvm tests\fib.tvm //TinyVM,[tinyvm](https://github.com/jakogut/tinyvm)
 

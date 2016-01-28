@@ -1,0 +1,56 @@
+#
+# A test for sm.lil
+#
+# The following article explains the ideas behind this code:
+# http://badsector.posterous.com/a-flexible-and-simple-script-driven-state-mac
+#
+
+source sm.lil
+
+# define robot-update-<state> functions
+sm:func robot-update {} {
+    idle { print $obj is idling }
+    seek { print $obj is seeking }
+    flee { print $obj is fleeing }
+    attack { print $obj is attacking }
+    die { print $obj is dying }
+    default { print $obj is doing nothing }
+}
+
+# define state check functions
+func robot-flee-check {sm} { return 0 }
+
+# define state enter functions
+func robot-attack-enter {sm} {
+    print "play sound attack for [sm:obj $sm]"
+}
+
+func robot-die-enter {sm} {
+    print "destroy [sm:obj $sm]"
+}
+
+# define state exit functions
+func robot-attack-exit {sm} {
+    print "kill sound attack for [sm:obj $sm]"
+}
+
+# a dummy object
+set robot [sm:new robot "fred" idle]
+
+func update {} { robot-update $robot }
+func transit {to} { sm:transit $robot $to }
+
+update
+transit seek
+update
+transit flee
+update
+transit idle
+update
+transit attack
+update
+transit cast
+update
+transit die
+update
+

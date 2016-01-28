@@ -1,0 +1,80 @@
+#
+# Prototype-based object oriented LIL example. This file defines all the
+# functions needed for OOP declarations. See one of the oop_*.lil files
+# for example on how to use these functions.
+#
+
+func --obj-find-handler-- {obj msg} {
+    set handler --obj-${obj}--m:${msg}--
+    if [reflect has-func $handler] {
+        return $handler
+    } {
+        if [reflect has-global --obj-${obj}--parent--] {
+            return [--obj-find-handler-- $"--obj-${obj}--parent--" $msg]
+        } {
+            return {}
+        }
+    }
+}
+
+func --obj-send-message-- {obj msg args} {
+    set handler [--obj-find-handler-- $obj $msg]
+    if not [streq $handler {}] {
+        return [$handler $obj $msg $args]
+    }
+    return {}
+}
+
+func --obj-set-method-- {obj msg method} {
+    set handler --obj-${obj}--m:${msg}--
+    func $handler {obj msg args} {
+        return "[}$method{ $obj $args]"
+    }
+}
+
+func --obj-set-parent-- {obj parent} {
+    set global --obj-${obj}--parent-- $parent
+}
+
+func --obj-set-- args {
+    set obj [index $args 1]
+    set name [index $args 2]
+    set realname --obj-${obj}--v:${name}--
+    if [expr [count $args] == 3] {
+        return $$realname
+    } {
+        return [set global $realname [index $args 3]]
+    }
+}
+
+func objset args {
+    return [upeval "--obj-set-- \$self [slice $args 1]"
+}
+
+func method {obj msg args code} {
+    set funcdecl "func {self"
+    foreach $args { set funcdecl "$funcdecl $i" }
+    set funcdecl "$funcdecl} {$code}"
+    --obj-set-method-- $obj $msg [eval $funcdecl]
+}
+
+func new args {
+    set parent [index $args 1]
+    set obj [func args {
+        return [--obj-send-message-- [index $args 0] [index $args 1] [slice $args 2]]
+    }]
+    if $parent {
+        --obj-set-parent-- $obj $parent
+    }
+    --obj-send-message-- $obj init [slice $args 2]
+    return $obj
+}
+
+func extend {old new} {
+    --obj-set-parent-- $new $old
+}
+
+func typeof {obj} {
+    return $"--obj-${obj}--parent--"
+}
+

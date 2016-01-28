@@ -1,0 +1,26 @@
+#
+# Makefile for Borland C/C++ Compiler 5.5
+#
+
+BCC = bcc32
+TLIB = tlib
+
+lil.exe: liblil.lib main.obj
+	$(BCC) -e$@ main.obj liblil.lib
+
+liblil.lib: lil.obj
+    $(TLIB) liblil.lib +lil.obj
+
+lil.obj: lil.c
+	$(BCC) -DLILINT_INT64 -D_MSC_VER -w-8057 -w-8060 -c -olil.obj lil.c
+
+main.obj: main.c
+	$(BCC) -DLILINT_INT64 -DWIN32 -w-8057 -c -omain.obj main.c
+
+.PHONY: clean
+clean:
+	del lil.obj
+	del main.obj
+	del liblil.lib
+	del lil.exe
+

@@ -1,0 +1,85 @@
+'scopeName': 'source.lil'
+'name': 'LIL'
+'fileTypes': ['lil']
+'patterns': [
+  {
+    'begin': '(?<=^|;)\\s*((#))'
+    'beginCaptures':
+      '1':
+        'name': 'comment.line.number-sign.lil'
+      '2':
+        'name': 'punctuation.definition.comment.lil'
+    'contentName': 'comment.line.number-sign.lil'
+    'end': '\\n'
+    'patterns': [
+      {
+        'match': '(\\\\\\\\|\\\\\\n)'
+      }
+    ]
+  }
+  {
+    'captures':
+      '1':
+        'name': 'keyword.control.lil'
+    'match': '(?<=^|[\\[{;])\\s*(foreach|if|if not|while|for|try|error|catcher|return)\\b'
+  }
+  {
+    'captures':
+      '1':
+        'name': 'keyword.other.lil'
+      '2':
+        'name': 'entity.name.function.lil'
+    'match': '^\\s*(proc)\\s+([^\\s]+)'
+  }
+  {
+    'captures':
+      '1':
+        'name': 'keyword.lil'
+    'match': '(?<=^|[\\[{;])\\s*(reflect|func|rename|unusedname|quote|set|local|write|print|eval|topeval|upeval|downeval|enveval|jaileval|count|index|indexof|filter|list|append|slice|subst|concat|expr|inc|dec|read|store|char|charat|codeat|substr|strpos|length|trim|ltrim|rtrim|strcmp|streq|repstr|split|exit|source|lmap|rand)\\b'
+  }
+  {
+    'match': '\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)\\b'
+    'name': 'constant.numeric.lil'
+  }
+  {
+    'match': '\\$+([a-zA-Z0-9]|-|`|~|!|@|#|%|\\^|\\&|\\*|\\(|\\)|_|=|\\+|\\||;|:|,|<|\\.|>|\\/|\\?)+|\\$+\\{.+\\}'
+    'name': 'variable.lil'
+  }
+  {
+    'match': '(\\[+)(([a-zA-Z0-9]|-|`|~|!|@|#|%|\\^|\\&|\\*|\\(|\\)|_|=|\\+|\\||;|:|,|<|\\.|>|\\/|\\?)+)'
+    'captures':
+      '1':
+        'name': 'brace.lil'
+      '2':
+        'name': 'property-name.lil'
+  }
+  {
+    'match': '[\\{\\}\\]$]+'
+    'name': 'brace.lil'
+  }
+  {
+    'begin': '"'
+    'beginCaptures':
+      '0':
+        'name': 'punctuation.definition.string.begin.lil'
+    'end': '"'
+    'endCaptures':
+      '0':
+        'name': 'punctuation.definition.string.end.lil'
+    'name': 'string.quoted.double.lil'
+    'patterns': [
+      {
+        'match': '\\$+([a-zA-Z0-9]|-|`|~|!|@|#|%|\\^|\\&|\\*|\\(|\\)|_|=|\\+|\\||;|:|,|<|\\.|>|\\/|\\?)+|\\$+\\{.+\\}'
+        'name': 'variable.lil'
+      }
+      {
+        'match': '(\\[+)(([a-zA-Z0-9]|-|`|~|!|@|#|%|\\^|\\&|\\*|\\(|\\)|_|=|\\+|\\||;|:|,|<|\\.|>|\\/|\\?)+)'
+        'captures':
+          '1':
+            'name': 'brace.lil'
+          '2':
+            'name': 'property-name.lil'
+      }
+    ]
+  }
+]

@@ -1,0 +1,28 @@
+#
+# Short-circuit logical "and" macro-like function using upeval and downeval.
+# The "and" function will evaluate each one of its arguments at the upper
+# environment in a call to downeval which sets the argument's result to the
+# "v" variable. As soon as the "v" is not a true value, the evaluation stops
+# and any possible side-effects the evaluation of the arguments might have, do
+# not happen.
+#
+
+func and args {
+    foreach [slice $args 1] {
+        upeval "downeval \"set v \"\[${i}\]"
+	if not $v { return 0 }
+    }
+    return 1
+}
+
+# print and return
+func priret {a} {
+    print "Got '$a'"
+    return $a
+}
+
+set a 0
+set final [and {priret [set a 3]} {priret 0} {priret [set a 32]}]
+
+print "Final is $final"
+print "a is $a"

@@ -1,0 +1,34 @@
+#
+# Calling code
+#
+
+# using eval
+print "* Evaluating 'print Hello, world!'"
+eval {print "Hello, world!"}
+
+# sourcing external file
+print "* Sourcing hello.lil"
+source hello.lil
+
+# an alternative way to source external files (which however might behave
+# differently if the host program wishes to forbit reading but allow sourcing)
+print "* Evaluating the string returned by 'read hello.lil'"
+eval [read hello.lil]
+
+# calling functions indirectly
+func foo {arg} {
+    print "This is function foo and the arg is $arg"
+}
+
+func bar {arg} {
+    print "This is function bar and the arg... who cares"
+}
+
+func callfunc {name arg} {
+    print "* Let's call the function '${name}' with the argument '${arg}'"
+    $name $arg
+}
+
+foreach f "foo bar print" {
+    foreach a {{tralala} {3 + 3}} {callfunc $f $a}
+}

@@ -1,0 +1,19 @@
+#
+# Shows how return can be omitted 
+#
+
+func uses_return {x} {
+    set y [expr $x * $x]
+    return $y
+}
+
+func does_not_use_return {x} {
+    expr $x * $x
+}
+
+foreach {uses_return does_not_use_return} {print "The result of '$i 10' is [$i 10]"}
+
+# Code from GitHub issue #2
+func test args {expr 100}
+print [test]
+

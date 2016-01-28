@@ -1,0 +1,27 @@
+# this line will not be executed, but the following will
+print hello, world
+
+## This is a multiline comment
+   which, as the name implies,
+   spans multiple lines.
+
+print hi
+
+   the code above wouldn't execute, but this will --> ##print hello again
+
+##
+ # multiline comments
+ # can be used to "comment out"
+ # parts of the code
+ # and even add some styling
+ # like i'm doing right now
+##
+
+
+##                                              ##
+ # this is not really a multiline comment, just #
+ # more fancy styling that happens to work :-P  #
+##                                              ##
+
+### more than two #s will not count as multiline comments
+print hello, the 3rd

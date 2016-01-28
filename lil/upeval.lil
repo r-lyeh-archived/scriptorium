@@ -1,0 +1,49 @@
+#
+# Test for "upeval". The "upeval" function allows code to be evaluated in the
+# upper (parent) environment of the current one. This makes possible for code
+# defined in a function to access the variables of the caller of the function
+# and - if the caller is another function - make it return, effectively
+# providing the functionality that other languages provide via the use of
+# macros but with being part of the program's execution instead of
+# preprocessing.
+#
+
+# This function will execute the code "if {$i > somenumber} return" in the
+# caller's environment, causing it to return if a variable named "i" is
+# greater than the given number
+func check {num} {
+    upeval "if {\$i > $num} return"
+}
+
+# This function will try to print numbers from 0 to 99, although it will
+# fail to do so because "check 10" will cause it to return once "i" goes
+# above 10.
+func do-stuff {} {
+    for {set i 0} {$i < 100} {inc i} {
+        check 10
+        print $i
+    }
+}
+
+do-stuff
+
+# This function returns some imaginary people info based on some id
+# Returns 0 if the person was not found, otherwise it sets the vars
+# specified by the first-name-var and last-name-var to the first and last
+# name of the person
+func get-person-info {id first-name-var last-name-var} {
+    set first-names [list Karina Dona Erik Cody Hugh]
+    set last-names [list Addario Mcneece Wootten Tokarz Severns]
+    if {$id < 0 || $id >= [count $first-names]} {return 0}
+    upeval "set $first-name-var [index $first-names $id]"
+    upeval "set $last-name-var [index $last-names $id]"
+    return 1
+}
+
+if [get-person-info 3 first-name last-name] {
+    print "First name: $first-name"
+    print "Last name:  $last-name"
+} {
+    print "Unknown user"
+}
+

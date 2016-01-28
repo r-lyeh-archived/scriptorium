@@ -1,0 +1,21 @@
+#
+# Test for trim, ltrim and rtrim. These functions can be used to remove
+# characters from the beginning and end of a string (ltrim and rtrim remove
+# only the beginning or ending characters).
+#
+
+set str "  Hello,  world! "
+
+print "The string is '$str'"
+print "After trim:   '[trim $str]'"
+print "After ltrim:  '[ltrim $str]'"
+print "After rtrim:  '[rtrim $str]'"
+
+print "Let's remove spaces, commas and exclamation marks for all words:"
+
+print "   [foreach [split $str] {quote [trim $i {,!}]}]"
+
+print "Alternative method using \"split\" and \"filter\":"
+
+print "   [filter [split $str {,! }] {[length $x] > 0}"
+

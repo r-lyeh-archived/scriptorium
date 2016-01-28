@@ -1,0 +1,23 @@
+#
+# local can be used to "localize" variables in an environment, which is useful
+# to make sure that a global variable with the same name as a local one will
+# not be modified.
+#
+
+func bits-for {x} {
+    local y bits
+    set y 0 bits 0
+    while {$y <= $x} {
+        inc bits
+        set y [expr 1 << $bits]
+    }
+    return $bits
+}
+
+set y 1001
+set bits [bits-for $y]
+set x 45
+set bitsx [bits-for $x]
+print "$bits bits needed for $y"
+print "$bitsx bits needed for $x"
+

@@ -1,0 +1,13 @@
+#
+# Test for the "filter" function. The "filter" function can be used to
+# filter a list using an expression which is evaluated for each item in
+# the list.
+#
+
+# print all known functions with name lengths less than 5 characters
+set known-funcs [reflect funcs]
+set predicate {[length $x] < 5}
+set small-named-funcs [filter $known-funcs $predicate]
+print "Functions with small names:"
+foreach $small-named-funcs {print "  $i"}
+

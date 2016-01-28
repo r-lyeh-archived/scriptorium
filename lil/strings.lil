@@ -1,0 +1,34 @@
+#
+# Strings test
+#
+
+set a "This is a string"
+set b "This is another string"
+
+print "String a: ${a}\nString b: $b"
+
+print "String a length: [length $a]"
+print "String b length: [length $b]"
+
+print "Character at length/2 in a: [charat $a [expr [length $a] / 2]]"
+print "Character at length/2 in b: [charat $b [expr [length $b] / 2]]"
+
+print "Character code at length/2 in a: [codeat $a [expr [length $a] / 2]]"
+print "Character code at length/2 in b: [codeat $b [expr [length $b] / 2]]"
+
+print "Middle of a: '[substr $a [expr [length $a] / 3] [expr ( [length $a] / 3 ) * 2]]'"
+print "Middle of b: '[substr $b [expr [length $b] / 3] [expr ( [length $b] / 3 ) * 2]]'"
+
+print "Index of 'string' in a: [strpos $a string]"
+print "Index of 'string' in b: [strpos $b string]"
+
+print "String comparison between a and b yields [strcmp $a $b]"
+print "String equality between a and b yeilds [streq $a $b]"
+
+print "String a with 'string' replaced to 'foo': [repstr $a string foo]"
+print "String b with 'string' replaced to 'foo': [repstr $b string foo]"
+
+print "String a splitted:"
+foreach [split $a] {print "    part: '${i}'"}
+print "String b splitted:"
+foreach [split $b] {print "    part: '${i}'"}

@@ -1,0 +1,114 @@
+#
+# Test for the 'catcher' function. The catcher function can be used to call
+# some code when an unknown function is called so that the script can 'catch'
+# unknown calls. It can be used to implement shell-like behavior or write small
+# mini/local languages for a specific purpose.
+#
+
+##############################################################################
+# Set a catcher that will print the command and its arguments. The catcher will
+# receive the command and arguments in an 'args' list, like if an anonymous
+# function without arguments was specified.
+
+print "Catcher test 1"
+
+catcher {print $args}
+
+# Try some commands
+print "This will be printed just fine"
+foo bar
+etc
+this will not be printed
+however substitution is still done [expr 3 + 3]
+"since a list is what is displayed, this will appear in braces"
+
+##############################################################################
+# Define a set of functions which define a mini language. The catcher is used
+# to delegate the call to the proper function. In this example the functions
+# just print what they do. The catcher is only set temporary from the parsecfg
+# function (which is supposed to parse some sort of configuration script) and
+# reset to the previous catcher before the function ends.
+
+print "Catcher test 2"
+
+set level 0
+
+func print-level {} {
+    for {set i 0} {$i < $level} {inc i} {write "  "}
+}
+
+func add-field {name values} {
+    set previous-field $last-field
+    set global last-field $name
+    print-level
+    print "Adding field $last-field"
+    inc level
+    eval $values
+    dec level
+    set global last-field $previous-field
+}
+
+func set-attribute {name value} {
+    print-level
+    print "Adding attribute '${name}' with value '${value}' to the field $last-field"
+}
+
+func parsecfg {cfg} {
+    set prev_catcher [catcher]
+    
+    catcher {
+        set name [index $args 0]
+        set value [index $args 1]
+        if [streq [charat $name 0] .] {
+            set-attribute $name $value
+        } {
+            add-field $name $value
+        }
+    }
+    
+    eval $cfg
+
+    catcher $prev_catcher
+}
+
+print "We'll try to parse"
+
+parsecfg {
+    user {
+        .name "Kostas Michalopoulos"
+        .email badsector@runtimelegend.com
+        .www none
+        .nick "Bad Sector"
+        groups {
+            .group coder
+            .group maintainer
+        }
+        .flags [expr 3 + 3 + 0]         # this will be parsed as ".flags 6"
+    }
+    groups {
+        group {
+            .name coder
+            .info "LIL Coders"
+            .cando stuff
+        }
+        group {
+            .name maintainer
+            .info "LIL Maintainers"
+            .cando otherstuff
+        }
+    }
+}
+
+Done   # The previous catcher will be restored so this will display "Done!"
+
+##############################################################################
+# Remove catchers, etc. An empty string will remove the current catcher and
+# lil will report unknown function calls like previously (
+
+print "Catcher test 3"
+
+catcher {}
+
+"This will fail"
+And this will never be executed
+

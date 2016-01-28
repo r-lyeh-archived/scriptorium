@@ -1,0 +1,35 @@
+#
+# Lists test
+#
+
+# dumps the list
+func dumplist {t l} {
+    print "${t}: $l"
+    set i 1
+    foreach it $l {
+        print "    item ${i}: $it"
+        inc i
+    }
+    print "[count $l] items"
+}
+
+set l [list foo bar baz bad]
+dumplist "Initial list" $l
+
+print "Item at index 2: [index $l 2]"
+
+print "Appending Chlorine..."
+append l Chlorine
+dumplist "List after Chlorine" $l
+
+print "Appending Hello, world!..."
+append l "Hello, world!"
+dumplist "List after Hello, world!" $l
+
+print "Substituting the list"
+set l [subst $l]
+dumplist "List after substitution" $l
+
+print "Map list to variables"
+lmap $l foox barx bamia
+foreach "foox barx bamia" {print "$i is '$${i}'"}

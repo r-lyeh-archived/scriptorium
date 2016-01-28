@@ -1,0 +1,44 @@
+#
+# LIL test for "rename" and "unusedname". This test shows how to implement an
+# alternative "func" which will store information about a function in
+# addition to declaring a new function.
+#
+# Note that this code is for illustrative purposes on how rename can be used.
+# In practice it might be a better idea to use a custom name (like doc-func)
+# for this purpose.
+#
+
+# Generate a random name, store it and rename func to that
+set real-func [unusedname]
+rename func $real-func
+
+# Declare a new "func" which uses the previous one and also stores info about
+# the function in a global variable
+$real-func func {name info args code} {
+    set global "--doc-func-${name}-info" $info
+    append global "--doc-func-names" $name
+    $real-func $name $args $code
+}
+
+# Let's declare a couple of functions
+func add "Adds two numbers and returns the result" {a b} {
+    return [expr (${a}) + (${b})]
+}
+
+func pew "Prints pew pew" {} {
+    print "pew pew"
+}
+
+# ...and use them
+
+pew
+print [add 3 4]
+
+# Now let's show some info about the known documented functions
+print "Known functions:"
+foreach $--doc-func-names {
+    print "  Name: $i"
+    print "    Arguments:   [reflect args $i]"
+    print "    Information: $'--doc-func-${i}-info'"
+}
+

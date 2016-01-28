@@ -1,0 +1,74 @@
+#
+# Simple object oriented example: animals. This script declares four prototype
+# objects: animal, cat, dog and fish. The animal object is used as a base for
+# the other three objects.
+#
+
+# Declares all the functions needed for prototype-based OOP
+source oop.lil
+
+##################
+# Animal prototype
+
+# The init message is sent after the object has been created with "new". This
+# method expects the animal's name as the first and only argument
+method Animal init {name} {
+    objset name $name
+}
+
+# The talk message returns something that resembles speech for an animal
+method Animal talk {} {
+    return "(the animal cannot talk)"
+}
+
+# The get-name message returns the animal's name
+method Animal get-name {} {
+    return [objset name]
+}
+
+#################################################
+# Cat prototype. Cat extends the Animal prototype
+
+extend Animal Cat
+
+method Cat talk {} {
+    return "meow"
+}
+
+#################################################
+# Dog prototype. Dog extends the Animal prototype
+
+extend Animal Dog
+
+method Dog talk {} {
+    return "woof"
+}
+
+#############################################################################
+# Fish prototype. Fish extends the Animal prototype, but doesn't add anything
+
+extend Animal Fish
+
+######################
+# Ok, let's use these!
+
+set animals [list \
+    [new Cat Alice] \
+    [new Cat Oswald] \
+    [new Dog Max] \
+    [new Fish Atlas]]
+
+foreach animal $animals {
+    print "[$animal get-name] ([typeof $animal]):\t[$animal talk]"
+}
+
+#
+# Expected output:
+# ----------------
+#
+# Alice (Cat):    meow
+# Oswald (Cat):   meow
+# Max (Dog):      woof
+# Atlas (Fish):   (the animal cannot talk)
+#
+

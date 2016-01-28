@@ -1,0 +1,7 @@
+#
+# As asked in http://stackoverflow.com/questions/3538156
+#
+
+store fileio.txt "hello\n"
+store fileio.txt "[read fileio.txt]world\n"
+print [index [split [read fileio.txt] "\n"] 1]

@@ -1,0 +1,27 @@
+#
+# Test for "reflect dollar-prefix"
+#
+
+# Set some variable
+set foo bar
+
+# Use dollar expansion with the default prefix ('set ')
+print $foo
+
+# Define a custom set-like function which prints the variable in question
+func my-set {name} {
+    print "Requested the value of [set name]"
+    return [set name]
+}
+
+# Try it
+print [my-set foo]
+
+# Now use reflect dollar-prefix to report and change the prefix
+print "Current dollar-prefix: '[reflect dollar-prefix]'"
+reflect dollar-prefix {my-set }
+print "New dollar prefix:     '[reflect dollar-prefix]'"
+
+# Try using the new dollar prefix
+print $foo
+

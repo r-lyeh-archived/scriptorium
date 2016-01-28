@@ -1,0 +1,79 @@
+#
+# A simple state machine implementation in LIL. The implementation uses LIL's
+# reflection to check for state changes and possible transitions.
+#
+# The following article explains the ideas behind this code:
+# http://badsector.posterous.com/a-flexible-and-simple-script-driven-state-mac
+#
+# See also robot.lil for using these functions
+#
+
+# creates a new state machine
+func sm:new {type obj init} {
+    set prefix [unusedname statemachine]
+    set global $prefix [list $type $obj $init]
+    return $prefix
+}
+
+# returns the type of the state machine
+func sm:type {sm} {
+    return [index $$sm 0]
+}
+
+# returns the object of the state machine
+func sm:obj {sm} {
+    return [index $$sm 1]
+}
+
+# returns the state of the state machine
+func sm:state {sm} {
+    return [index $$sm 2]
+}
+
+# sets the state name
+func sm:-setstate {sm state} {
+    set global $sm [list [index $$sm 0] [index $$sm 1] $state]
+}
+
+# transitions from the state machine's current state to the given state
+func sm:transit {sm to} {
+    set type [sm:type $sm]
+    set from [sm:state $sm]
+    if [reflect has-func ${type}-${to}-check] {
+        if not [${type}-${to}-check $sm] { return 0 }
+    }
+    if [reflect has-func ${type}-${from}-exit] { ${type}-${from}-exit $sm }
+    sm:-setstate $sm $to
+    if [reflect has-func ${type}-${to}-enter] { ${type}-${to}-enter $sm }
+    return 1
+}
+
+# declares a new state function. This is just a shortcut for
+# declaring <type>-<name>-<state> functions
+func sm:func {name args states} {
+    set i 0
+    set statec [count $states]
+    while {$i < $statec - 1} {
+        set subname [index $states $i] ; inc i
+        set subcode [index $states $i] ; inc i
+        func ${name}-${subname} "obj $args" $subcode
+    }
+    func $name {args} { return [eval "sm:call [index $args 1] "}$name{" [sm:obj [index $args 1]] [slice $args 2]"] }
+}
+
+# calls a state function. You don't really need that since it
+# is used by the function caller declared by sm:func
+func sm:call {args} {
+    set sm [index $args 1]
+    set name [index $args 2]
+    set fargs [slice $args 3]
+    set state [sm:state $sm]
+    if [reflect has-func "${name}-${state}"] {
+        return [eval "${name}-${state} $fargs"]
+    }
+    if [reflect has-func "${name}-default"] {
+        return [eval "${name}-default $fargs"]
+    }
+    error "There is no state $state for state function $name of type $type"
+}
+

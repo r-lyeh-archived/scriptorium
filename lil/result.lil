@@ -1,0 +1,15 @@
+#
+# Showing how 'result' can be used to define the return value of a
+# function without actually breaking out of the function.
+#
+
+func bits-for {x} {
+    result 1
+    while {$x > 1} {
+        set x [expr $x >> 1]
+        result [expr [result] + 1]
+    }
+}
+
+foreach {0 1 2 10 30 63 64 100 300} {print "Bits for ${i}:\t[bits-for $i]}
+

@@ -1,0 +1,31 @@
+#
+# topeval is like an "extreme" version of upeval: it evaluates code at the
+# topmost (global/root) environment.  Like with upeval, downeval can be used
+# to evaluate code in the environment from where topeval was called.
+#
+
+func does-something {} {
+    topeval {
+        # this will show the global x, not the one from calls-something
+        print "x inside topeval before modifying it is $x"
+        set x 42
+        downeval {
+            set y [expr $x * 10]
+        }
+    }
+    print "y in does-something is $y"
+}
+
+func calls-something {} {
+    local x
+    set x 33
+    does-something # this will modify the global x, not the local one!
+    print "x in calls-something is $x and y is $y"
+}
+
+set x 10
+set y 20
+print "x in global is $x and y is $y"
+calls-something
+print "now x in global is $x and y is $y"
+

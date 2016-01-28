@@ -1,0 +1,50 @@
+#
+# expr test and demo
+#
+
+func xprint {expected got} {
+    write $got (should be ${expected})
+    if not [streq $expected $got] {
+        write {  ** ERROR **  }
+    }
+    print
+}
+
+# should print 7 (it is recommended to use spaces to avoid
+# tripping the parser with auto-expanded stuff)
+xprint 7 [expr 1 + ( 2 * 3 )]
+xprint 7 [expr 1+(2*3)]
+
+# these should print -6
+xprint -6 [expr 1+ ~(2*3)]
+xprint -6 [expr 1 + ~( 2 * 3 )]
+xprint -6 [expr 1 +~ (2*3 )]
+xprint -6 [expr ~(2*3)+1]
+
+# this should be 0 because everything after 1 is 0
+xprint 0 [expr 1*!(2+2)]
+
+# this should be -1 (assuming full bits in an int means -1)
+xprint -1 [expr ~!(!{})]
+
+# everything after 1 is invalid so it will only print 1
+xprint 1 [expr 1 +~*(2*3)]
+
+# should print some non-zero value (strings are "non-zero")
+xprint 1 [expr "hello"]
+
+# all these should print 0
+xprint 0 [expr 0]
+xprint 0 [expr {}]
+
+# empty parentheses evaluate to 1 because the closing
+# parenthesis is seen as unexpected and considered as
+# some string (which evaluates to 1)
+xprint 1 [expr ()]
+xprint 1 [expr ( )]
+
+# this should print nothing
+xprint '' [expr]
+
+print done
+

@@ -215,3 +215,10 @@ rem @popd
 @c\oc\parse < tests\fib.oc > tests\fib.ooc 
 @rem bench 5 c\oc\interp < tests\fib.ooc //C,[OC](http://exmortis.narod.ru/src_pcode_eng.html)
 
+@echo .
+@echo lisp/aria
+@bench 5 lisp\aria\aria tests\fib.lsp //Lisp,[aria](http://github.com/rxi/aria)
+
+@echo .
+@echo lil
+@bench 1 lil\lil tests\fib.lil //LIL,[lil](https://github.com/badsector/lil/)

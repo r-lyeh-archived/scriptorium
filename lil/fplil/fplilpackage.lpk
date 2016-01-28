@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <Package Version="3">
+    <Name Value="fplilpackage"/>
+    <Author Value="Kostas Michalopoulos"/>
+    <CompilerOptions>
+      <Version Value="9"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+      <CodeGeneration>
+        <SmartLinkUnit Value="True"/>
+        <Optimizations>
+          <VariablesInRegisters Value="True"/>
+          <OptimizationLevel Value="3"/>
+        </Optimizations>
+      </CodeGeneration>
+      <Other>
+        <CustomOptions Value="-dLAZFPLIL"/>
+        <CompilerPath Value="$(CompPath)"/>
+      </Other>
+    </CompilerOptions>
+    <Description Value="FPLIL is the FreePascal implementation of the LIL scripting language."/>
+    <License Value="zlib"/>
+    <Files Count="2">
+      <Item1>
+        <Filename Value="fplil.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="FPLIL"/>
+      </Item1>
+      <Item2>
+        <Filename Value="fplilpackage.lrs"/>
+        <Type Value="LRS"/>
+      </Item2>
+    </Files>
+    <Type Value="RunAndDesignTime"/>
+    <RequiredPkgs Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
+      </Item2>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>

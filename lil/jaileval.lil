@@ -1,0 +1,25 @@
+#
+# jaileval test
+#
+
+func my_part {} {
+    return "where are you?"
+}
+
+# this code will be executed in its own LIL runtime
+set code {
+    func my_part {} {
+        set global msg "here i am"
+        set global foo "hey dude, $msg"
+    }
+    
+    my_part
+    
+    return $foo
+}
+
+set bar [jaileval $code]
+set msg [my_part]
+
+print $msg
+print $bar

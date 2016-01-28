@@ -1,0 +1,47 @@
+#
+# Functions test
+#
+
+# direct function definition and call
+func foo {a b} {
+    print "This is foo and a is '$a' while b is '$b'"
+}
+
+foo "hello, world" "hello to you too"
+
+# pseudo-anonymous function definition with the result assigned to 'bar'
+set bar [func {a b} {
+    print "This is bar and a is '$a' while b is '$b'"
+}]
+
+$bar "hi again" "and again"
+
+# similarly, but without arguments (they are stored as a list in 'args'). This
+# behaves the same as a function declared like 'func name args {...}' which
+# means that the first item in the list will be the function's name - in this
+# case a randomly generated name
+set moo [func {
+    print "I'm moo and i've got these arguments:"
+    set c 0
+    foreach $args {
+        print "    argument $c is '${i}'"
+        inc c
+    }
+}]
+
+$moo this is a good day
+
+# applying a function to a list - the function returns some value to be printed
+func apply-to-list {title list func} {
+    print ${title}:
+    foreach $list {print [$func $i]}
+    set body [reflect body $func]
+    if $body {
+        print "The function's code is\n    $body"
+    }
+}
+
+set list [list {bad's day} {good's day} {eh??}]
+apply-to-list "Splitting the list items" $list split
+apply-to-list "Getting list items' length" $list length
+apply-to-list "Using an anonymous function with the list" $list [func {a} {return "The length of $a is [length $a]"}]

@@ -1,0 +1,81 @@
+object Main: TMain
+  Left = 347
+  Height = 412
+  Top = 204
+  Width = 539
+  Caption = 'Lazarus LIL Test'
+  ClientHeight = 412
+  ClientWidth = 539
+  Position = poDesktopCenter
+  LCLVersion = '0.9.30'
+  object mOutput: TMemo
+    Left = 0
+    Height = 289
+    Top = 0
+    Width = 539
+    Align = alClient
+    BorderStyle = bsNone
+    Lines.Strings = (
+      'Script output:'
+    )
+    ScrollBars = ssAutoVertical
+    TabOrder = 0
+  end
+  object mCode: TMemo
+    Left = 0
+    Height = 90
+    Top = 294
+    Width = 539
+    Align = alBottom
+    BorderStyle = bsNone
+    Lines.Strings = (
+      '#'
+      '# Hello world in lil'
+      '#'
+      ''
+      'print "Hello, world!"'
+    )
+    ScrollBars = ssAutoVertical
+    TabOrder = 1
+  end
+  object Splitter1: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 5
+    Top = 289
+    Width = 539
+    Align = alBottom
+    ResizeAnchor = akBottom
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 28
+    Top = 384
+    Width = 539
+    Align = alBottom
+    AutoSize = True
+    BevelOuter = bvNone
+    ClientHeight = 28
+    ClientWidth = 539
+    TabOrder = 3
+    object Button1: TButton
+      Left = 4
+      Height = 20
+      Top = 4
+      Width = 81
+      AutoSize = True
+      BorderSpacing.Around = 4
+      Caption = 'Evaluate'
+      Default = True
+      OnClick = Button1Click
+      TabOrder = 0
+    end
+  end
+  object LIL1: TLIL
+    OnExit = LIL1Exit
+    OnWrite = LIL1Write
+    OnError = LIL1Error
+    left = 32
+    top = 32
+  end
+end

@@ -1,0 +1,28 @@
+#
+# downeval is the complement of upeval: it allows code inside an upeval block
+# to be executed back in the level of the most recent upeval. This can be
+# used to access data from an upper environment and work on it at the upeval's
+# environment. Obviously downeval makes sense only if it used from inside an
+# upeval (otherwise it acts like plain old eval).
+#
+
+func print-the-list {} {
+    set items {}
+    upeval {
+        foreach $some-list {
+            downeval "
+                print Adding item $i
+                append items $i
+            "
+        }
+    }
+    print Items: $items
+}
+
+func do-stuff {} {
+    set some-list [list foo bar baz blah moo boo]
+    print-the-list
+}
+
+do-stuff
+

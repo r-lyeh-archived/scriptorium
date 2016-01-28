@@ -1,0 +1,29 @@
+#
+# enveval is a code evaluation function like eval, topeval, upeval, jaileval,
+# etc that can be used to evaluate code inside its own environment.  The code
+# has no access to the enveval's calling environment and is executed almost
+# like a function's body.
+#
+
+func do-something {} {
+    local x
+    set x 32
+    set y 10
+    set z 88
+    # here both y and z variables will be copied to the new environment, but
+    # only y will be copied back to the current environment
+    enveval {y z} {y} {
+        local x
+        print "x inside enveval before changing is ${x}, y is $y and z is $z"
+        set x 100 y 44 z 123
+        print "x inside enveval after changing is ${x}, y is $y and z is $z"
+        quote 32
+    }
+    print "x inside do-something is ${x}, y is $y and z is $z"
+}
+
+print "setting x in the global environment to 300"
+set x 300
+do-something
+print "x in the global environment is $x"
+

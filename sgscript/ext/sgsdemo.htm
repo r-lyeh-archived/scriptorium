@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SGScript HTML5 demo</title>
+		<script type="text/javascript" src="sgscript.js"></script>
+		<script type="text/javascript">
+window.runsgs = Module.cwrap("runsgs", "string", ["string"]);
+function action()
+{
+	var input = document.getElementById("input").value;
+	var output = runsgs( input );
+	document.getElementById("output").value = output;
+}
+
+function tabHandler(e)
+{
+	if( e.keyCode != 9 )
+		return;
+	
+	var start = this.selectionStart;
+	var end = this.selectionEnd;
+	var value = this.value;
+	
+	this.value = value.substring( 0, start ) + "\t" + value.substring( end );
+	this.selectionStart = this.selectionEnd = start + 1;
+	
+	e.preventDefault();
+}
+window.addEventListener( "load", function()
+{
+	var textareas = document.querySelectorAll("textarea");
+	for( var i = 0; i < textareas.length; ++i )
+		textareas[ i ].addEventListener( "keydown", tabHandler );
+});
+		</script>
+		<style type="text/css">
+.maintbl { width: 100%; }
+.textbox { width: 100%; height: 500px; tab-size: 4; }
+		</style>
+	</head>
+	<body>
+		<div>You can test SGScript here.</div>
+		<table class="maintbl">
+			<tr>
+				<td>
+					<input type="button" value="Run" onclick="action()" />
+				</td>
+				<td></td>
+			</tr>
+			<tr><td>Input:</td><td>Output:</td></tr>
+			<tr>
+				<td><textarea class="textbox" id="input">println("Hello world!");</textarea></td>
+				<td><textarea class="textbox" id="output"></textarea></td>
+			</tr>
+		</table>
+	</body>
+</html>

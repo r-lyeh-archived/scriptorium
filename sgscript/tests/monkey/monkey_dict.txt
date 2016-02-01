@@ -1,0 +1,10 @@
+{ } ( ) [ ] ; : , . " '
++ - * / % & | ^ && || $ << >> ! ~
++= -= *= /= %= &= |= ^= &&= ||= $= <<= >>=
+< > <= >= == != === !==
+a b c aa bb cc
+if else do while for foreach
+return function break continue
+0 1523, -8293, 0.2839, -43.289E+1
+0x98ac3e0 0o16743 0b01011010101010100
+"what" '\this'

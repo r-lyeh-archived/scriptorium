@@ -1,0 +1,4 @@
+function test( arg ){ x = "FAILURE"; print( arg $ "\n" ); }
+test( "SUCCESS" );
+function test2( arg ){ var x = "FAILURE"; print( arg $ "\n" ); }
+test2( "SUCCESS" );

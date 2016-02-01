@@ -1,0 +1,10 @@
+var data = array( "snake", 5.001 );
+print( data[0], data[1], '\n' );
+data[1] = "5";
+data.push( "creator" );
+data.unshift( "the", "amazing" );
+print( "pop() returns \"", data.pop(), "\"\n" );
+print( "shift() returns \"", data.shift(), "\"\n" );
+print( "Array (", data.size, "): ", data, "\n" );
+data.clear();
+print( "after clear, size = ", data.size, ", capacity = ", data.capacity );

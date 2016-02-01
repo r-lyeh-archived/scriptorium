@@ -1,0 +1,4 @@
+function sqr( x ) = x * x;
+println( sqr( 5 ) );
+println( function(x) = x * x; (6) );
+println( function sqr(x) = x * x; (7) );

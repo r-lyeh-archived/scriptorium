@@ -1,0 +1,266 @@
+
+global ERRORS;
+global tests_failed, tests_ran;
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+print( "\n\n-- STRINGS --\n" );
+include_library( "string" );
+//
+
+var a = "random string";
+var b = "WHAT";
+var c = "banana";
+var d = " \t\r\n \t\r\n spacy \t\r\n \t\r\n ";
+
+	section( "string_cut" );
+var string_cut_error_range = "[W:string_cut(): invalid character range]";
+var string_cut_error_indices = "[W:string_cut(): detected negative indices]";
+testEqual( string_cut( a, 3, 5 ), "dom", "string_cut - basic cutting" );
+testEqual( string_cut( a, -10, -4 ), "dom str", "string_cut - negative indices" );
+testEqual( string_cut( a, 0, 20 ), a, "string_cut - expected positive range overflow" );
+testEqual( string_cut( a, -20, -1 ), a, "string_cut - expected negative range overflow" );
+testEqual( string_cut( a, 3, 5, STRING_STRICT_RANGES | STRING_NO_REV_INDEX ), "dom", "string_cut - strict cutting" );
+testEqual( string_cut( a, 7 ), 'string', "string_cut - cutting to end" );
+ERRORS = ""; testEqual( string_cut( a ), null, "string_cut - bad argument count" );
+ERRORS = ""; testEqual( string_cut( null, 0, 10 ), null, "string_cut - string conversion error" );
+ERRORS = ""; testEqual( string_cut( a, 0, 20, STRING_STRICT_RANGES ), null, "string_cut - illegal positive range overflow" ); testEqual( ERRORS, string_cut_error_range );
+ERRORS = ""; testEqual( string_cut( a, -20, -1, STRING_STRICT_RANGES ), null, "string_cut - illegal negative range overflow" ); testEqual( ERRORS, string_cut_error_range );
+ERRORS = ""; testEqual( string_cut( a, -20, 20, STRING_STRICT_RANGES ), null, "string_cut - illegal both range overflow" ); testEqual( ERRORS, string_cut_error_range );
+ERRORS = ""; testEqual( string_cut( a, 0, 13, STRING_STRICT_RANGES ), null, "string_cut - illegal subtle range overflow" ); testEqual( ERRORS, string_cut_error_range );
+ERRORS = ""; testEqual( string_cut( a, -5, -3, STRING_NO_REV_INDEX ), null, "string_cut - illegal negative indices" ); testEqual( ERRORS, string_cut_error_indices );
+
+	section( "string_part" );
+var string_part_error_range = "[W:string_part(): invalid character range]";
+var string_part_error_indices = "[W:string_part(): detected negative indices]";
+testEqual( string_part( a, 3, 3 ), "dom", "string_part - basic cutting" );
+testEqual( string_part( a, -10, -6 ), "dom str", "string_part - negative indices" );
+testEqual( string_part( a, 0, 20 ), a, "string_part - expected positive range overflow" );
+testEqual( string_part( a, 20, 20 ), "", "string_part - expected positive range overflow" );
+testEqual( string_part( a, -20, -1 ), "rando", "string_part - expected negative range overflow" );
+testEqual( string_part( a, 3, 3, STRING_STRICT_RANGES | STRING_NO_REV_INDEX ), "dom", "string_part - basic cutting" );
+testEqual( string_part( a, 7 ), 'string', "string_part - cutting to end" );
+ERRORS = ""; testEqual( string_part( a ), null, "string_part - bad argument count" );
+ERRORS = ""; testEqual( string_part( null, 0, 10 ), null, "string_part - string conversion error" );
+ERRORS = ""; testEqual( string_part( a, 0, 20, STRING_STRICT_RANGES ), null, "string_part - illegal positive range overflow" ); testEqual( ERRORS, string_part_error_range );
+ERRORS = ""; testEqual( string_part( a, -20, -1, STRING_STRICT_RANGES ), null, "string_part - illegal negative range overflow" ); testEqual( ERRORS, string_part_error_range );
+ERRORS = ""; testEqual( string_part( a, -20, 20, STRING_STRICT_RANGES ), null, "string_part - illegal both range overflow" ); testEqual( ERRORS, string_part_error_range );
+ERRORS = ""; testEqual( string_part( a, 0, 14, STRING_STRICT_RANGES ), null, "string_part - illegal subtle range overflow" ); testEqual( ERRORS, string_part_error_range );
+ERRORS = ""; testEqual( string_part( a, -5, -3, STRING_NO_REV_INDEX ), null, "string_part - illegal negative indices" ); testEqual( ERRORS, string_part_error_indices );
+
+	section( "string_reverse" );
+testEqual( string_reverse( a ), "gnirts modnar", "string_reverse - output (odd number of chars)" );
+testEqual( string_reverse( "action" ), "noitca", "string_reverse - output (even number of chars)" );
+testEqual( typeof( string_reverse( "" ) ), "string", "string_reverse - empty strings" );
+ERRORS = ""; testEqual( string_reverse(), null, "string_reverse - bad argument count" );
+ERRORS = ""; testEqual( string_reverse( null ), null, "string_reverse - string conversion error" );
+
+	section( "string_pad" );
+testEqual( string_pad( b, 8, " ", STRING_PAD_LEFT|STRING_PAD_RIGHT ), "  WHAT  ", "string_pad - output (even padding)" );
+testEqual( string_pad( b, 9, " ", STRING_PAD_LEFT|STRING_PAD_RIGHT ), "   WHAT  ", "string_pad - output (odd padding)" );
+testEqual( string_pad( b, 9, 'pad', STRING_PAD_LEFT|STRING_PAD_RIGHT ), "padWHATad", "string_pad - custom padding string" );
+testEqual( string_pad( b, 8, 'pad', STRING_PAD_LEFT ), "padpWHAT", "string_pad - left padding only" );
+testEqual( string_pad( b, 8, 'pad', STRING_PAD_RIGHT ), "WHATadpa", "string_pad - right padding only" );
+testEqual( string_pad( b, 3 ), b, "string_pad - output (no padding)" );
+testEqual( string_pad( b, 100, a, 1<<4 ), b, "string_pad - no (recognized) flags specified" );
+
+	section( "string_repeat" );
+testEqual( string_repeat( b, 3 ), b$b$b, "string_repeat - positive count" );
+testEqual( string_repeat( b, 0 ), '', "string_repeat - zero count" );
+ERRORS = ""; testEqual( string_repeat( b, -3 ), null, "string_repeat - negative count" );
+
+	section( "string_count" );
+testEqual( string_count( a, "ran" ), 1, "string_count - 1 match at beginning" );
+testEqual( string_count( a, "ring" ), 1, "string_count - 1 match at end" );
+testEqual( string_count( a, "box" ), 0, "string_count - 0 matches" );
+testEqual( string_count( c, "a" ), 3, "string_count - multiple matches" );
+testEqual( string_count( c, "an" ), 2, "string_count - multiple following matches" );
+testEqual( string_count( c, "ana" ), 1, "string_count - overlapping matches (disabled)" );
+testEqual( string_count( c, "ana", true ), 2, "string_count - overlapping matches (enabled)" );
+ERRORS = ""; testEqual( string_count( c, "" ), null, "string_count - zero-length substring" );
+
+	section( "string_find" );
+testEqual( string_find( a, "ran" ), 0, "string_find - 1 match at beginning" );
+testEqual( string_find( a, "ring" ), 9, "string_find - 1 match at end" );
+testEqual( string_find( a, "box" ), null, "string_find - no matches" );
+testEqual( string_find( c, "a", 2 ), 3, "string_find - matching offset" );
+testEqual( string_find( c, "a", -4 ), 3, "string_find - negative matching offset" );
+testEqual( string_find( c, "na", 4 ), 4, "string_find - matching offset right at end" );
+ERRORS = ""; testEqual( string_find( c, "" ), null, "string_find - zero-length substring" );
+
+	section( "string_find_rev" );
+testEqual( string_find_rev( a, "ran" ), 0, "string_find_rev - 1 match at beginning" );
+testEqual( string_find_rev( a, "ring" ), 9, "string_find_rev - 1 match at end" );
+testEqual( string_find_rev( a, "box" ), null, "string_find_rev - no matches" );
+testEqual( string_find_rev( c, "a", 2 ), 1, "string_find_rev - matching offset" );
+testEqual( string_find_rev( c, "a", -4 ), 1, "string_find_rev - negative matching offset" );
+testEqual( string_find_rev( c, "ba", 0 ), 0, "string_find_rev - matching offset right at start" );
+ERRORS = ""; testEqual( string_find_rev( c, "" ), null, "string_find_rev - zero-length substring" );
+
+	section( "string_replace" );
+ERRORS = "";
+testEqual( string_replace( a, "random", "exact" ), "exact string", "string_replace - 1 match at beginning" );
+testEqual( string_replace( a, "string", "cat" ), "random cat", "string_replace - 1 match at end" );
+testEqual( string_replace( a, "box", "wat" ), "random string", "string_replace - no matches" );
+testEqual( string_replace( c, "ana", "anda" ), "bandana", "string_replace - overlapping matches" );
+testEqual( string_replace( string_repeat( "x", 1020 ), "x", "y" ), string_repeat( "y", 1020 ), "string_replace - large match count" );
+testEqual( string_replace( a, ["random","string"], "blah" ), "blah blah", "string_replace - array/string" );
+testEqual( string_replace( c, ["b","na"], ["batm","nana"] ), "batmanananana", "string_replace - array/array" );
+testEqual( string_replace( "a b c d e", ["a","b","c","d","e"], ["1","2"] ), "1 2 1 2 1", "string_replace - array/array modulo test" );
+testEqual( ERRORS, "", "string_replace - no errors" );
+ERRORS = ""; testEqual( string_replace( a, "wat", ["1","2"] ), null, "string_replace - string/array" );
+
+	section( "string_trim" );
+testEqual( string_trim( d ), "spacy", "string_trim - basic space trimming" );
+testEqual( string_trim( d, d ), "", "string_trim - trim everything" );
+testEqual( string_trim( c, "ba", STRING_TRIM_LEFT ), "nana", "string_trim - trim from left only" );
+testEqual( string_trim( c, "an", STRING_TRIM_RIGHT ), "b", "string_trim - trim from right only" );
+testEqual( string_trim( c, c, 1<<4 ), c, "string_trim - no (recognized) flags specified" );
+
+	section( "string_tolower" );
+testEqual( string_tolower( "What" ), "what", "string_tolower - one uppercase character" );
+testEqual( string_tolower( "xyZWuV" ), "xyzwuv", "string_tolower - no uppercase characters" );
+testEqual( string_tolower( "a278%#.," ), "a278%#.,", "string_tolower - no replaceable characters" );
+	
+	section( "string_toupper" );
+testEqual( string_toupper( "wHAT" ), "WHAT", "string_toupper - one uppercase character" );
+testEqual( string_toupper( "XYzwUv" ), "XYZWUV", "string_toupper - no uppercase characters" );
+testEqual( string_toupper( "A278%#.," ), "A278%#.,", "string_toupper - no replaceable characters" );
+
+	section( "string_compare" );
+testEqual( string_compare( "what", "whaT" ), 1, "string_compare - basic comparison" );
+testEqual( string_compare( "what", "whaT", 3 ), 0, "string_compare - limited comparison" );
+testEqual( string_compare( "what", "whaT", 3, 3 ), 1, "string_compare - extended comparison" );
+testEqual( string_compare( "what", "whaT", 3, -5 ), 0, "string_compare - pre-extended comparison" );
+testEqual( string_compare( "file.txt", ".txt", 0, -4 ), 0, "string_compare - file extension comparison" );
+
+	section( "string_implode" );
+testEqual( string_implode( ["a","b",5], "." ), "a.b.5", "string_implode - basic concatenation" );
+testEqual( string_implode( ["",3,""], "-" ), "-3-", "string_implode - empty strings" );
+
+	section( "string_explode" );
+testEqual( string_explode( "a.b.5", "." )$'', "[a,b,5]", "string_explode - basic split" );
+testEqual( string_explode( ".b.5", "." )$'', "[,b,5]", "string_explode - empty left side" );
+testEqual( string_explode( "a.b.", "." )$'', "[a,b,]", "string_explode - empty right side" );
+testEqual( string_explode( "a..5", "." )$'', "[a,,5]", "string_explode - empty middle" );
+testEqual( string_explode( "a<>b<>5", "<>" )$'', "[a,b,5]", "string_explode - multi-char split" );
+testEqual( string_explode( "<>b<>5", "<>" )$'', "[,b,5]", "string_explode - MC empty left side" );
+testEqual( string_explode( "a<>b<>", "<>" )$'', "[a,b,]", "string_explode - MC empty right side" );
+testEqual( string_explode( "a<><>5", "<>" )$'', "[a,,5]", "string_explode - MC empty middle" );
+testEqual( string_explode( "a..b..5", ".." )$'', "[a,b,5]", "string_explode - same-multi-char split" );
+testEqual( string_explode( "..b..5", ".." )$'', "[,b,5]", "string_explode - SMC empty left side" );
+testEqual( string_explode( "a..b..", ".." )$'', "[a,b,]", "string_explode - SMC empty right side" );
+testEqual( string_explode( "a....5", ".." )$'', "[a,,5]", "string_explode - SMC empty middle" );
+testEqual( string_explode( "a...5", ".." )$'', "[a,.5]", "string_explode - SMC tricky middle" );
+testEqual( string_explode( "abc5", "" )$'', "[a,b,c,5]", "string_explode - empty separator string" );
+
+	section( "string_charcode" );
+testEqual( string_charcode( "%?" ), 37, "string_charcode - default behavior" );
+testEqual( string_charcode( "%?", -1 ), 63, "string_charcode - reverse indexing" );
+ERRORS = ""; testEqual( string_charcode( "%?", -3 ), null, "string_charcode - invalid reverse index" );
+	testEqual( ERRORS, "[W:string_charcode(): index out of bounds]" );
+
+	section( "string_frombytes" );
+testEqual( string_frombytes( 33 ), "!", "string_frombytes - integer" );
+testEqual( string_frombytes([72,101,108,108,111]), "Hello", "string_frombytes - array" );
+ERRORS = "";
+testEqual( string_frombytes( 256 ), null, "string_frombytes - invalid integer" );
+testEqual( string_frombytes([ 32, -1, 256 ]), null, "string_frombytes - invalid array" );
+var e_sfbibv = "[W:string_frombytes(): invalid byte value]"; testEqual( ERRORS, e_sfbibv $ e_sfbibv );
+
+	section( "string_utf8_decode" );
+testEqual( string_utf8_decode( "pie" )$"", "[112,105,101]", "string_utf8_decode - ASCII code points" );
+testEqual( string_utf8_decode( "āži" )$"", "[257,382,105]", "string_utf8_decode - baltic code points" );
+testEqual( string_utf8_decode( "код" )$"", "[1082,1086,1076]", "string_utf8_decode - russian code points" );
+testEqual( string_utf8_decode( "標準" )$"", "[27161,28310]", "string_utf8_decode - chinese (?) code points" );
+testEqual( string_utf8_decode( "起頭" )$"", "[36215,38957]", "string_utf8_decode - big code points" );
+testEqual( string_utf8_decode( "\xF0\xAE\xD0\xBD" )$"", "[65533]", "string_utf8_decode - invalid #1" );
+testEqual( string_utf8_decode( "\xD0\xAE\xD0\xBD\xD0" )$"", "[1070,1085,65533]", "string_utf8_decode - invalid #2" );
+
+	section( "string_utf8_encode" );
+testEqual( string_utf8_encode( [112,105,101] ), "pie", "string_utf8_encode - ASCII code points" );
+testEqual( string_utf8_encode( [257,382,105] ), "āži", "string_utf8_encode - baltic code points" );
+testEqual( string_utf8_encode( [1082,1086,1076] ), "код", "string_utf8_encode - russian code points" );
+testEqual( string_utf8_encode( [27161,28310] ), "標準", "string_utf8_encode - chinese (?) code points" );
+testEqual( string_utf8_encode( [36215,38957] ), "起頭", "string_utf8_encode - big code points" );
+testEqual( string_utf8_encode( 112,105,101 ), "pie", "string_utf8_encode ALT - ASCII code points" );
+testEqual( string_utf8_encode( 257,382,105 ), "āži", "string_utf8_encode ALT - baltic code points" );
+testEqual( string_utf8_encode( 1082,1086,1076 ), "код", "string_utf8_encode ALT - russian code points" );
+testEqual( string_utf8_encode( 27161,28310 ), "標準", "string_utf8_encode ALT - chinese (?) code points" );
+testEqual( string_utf8_encode( 36215,38957 ), "起頭", "string_utf8_encode ALT - big code points" );
+
+	section( "string_utf8_offset" );
+utf8strings = [ "pie", "āži", "код", "標準", "起頭" ];
+utf8offsets1 = [ 1, 2, 2, 3, 3 ];
+utf8offsets2 = [ 3, 3, 3, 2, 2 ];
+utf8offsets3 = [ 3, 4, 4, 3, 3 ];
+testEqual( string_utf8_offset( "any", 0 ), 0, "string_utf8_offset - offset 0" );
+testEqual( string_utf8_offset( "", 0 ), 0, "string_utf8_offset - offset 0, empty string" );
+foreach( i, v : utf8strings )
+	testEqual( string_utf8_offset( v, 1 ), utf8offsets1[ i ], "string_utf8_offset - index 1, offset 0, string " $ i+1 );
+foreach( i, v : utf8strings )
+	testEqual( string_utf8_offset( v, 1, 2 ), utf8offsets3[ i ], "string_utf8_offset - index 1, offset 1, string " $ i+1 );
+foreach( i, v : utf8strings )
+	testEqual( string_utf8_offset( v, utf8offsets2[ i ] ), v.length, "string_utf8_offset - index =size, offset 0, string " $ i+1 );
+
+	section( "string_utf8_length" );
+foreach( i, v : utf8strings )
+	testEqual( string_utf8_length( v ), utf8offsets2[ i ], "string_utf8_length - string "$i+1$" length" );
+// the rest should be covered by string_part
+
+	section( "string_utf8_iterator" );
+ERRORS = "";
+uit = string_utf8_iterator( "код" );
+testEqual( typeof(uit), "utf8_iterator", "string_utf8_iterator - creation" );
+testEqual( typeof(get_iterator( uit )), "utf8_iterator", "string_utf8_iterator - self-retrieve" );
+testEqual( iter_getdata( uit ), null, "string_utf8_iterator - getdata 0" );
+//
+testEqual( iter_advance( uit ), true, "string_utf8_iterator - advance 1" );
+(k,v) = iter_getdata( uit, true );
+testEqual( k, 0, "string_utf8_iterator - getdata 1 key" );
+testEqual( v, 1082, "string_utf8_iterator - getdata 1 value" );
+//
+testEqual( iter_advance( uit ), true, "string_utf8_iterator - advance 2" );
+(k,v) = iter_getdata( uit, true );
+testEqual( k, 2, "string_utf8_iterator - getdata 2 key" );
+testEqual( v, 1086, "string_utf8_iterator - getdata 2 value" );
+//
+testEqual( iter_advance( uit ), true, "string_utf8_iterator - advance 3" );
+(k,v) = iter_getdata( uit, true );
+testEqual( k, 4, "string_utf8_iterator - getdata 3 key" );
+testEqual( v, 1076, "string_utf8_iterator - getdata 3 value" );
+//
+testEqual( iter_advance( uit ), false, "string_utf8_iterator - advance 4 (end)" );
+testEqual( iter_getdata( uit ), null, "string_utf8_iterator - getdata 4 (end)" );
+testEqual( ERRORS, "[E:iter_getdata(): failed to retrieve data from iterator][E:iter_getdata(): failed to retrieve data from iterator]", "string_utf8_iterator - errors" );
+
+	section( "string_format" );
+testEqual( string_format( 6, "{1:d}", 5 ), "5", "string_format - preallocation" );
+
+testEqual( string_format( "{1:d}", 5 ), "5", "string_format - basic number" );
+testEqual( string_format( "{1:d}", -5 ), "-5", "string_format - negative number" );
+testEqual( string_format( "{1:d}", -999 ), "-999", "string_format - negative number 2" );
+testEqual( string_format( "{1:d}", 0 ), "0", "string_format - zero" );
+
+testEqual( string_format( "{1:x}", 5 ), "5", "string_format - hex" );
+testEqual( string_format( "{1:X}", 999 ), "3E7", "string_format - hex 2" );
+testEqual( string_format( "{1:x}", -5 ), "fffffffffffffffb", "string_format - negative hex" );
+testEqual( string_format( "{1:X}", -999 ), "FFFFFFFFFFFFFC19", "string_format - negative hex 2" );
+testEqual( string_format( "{1:x}", 0 ), "0", "string_format - hex zero" );
+
+testEqual( string_format( "{1:o}", 5 ), "5", "string_format - oct" );
+testEqual( string_format( "{1:o}", 999 ), "1747", "string_format - oct 2" );
+testEqual( string_format( "{1:o}", -5 ), "1777777777777777777773", "string_format - negative oct" );
+testEqual( string_format( "{1:o}", -999 ), "1777777777777777776031", "string_format - negative oct 2" );
+testEqual( string_format( "{1:o}", 0 ), "0", "string_format - oct zero" );
+
+testEqual( string_format( "{1:b}", 5 ), "101", "string_format - bin" );
+testEqual( string_format( "{1:b}", 999 ), "1111100111", "string_format - bin 2" );
+testEqual( string_format( "{1:b}", -5 ), "1111111111111111111111111111111111111111111111111111111111111011", "string_format - negative bin" );
+testEqual( string_format( "{1:b}", -999 ), "1111111111111111111111111111111111111111111111111111110000011001", "string_format - negative bin 2" );
+testEqual( string_format( "{1:b}", 0 ), "0", "string_format - bin zero" );
+
+
+//
+print( "\n\nTesting finished!\nRan ", tests_ran, " tests of which ", tests_failed, " failed.\n" );
+//

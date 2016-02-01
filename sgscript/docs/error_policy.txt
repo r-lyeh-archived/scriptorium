@@ -1,0 +1,112 @@
+
+- E: error
+- W: warning
+
+main policy guidelines:
+- anything that prevents the script from executing code is an Error
+- anything that has more chance of being unexpected than not is an Error
+	-- for example, when given types/values don't support the intended operation
+	-- not having properties may be expected so it's a warning - breaks while debugging, no issues otherwise
+- the main exception is cascading failures
+	-- should disable code paths not stop things while still being detectable
+	-- null variables are key to this - most parsing functions don't accept them, they're returned on errors
+
+
+CONTEXT
+E Failed to read bytecode file (incomplete file|invalid variable type found)
+
+TOKENIZER
+E End of string not found
+E Invalid operator found
+E Failed to parse numeric constant
+E Unexpected symbol
+E Comment has no end
+
+FUNCTION TREE GENERATOR
+E Unexpected end of code
+E Unexpected token while parsing argument ..
+E Expected ',' or '<ending character>'
+E Invalid number of arguments in an array accessor
+E Missing operators or separators
+E Invalid expression
+E Unexpected token '<token>' found
+E Argument name cannot be a reserved keyword
+E Expected initializing expression
+E Expected key identifier in dictionary expression
+E Expected '=' in dictionary expression / missing closing bracket before '{'
+E INTERNAL ERROR in parse_exp: unknown token found!
+E Empty expression found
+E Expected '(' after '(if|while|for|foreach|function)'
+E Expected 'while' after statement in do/while
+E Expected identifier after '(' in 'foreach'
+E Expected ':' or ',' after identifier in 'foreach'
+E Expected identifier or ':' after ',' in 'foreach'
+E Expected ':' after identifier #2 or ',' in 'foreach'
+E Expected identifier after 'function'
+E Expected identifier after 'function', identifier and '.'
+E Expected '(' after 'function' and its name
+E Found 'else' without matching 'if'
+E Invalid (break|continue) level (can be between 1 and 255)
+
+BYTECODE GENERATOR
+E Variable storage redefined: global -> local
+E Variable storage redefined: local -> global
+E Variable storage redefined (foreach key variable cannot be global): global -> local
+E Cannot redeclare arguments with the same name
+E Maximum number of constants exceeded
+E Maximum register count exceeded
+E This function is not a method, cannot use 'this'
+E Cannot read from specified keyword
+E Cannot write to reserved keywords
+E Cannot set indexed value of a constant
+E Cannot set property of a constant
+E Cannot write to constants
+E Too many expected outputs for operator
+E Empty expression found
+E Break level too high
+E Attempted to break while not in a loop
+E Continue level too high
+E Attempted to continue while not in a loop
+E Expression writes only allowed with function call reads
+E 'if' pseudo-function cannot be used as input for expression writes
+E 'if' pseudo-function requires exactly 3 arguments
+E INTERNAL ERROR: constant doesn't have a token of type int/real/string attached
+E Unexpected tree node [uncaught/internal (BcG/w|BcG/r|BcG/r[fe]|BcG) error]
+
+VIRTUAL MACHINE
+E Max call stack size reached
+E Object does not support negation
+E Negating variable of type .. isn't supported
+E Cannot (in|de)crement non-numeric variables
+E Division by 0
+E Specified arithmetic operation is not supported on the given set of arguments
+E Variable of type .. doesn't have an iterator
+E Object .. doesn't have an iterator
+E Failed to retrieve data from iterator
+E Object could not be called
+E Variable of type .. cannot be called
+E Illegal instruction executed
+E Unknown memory error // (usually means that a wrong type ID is found)
+W Thiscall was not called on a function type
+W Thiscall expects at least one argument
+W Thiscall failed with error ..
+W Expected integer as string index
+W String index out of bounds
+W Cannot index variable of type ..
+W Property .. not found on object of type ..
+W Cannot find value by index / Property not found
+W Index out of bounds
+W Invalid value used for (index|property) (read|write)
+W Unknown error on (index|property) (read|write)
+W Cannot serialize functions
+W Variable .. was not found
+
+STANDARD LIBRARY
+W ~ Most issues with arguments / state - if not specified otherwise, warning is used
+E This errno value is unsupported
+W Array index out of bounds
+E _G only accepts 'dict' values
+E unknown error while dumping variable
+E failed to concatenate the output
+E failed to serialize
+E unserialize: (error in data|could not find something|unknown error)

@@ -1,0 +1,9 @@
+global ERRORS = "";
+function Obj_Test( arg )
+{
+	testEqual( this, "wat", "inhcall - 'this'" );
+	testEqual( arg, "dat", "inhcall - arg0" );
+}
+obj = "wat";
+obj!Obj_Test( "dat" );
+testEqual( ERRORS, "", "no errors in process" );

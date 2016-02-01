@@ -1,0 +1,5 @@
+var a, b, c, d;
+a = 0, b = a++, c = 5, d = 5;
+print( a, b, '\n' );
+print( b++, ++b, b++, '\n' );
+print( c++ + ++d, '\n' );

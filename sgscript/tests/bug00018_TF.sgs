@@ -1,0 +1,7 @@
+
+(function()
+{
+	x = ["wat"];
+	testEqual( tostring(x), "[wat]" );
+	a = function() use(x) {};
+})();

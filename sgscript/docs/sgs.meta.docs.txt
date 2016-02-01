@@ -1,0 +1,142 @@
+SGScript Metaprogramming helper library
+
+
+# Description [info]
+
+The goal of this library is to provide further tools for handling the compilation part of SGScript. Specifically, this library implements bytecode parsing.
+
+The library is compiled to a 'sgsmeta' shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+
+    include "sgsmeta";
+
+
+# SGScript API [info]
+
+=== Functions:
+
+- @meta_globals - load all global constants
+- @meta_unpack - parse a bytecode buffer
+- @meta_opname - retrieve bytecode instruction name by ID
+
+=== Constants:
+
+- @SI_ - instruction code/ID constants
+
+
+# >>>
+
+
+# meta_globals [function]
+
+== meta_globals()
+=== load all global constants
+
+- for now, only instruction code/ID constants are loaded (the @SI_ prefix)
+- to load them into another `dict` variable, environment can be altered by setting `_G`
+
+
+# meta_unpack [function]
+
+== meta_unpack( string bytecode_buffer )
+=== parse a bytecode buffer
+
+- returns a dict containing root function or false/warning on failure
+
+The structure of a function:
+
+- `array consts` -- contains a list of parsed constants for the function
+- `array code` -- contains a list of parsed instructions for the function
+- `array lines` -- contains a list of line numbers for the instructions, array size should be equal to that of instruction array
+- `bool gotthis` -- whether `this` is required (should be false for root function)
+- `int numargs` -- number of input arguments (should be 0 for root function)
+- `int numtmp` -- number of temporary variables in function
+- `int numclsr` -- number of closures required in function
+- `string name` -- name of the function ("<main>" for root function)
+- `int line` -- first line number of function definition (0 for root function)
+
+The structure of a constant:
+
+- `int type` -- base type ID of constant, should be one of SVT_[NULL|BOOL|INT|REAL|STRING|FUNC]
+- `var data` -- variable in the previously specified type or a parsed function in the case of SVT_FUNC
+
+The structure of an instruction:
+
+- `int op` -- operation code (ID), one of @SI_ constants, name can be retrieved with @meta_opname
+- `int a` -- the "A" argument, 0 - 255
+- `int b` -- the "B" argument, -256 - 255
+- `int c` -- the "C" argument, -256 - 255
+- `int e` -- the "E" (extended) argument, -65536 - 65535 (occupies same memory space as A/B)
+
+
+# meta_opname [function]
+
+== meta_opname( int id )
+=== retrieve bytecode instruction name by ID
+
+- this function is the SGScript version of C API function sgs_CodeString( SGS_CODE_OP, id )
+
+    meta_opname( 0 ); // returns "nop"
+
+
+# SI_ [constants]
+
+SGScript instruction code/type/ID constants.
+
+! These constants are only available if @meta_globals is called first.
+
+- SI_NOP - no op
+- SI_PUSH - push variable to stack
+- SI_RETN - return from call with the specified number of variables off the top of the stack
+- SI_JUMP - do a relative jump from after the instruction
+- SI_JMPT - do a relative jump from after the instruction, if a register/constant is true
+- SI_JMPF - do a relative jump from after the instruction, if a register/constant is false
+- SI_CALL - do a function call with the specified function/argument list
+- SI_FORPREP - prepare for `foreach` loop, retrieving the iterator
+- SI_FORLOAD - load key/value from iterator
+- SI_FORJUMP - advance the iterator, optionally jumping if iterator reached end
+- SI_LOADCONST - load constant (extended addressing) into register
+- SI_GETVAR - retrieve global variable by key
+- SI_SETVAR - set global variable by key
+- SI_GETPROP - retrieve property from object by key
+- SI_SETPROP - set property in object by key
+- SI_GETINDEX - retrieve index from object by key
+- SI_SETINDEX - set index in object by key
+- SI_GENCLSR - generate number of closure variables, pushing them on top of stack
+- SI_PUSHCLSR - copy and push closure variable from the stack
+- SI_MAKECLSR - make function with attached closure variables
+- SI_GETCLSR - get closure value from closure variable on stack
+- SI_SETCLSR - set closure value to closure variable on stack
+- SI_SET - copy variable from register/constant to another register
+- SI_MCONCAT - concatenate range of variables
+- SI_CONCAT - concatenate two variables
+- SI_NEGATE - negate variable
+- SI_BOOL_INV - do logical inversion on variable
+- SI_INVERT - do bitwise inversion on variable
+- SI_INC - add 1 to variable
+- SI_DEC - subtract 1 from variable
+- SI_ADD - add two variables
+- SI_SUB - subtract two variables
+- SI_MUL - multiply two variables
+- SI_DIV - divide two variables
+- SI_MOD - do modulo on two variables
+- SI_AND - do bitwise AND on two variables
+- SI_OR - do bitwise OR on two variables
+- SI_XOR - do bitwise XOR on two variables
+- SI_LSH - do left bit shift
+- SI_RSH - do right bit shift
+- SI_SEQ - compare two variables for strict equality
+- SI_SNEQ - compare two variables for strict inequality
+- SI_EQ - compare two variables for (weak) equality
+- SI_NEQ - compare two variables for (weak) inequality
+- SI_LT - test if one variable is less than other
+- SI_GTE - test if one variable is greater than or equal to other
+- SI_GT - test if one variable is greater than other
+- SI_LTE - test if one variable is less than or equal to other
+- SI_RAWCMP - return variable difference as -1/0/1
+- SI_ARRAY - create an array from stack items
+- SI_DICT - create a dict from stack items
+
+
+# <<<
+
+

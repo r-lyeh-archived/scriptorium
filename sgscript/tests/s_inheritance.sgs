@@ -1,0 +1,11 @@
+var printerIface = 
+{
+	print_stdout = function( text ){ print( text ); },
+};
+var postfixPrinterIface = 
+{
+	print = function( text ){ this.print_stdout( text $ this.postfix ); },
+	postfix = '[postfix]',
+};
+var questionPrinter = class( { postfix = '?' }, class( postfixPrinterIface, printerIface ) );
+questionPrinter.print( "wat" );

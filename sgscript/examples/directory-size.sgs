@@ -1,0 +1,57 @@
+
+include_library( "io" );
+
+
+function dir_size_recursive( dir )
+{
+	size = 0;
+	foreach( t, i : io_dir( dir ) )
+	{
+		if( !t )
+			continue;
+		fullpath = dir $ "/" $ i;
+		info = io_stat( fullpath );
+		if( info.type == FST_FILE )
+			size += info.size;
+		else if( info.type == FST_DIR )
+			size += dir_size_recursive( fullpath );
+	}
+	return size;
+}
+
+println
+(
+	"Directory size (recursive counter): ",
+	dir_size_recursive( "." ) / 1024, " kB"
+);
+
+
+function dir_size_nonrecursive( dir )
+{
+	set = [dir];
+	size = 0;
+
+	while( set.size )
+	{
+		path = set.pop();
+		foreach( t, i : io_dir( path ) )
+		{
+			if( !t )
+				continue;
+			fullpath = path $ "/" $ i;
+			info = io_stat( fullpath );
+			if( info.type == FST_FILE )
+				size += info.size;
+			else if( info.type == FST_DIR )
+				set.push( fullpath );
+		}
+	}
+
+	return size;
+}
+
+println
+(
+	"Directory size (non-recursive counter): ",
+	dir_size_nonrecursive( "." ) / 1024, " kB"
+);

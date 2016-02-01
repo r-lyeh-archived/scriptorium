@@ -1,0 +1,1310 @@
+SGScript eXtended Game Math library
+
+
+# Description [info]
+
+The goal of this library is to provide the mathematical objects commonly used in games:
+
+- all values have 32 bit floating point type unless otherwise noted
+- @vec2<vec2 [object]>, @vec3<vec3 [object]>, @vec4<vec4 [object]> (2,3 and 4 dimension vectors)
+- @mat4<mat4 [object]> (4x4 matrix)
+- @aabb2<aabb2 [object]> (2D axis-aligned bounding box)
+- @aabb3<aabb3 [object]> (3D axis-aligned bounding box)
+- @color<color [object]> (red, green, blue, alpha values)
+- @floatarray<floatarray [object]> (array of floating point values)
+
+The library is compiled to a 'sgsxgmath' shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+
+    include "sgsxgmath";
+
+! It is extremely important that only one instance of this library is loaded in the application for constant sharing to enable object interface recognition.
+
+
+# SGScript API [info]
+
+=== Objects:
+
+- @vec2<vec2 [object]>
+- @vec3<vec3 [object]>
+- @vec4<vec4 [object]>
+- @aabb2<aabb2 [object]>
+- @aabb3<aabb3 [object]>
+- @color<color [object]>
+- @mat4<mat4 [object]>
+- @floatarray<floatarray [object]>
+
+=== Functions:
+
+- @vec2<vec2 [function]> - create a vec2 object
+- @vec2_dot - return dot product of two 2D vectors
+- @vec3<vec3 [function]> - create a vec3 object
+- @vec3_dot - return dot product of two 3D vectors
+- @vec3_cross - return cross product of two 3D vectors
+- @vec4<vec4 [function]> - create a vec4 object
+- @vec4_dot - return dot product of two 4D vectors
+- @aabb2<aabb2 [function]> - create a 2D AABB from 4 real values
+- @aabb2v - create a 2D AABB from 2 2D vectors
+- @aabb2_intersect - intersect two 2D AABB values
+- @aabb3<aabb3 [function]> - create a 3D AABB from 6 real values
+- @aabb3v - create a 3D AABB from 2 3D vectors
+- @aabb3_intersect - intersect two 3D AABB values
+- @color<color [function]>
+- @mat4<mat4 [function]>
+- @floatarray<floatarray [function]> - create floatarray from array/list of int/real values
+- @floatarray_buffer - create 0-initialized floatarray
+- @vec2array - create floatarray from array/list of int/real/vec2 values
+- @vec3array - create floatarray from array/list of int/real/vec3 values
+- @vec4array - create floatarray from array/list of int/real/vec4 values
+- @floatarray_from_*_buffer - create floatarray from byte buffer
+
+
+# >>>
+
+
+# vec2 [object]
+
+- methods
+-- @rotate<vec2.rotate> - return vector, rotated by specified angle
+- read-only properties
+-- [real] length
+-- [real] length_squared
+-- [vec2] normalized - return a vector with length = 1 if possible, length = 0 if too short
+-- [vec2] perp - returns vec2(-y,x) - 90 degree clockwise vector
+-- [vec2] perp2 - returns vec2(y,-x) - 90 degree counter-clockwise vector
+-- [int] size - returns 2 - the number of components in this vector
+- read/write properties
+-- [real] x
+-- [real] y
+-- [real] angle
+- overloaded operators
+-- `+` - adds two vec2/real values
+-- `-` - subtracts two vec2/real values
+-- `*` - multiplies two vec2/real values
+-- `/` - divides two vec2/real values
+-- `%` - returns modulo of two vec2/real values
+-- comparison between vec2 values: first by X, then by Y
+-- unary `-` - returns negated vec2
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - 1: returns/sets the specified subvalue
+-- tostring, dump = "vec2(<x>;<y>)"
+
+
+# vec2.rotate [method]
+
+== vec2.rotate( real angle )
+=== return vec2, rotated by angle in radians
+
+
+# vec2 [function]
+
+== vec2( real x[, real y ])
+=== create a vec2 value from 1 - 2 real values
+
+- if only one argument is given, it is used for both `x` and `y`
+
+
+# vec2_dot [function]
+
+== vec2_dot( vec2 v1, vec2 v2 )
+=== return the dot product of both vectors
+
+- returns `v1.x * v2.x + v1.y * v2.y`
+
+
+# vec3 [object]
+
+- read-only properties
+-- [real] length
+-- [real] length_squared
+-- [vec3] normalized - return a vector with length = 1 if possible, length = 0 if too short
+-- [int] size - returns 3 - the number of components in this vector
+- read/write properties
+-- [real] x
+-- [real] y
+-- [real] z
+- overloaded operators
+-- `+` - adds two vec3/real values
+-- `-` - subtracts two vec3/real values
+-- `*` - multiplies two vec3/real values
+-- `/` - divides two vec3/real values
+-- `%` - returns modulo of two vec3/real values
+-- comparison between vec3 values: first by X, then by Y, then by Z
+-- unary `-` - returns negated vec3
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - 2: returns/sets the specified subvalue
+-- tostring, dump = "vec3(<x>;<y>;<z>)"
+
+
+# vec3 [function]
+
+== vec3( real x[, real y[, real z ]])
+=== create a vec3 value from 1 or 3 real values
+
+- if only one argument is given, it is used for `x`, `y` and `z`
+
+
+# vec3_dot [function]
+
+== vec3_dot( vec3 v1, vec3 v2 )
+=== return the dot product of both vectors
+
+- returns `v1.x * v2.x + v1.y * v2.y + v1.z * v2.z`
+
+
+# vec3_cross [function]
+
+== vec3_cross( vec3 v1, vec3 v2 )
+=== return the cross product of both vectors
+
+- returns `vec3( v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x )`
+
+
+# vec4 [object]
+
+- read-only properties
+-- [real] length
+-- [real] length_squared
+-- [vec4] normalized - return a vector with length = 1 if possible, length = 0 if too short
+-- [int] size - returns 4 - the number of components in this vector
+- read/write properties
+-- [real] x
+-- [real] y
+-- [real] z
+-- [real] w
+- overloaded operators
+-- `+` - adds two vec4/real values
+-- `-` - subtracts two vec4/real values
+-- `*` - multiplies two vec4/real values
+-- `/` - divides two vec4/real values
+-- `%` - returns modulo of two vec4/real values
+-- comparison between vec4 values: first by X, then by Y, then by Z, then by W
+-- unary `-` - returns negated vec4
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - 3: returns/sets the specified subvalue
+-- tostring, dump = "vec4(<x>;<y>;<z>;<w>)"
+
+
+# vec4 [function]
+
+== vec4( real x[, real y[, real z[, real w ]]])
+=== create a vec4 value from 1, 2 or 4 real values
+
+- if only one argument is given, it is used for `x`, `y`, `z` and `w`
+- if two arguments are given, use argument 1 for `x`, `y` and `z` ; argument 2 for `w`
+
+
+# vec4_dot [function]
+
+== vec4_dot( vec4 v1, vec4 v2 )
+=== return the dot product of both vectors
+
+- returns `v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w`
+
+
+# aabb2 [object]
+
+In this object, assume 1 = min and 2 = max.
+
+- methods
+-- @expand<aabb2.expand> - include other vec2/aabb2 items in current AABB
+- read-only properties
+-- [real] width -- x2 - x1
+-- [real] height -- y2 - y1
+-- [vec2] center -- (p1 + p2) / 2
+-- [real] area -- width * height
+-- [bool] valid -- returns if x1 <= x2 and y1 <= y2
+- read/write properties
+-- [real] x1
+-- [real] y1
+-- [real] x2
+-- [real] y2
+-- [vec2] p1
+-- [vec2] p2
+- overloaded operators
+-- comparison between aabb2 values: first by X1, then by Y1, then by X2, then by Y2
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- tostring, dump = "aabb2(<x1>;<y1> - <x2>;<y2>)"
+
+
+# aabb2.expand( ... ) [function]
+
+== aabb2.expand( ... )
+=== include other vec2/aabb2 items in current AABB
+
+
+# aabb2 [function]
+
+== aabb2( real x1, real y1, real x2, real y2 )
+=== create a 2D AABB object from 4 real values
+
+
+# aabb2v [function]
+
+== aabb2v( vec2 p1, vec2 p2 )
+=== create a 2D AABB object from 2 vec2 values
+
+
+# aabb2_intersect [function]
+
+== aabb2_intersect( aabb2 bb1, aabb2 bb2 )
+=== check if two AABBs intersect
+
+
+# aabb3 [object]
+
+In this object, assume 1 = min and 2 = max.
+
+- methods
+-- @expand<aabb3.expand> - include other vec3/aabb3 items in current AABB
+- read-only properties
+-- [real] width -- x2 - x1
+-- [real] height -- y2 - y1
+-- [real] depth -- z2 - z1
+-- [vec3] center -- (p1 + p2) / 2
+-- [real] area -- width * height * depth
+-- [bool] valid -- returns if x1 <= x2 and y1 <= y2 and z1 <= z2
+- read/write properties
+-- [real] x1
+-- [real] y1
+-- [real] z1
+-- [real] x2
+-- [real] y2
+-- [real] z2
+-- [vec3] p1
+-- [vec3] p2
+- overloaded operators
+-- comparison between aabb3 values: first by X1, then by Y1, then by Z1, then by X2, then by Y2, then by Z2
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- tostring, dump = "aabb3(<x1>;<y1>;<z1> - <x2>;<y2>;<z2>)"
+
+
+# aabb3.expand( ... ) [function]
+
+== aabb3.expand( ... )
+=== include other vec3/aabb3 items in current AABB
+
+
+# aabb3 [function]
+
+== aabb3( real x1, real y1, real x2, real y2 )
+=== create a 2D AABB object from 4 real values
+
+
+# aabb3v [function]
+
+== aabb3v( vec3 p1, vec3 p2 )
+=== create a 2D AABB object from 2 vec3 values
+
+
+# aabb3_intersect [function]
+
+== aabb3_intersect( aabb3 bb1, aabb3 bb2 )
+=== check if two AABBs intersect
+
+
+# color [object]
+
+- read-only properties
+-- [int] size - returns 4 - the number of components in this vector
+- read/write properties
+-- [real] r
+-- [real] g
+-- [real] b
+-- [real] a
+- overloaded operators
+-- `+` - adds two color/real values
+-- `-` - subtracts two color/real values
+-- `*` - multiplies two color/real values
+-- `/` - divides two color/real values
+-- `%` - returns modulo of two color/real values
+-- comparison between color values: first by R, then by G, then by B, then by A
+-- unary `-` - returns negated color
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - 3: returns/sets the specified subvalue
+-- tostring, dump = "color(<r>;<g>;<b>;<a>)"
+
+
+# color [function]
+
+== color( real r[, real g[, real b[, real a ]]])
+=== create a color value from 1 to 4 real values
+
+- if one argument is given, it is used for all components
+- if two arguments are given, argument 1 is used for R, G and B, argument 2 is used for A
+- if three arguments are given, they're used for R, G and B; 1 is the value of A
+
+
+
+# quat [object]
+
+A quaternion
+
+- methods
+-- @identity<quat.identity> - set quaternion to identity
+-- @multiply<quat.multiply> - multiply this quaternion with another one
+-- @multiply_left<quat.multiply_left> - left-multiply this quaternion with another one
+-- @multiply2<quat.multiply2> - multiply two matrices into this one
+-- @invert<quat.invert> - invert quaternion
+-- @invert_from<quat.invert_from> - invert another quaternion into this one
+-- @rotateX<quat.rotateX> - set or multiply a X-axis rotation quaternion
+-- @rotateY<quat.rotateY> - set or multiply a Y-axis rotation quaternion
+-- @rotateZ<quat.rotateZ> - set or multiply a Z-axis rotation quaternion
+-- @rotate_axis_angle<quat.rotate_axis_angle> - set or multiply a custom axis rotation quaternion
+-- @rotate_axis_angle_v3<quat.rotate_axis_angle_v3> - set or multiply a custom axis rotation quaternion (vec3 argument)
+-- @transform<quat.transform> - transform a 3D vector
+- read-only properties
+-- [real] length
+-- [real] length_squared
+-- [quat] normalized - return a quaternion with length = 1 if possible, length = 0 if too short
+-- [int] size - returns 4 - the number of components in this vector
+-- [mat3] mat3 - returns a 3x3 matrix, generated from this quaternion
+-- [mat4] mat4 - returns a 4x4 matrix, generated from this quaternion
+- read/write properties
+-- [real] m[0-2][0-2]
+- overloaded operators
+-- comparison between subvalues: column-major subvalue order
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - 8: returns/sets the specified subvalue
+-- tostring = "quat"
+-- dump:
+    quat(<x>;<y>;<z>|<w>)
+
+
+# quat.identity [method]
+
+== quat.identity()
+=== set the quaternion to identity
+
+
+# quat.multiply [method]
+
+== quat.multiply( quat m )
+=== multiply this quaternion and another quaternion, putting the other quaternion on the right side of multiplication
+
+
+# quat.multiply_left [method]
+
+== quat.multiply_left( quat m )
+=== multiply this quaternion and another quaternion, putting the other quaternion on the left side of multiplication
+
+
+# quat.multiply2 [method]
+
+== quat.multiply2( quat m1, quat m2 )
+=== multiply two matrices into this quaternion
+
+
+# quat.invert [method]
+
+== quat.invert()
+=== invert this quaternion into itself
+
+
+# quat.invert_from [method]
+
+== quat.invert_from( quat m )
+=== invert another quaternion into this quaternion
+
+
+# quat.rotateX [method]
+
+== quat.rotateX( real a[, bool reset ])
+=== generate a rotation quaternion (rotation around X axis) and multiply or set it to this quaternion
+
+- if `reset` is true, the generated quaternion is directly set to this quaternion
+-- otherwise, generated quaternion is right-multiplied to this quaternion
+-- if current quaternion is an identity quaternion, `reset` has no effect
+
+
+# quat.rotateY [method]
+
+== quat.rotateY( real a[, bool reset ])
+=== generate a rotation quaternion (rotation around Y axis) and multiply or set it to this quaternion
+
+- if `reset` is true, the generated quaternion is directly set to this quaternion
+-- otherwise, generated quaternion is right-multiplied to this quaternion
+-- if current quaternion is an identity quaternion, `reset` has no effect
+
+
+# quat.rotateZ [method]
+
+== quat.rotateZ( real a[, bool reset ])
+=== generate a rotation quaternion (rotation around Z axis) and multiply or set it to this quaternion
+
+- if `reset` is true, the generated quaternion is directly set to this quaternion
+-- otherwise, generated quaternion is right-multiplied to this quaternion
+-- if current quaternion is an identity quaternion, `reset` has no effect
+
+
+# quat.rotate_axis_angle [method]
+
+== quat.rotate_axis_angle( real x, real y, real z, real a[, bool reset ])
+=== generate a rotation quaternion (rotation around specified axis) and multiply or set it to this quaternion
+
+- if `reset` is true, the generated quaternion is directly set to this quaternion
+-- otherwise, generated quaternion is right-multiplied to this quaternion
+-- if current quaternion is an identity quaternion, `reset` has no effect
+
+
+# quat.rotate_axis_angle_v3 [method]
+
+== quat.rotate_axis_angle( vec3 v, real a[, bool reset ])
+=== generate a rotation quaternion (rotation around specified axis) and multiply or set it to this quaternion
+
+- if `reset` is true, the generated quaternion is directly set to this quaternion
+-- otherwise, generated quaternion is right-multiplied to this quaternion
+-- if current quaternion is an identity quaternion, `reset` has no effect
+
+
+# quat.transform [method]
+
+== quat.transform( vec3 v )
+=== multiply a 3D vector by this quaternion
+
+
+# quat [function]
+
+== quat( real v[4] )
+=== create a quaternion from 4 real values
+
+
+
+# mat3 [object]
+
+A 3x3 column-major matrix
+
+- methods
+-- @identity<mat3.identity> - set matrix to identity
+-- @multiply<mat3.multiply> - multiply this matrix with another one
+-- @multiply_left<mat3.multiply_left> - left-multiply this matrix with another one
+-- @multiply2<mat3.multiply2> - multiply two matrices into this one
+-- @transpose<mat3.transpose> - transpose matrix
+-- @transpose_from<mat3.transpose_from> - transpose another matrix into this one
+-- @invert<mat3.invert> - invert matrix
+-- @invert_from<mat3.invert_from> - invert another matrix into this one
+-- @rotateX<mat3.rotateX> - set or multiply a X-axis rotation matrix
+-- @rotateY<mat3.rotateY> - set or multiply a Y-axis rotation matrix
+-- @rotateZ<mat3.rotateZ> - set or multiply a Z-axis rotation matrix
+-- @rotate_axis_angle<mat3.rotate_axis_angle> - set or multiply a custom axis rotation matrix
+-- @rotate_axis_angle_v3<mat3.rotate_axis_angle_v3> - set or multiply a custom axis rotation matrix (vec3 argument)
+-- @scale<mat3.scale> - set or multiply a scale matrix
+-- @scale_v3<mat3.scale_v3> - set or multiply a scale matrix (vec3 argument)
+-- @transform<mat3.transform> - transform a 3D vector
+- read-only properties
+-- [int] size - returns 9 - the number of components in this vector
+-- [quat] quat - returns the quaternion version of this matrix
+-- [mat4] mat4 - returns a 4x4 version of this matrix, expanded with identity matrix data
+- read/write properties
+-- [real] m[0-2][0-2]
+- overloaded operators
+-- comparison between subvalues: column-major subvalue order
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - 8: returns/sets the specified subvalue
+-- tostring = "mat3"
+-- dump:
+    mat3
+    (
+    	<m00> <m10> <m20>
+    	<m01> <m11> <m21>
+    	<m02> <m12> <m22>
+    )
+
+
+# mat3.identity [method]
+
+== mat3.identity()
+=== set the matrix to identity
+
+
+# mat3.multiply [method]
+
+== mat3.multiply( mat3 m )
+=== multiply this matrix and another matrix, putting the other matrix on the right side of multiplication
+
+
+# mat3.multiply_left [method]
+
+== mat3.multiply_left( mat3 m )
+=== multiply this matrix and another matrix, putting the other matrix on the left side of multiplication
+
+
+# mat3.multiply2 [method]
+
+== mat3.multiply2( mat3 m1, mat3 m2 )
+=== multiply two matrices into this matrix
+
+
+# mat3.transpose [method]
+
+== mat3.transpose()
+=== transpose this matrix into itself
+
+
+# mat3.transpose_from [method]
+
+== mat3.transpose_from( mat3 m )
+=== transpose another matrix into this matrix
+
+
+# mat3.invert [method]
+
+== mat3.invert()
+=== invert this matrix into itself, return if successful
+
+
+# mat3.invert_from [method]
+
+== mat3.invert_from( mat3 m )
+=== invert another matrix into this matrix
+
+
+# mat3.rotateX [method]
+
+== mat3.rotateX( real a[, bool reset ])
+=== generate a rotation matrix (rotation around X axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat3.rotateY [method]
+
+== mat3.rotateY( real a[, bool reset ])
+=== generate a rotation matrix (rotation around Y axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat3.rotateZ [method]
+
+== mat3.rotateZ( real a[, bool reset ])
+=== generate a rotation matrix (rotation around Z axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat3.rotate_axis_angle [method]
+
+== mat3.rotate_axis_angle( real x, real y, real z, real a[, bool reset ])
+=== generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat3.rotate_axis_angle_v3 [method]
+
+== mat3.rotate_axis_angle( vec3 v, real a[, bool reset ])
+=== generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat3.scale [method]
+
+== mat3.scale( real x, real y, real z[, bool reset ])
+=== generate a scale matrix and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat3.scale_v3 [method]
+
+== mat3.scale_v3( vec3 v[, bool reset ])
+=== generate a scale matrix and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat3.transform [method]
+
+== mat3.transform( vec3 v )
+=== multiply a 3D vector by this matrix
+
+
+# mat3 [function]
+
+== mat3( mat3 m )
+=== copy the matrix
+== mat3( vec3 row1, vec3 row2, vec3 row3 )
+=== create a matrix from 3 rows
+== mat3( real v[9] )
+=== create a matrix from 9 real values
+
+
+
+# mat4 [object]
+
+A 4x4 column-major matrix
+
+- methods
+-- @identity<mat4.identity> - set matrix to identity
+-- @multiply<mat4.multiply> - multiply this matrix with another one
+-- @multiply_left<mat4.multiply_left> - left-multiply this matrix with another one
+-- @multiply2<mat4.multiply2> - multiply two matrices into this one
+-- @transpose<mat4.transpose> - transpose matrix
+-- @transpose_from<mat4.transpose_from> - transpose another matrix into this one
+-- @invert<mat4.invert> - invert matrix
+-- @invert_from<mat4.invert_from> - invert another matrix into this one
+-- @translate<mat4.translate> - set or multiply a translation matrix
+-- @translate_v3<mat4.translate_v3> - set or multiply a translation matrix (vec3 argument)
+-- @rotateX<mat4.rotateX> - set or multiply a X-axis rotation matrix
+-- @rotateY<mat4.rotateY> - set or multiply a Y-axis rotation matrix
+-- @rotateZ<mat4.rotateZ> - set or multiply a Z-axis rotation matrix
+-- @rotate_axis_angle<mat4.rotate_axis_angle> - set or multiply a custom axis rotation matrix
+-- @rotate_axis_angle_v3<mat4.rotate_axis_angle_v3> - set or multiply a custom axis rotation matrix (vec3 argument)
+-- @scale<mat4.scale> - set or multiply a scale matrix
+-- @scale_v3<mat4.scale_v3> - set or multiply a scale matrix (vec3 argument)
+-- @transform<mat4.transform> - transform a 4D vector
+-- @transform_pos<mat4.transform_pos> - transform a 3D position vector
+-- @transform_normal<mat4.transform_normal> - transform a 3D normal vector
+- read-only properties
+-- [int] size - returns 16 - the number of components in this vector
+-- [quat] quat - returns the quaternion version of the 3x3 part of this matrix
+-- [mat3] mat3 - returns the 3x3 part of this matrix
+- read/write properties
+-- [real] m[0-3][0-3]
+- overloaded operators
+-- comparison between subvalues: column-major subvalue order
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - 15: returns/sets the specified subvalue
+-- tostring = "mat4"
+-- dump:
+    mat4
+    (
+    	<m00> <m10> <m20> <m30>
+    	<m01> <m11> <m21> <m31>
+    	<m02> <m12> <m22> <m32>
+    	<m03> <m13> <m23> <m33>
+    )
+
+
+# mat4.identity [method]
+
+== mat4.identity()
+=== set the matrix to identity
+
+
+# mat4.multiply [method]
+
+== mat4.multiply( mat4 m )
+=== multiply this matrix and another matrix, putting the other matrix on the right side of multiplication
+
+
+# mat4.multiply_left [method]
+
+== mat4.multiply_left( mat4 m )
+=== multiply this matrix and another matrix, putting the other matrix on the left side of multiplication
+
+
+# mat4.multiply2 [method]
+
+== mat4.multiply2( mat4 m1, mat4 m2 )
+=== multiply two matrices into this matrix
+
+
+# mat4.transpose [method]
+
+== mat4.transpose()
+=== transpose this matrix into itself
+
+
+# mat4.transpose_from [method]
+
+== mat4.transpose_from( mat4 m )
+=== transpose another matrix into this matrix
+
+
+# mat4.invert [method]
+
+== mat4.invert()
+=== invert this matrix into itself, return if successful
+
+
+# mat4.invert_from [method]
+
+== mat4.invert_from( mat4 m )
+=== invert another matrix into this matrix
+
+
+# mat4.translate [method]
+
+== mat4.translate( real x, real y, real z[, bool reset ])
+=== generate a translation matrix and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.translate_v3 [method]
+
+== mat4.translate_v3( vec3 v[, bool reset ])
+=== generate a translation matrix and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.rotateX [method]
+
+== mat4.rotateX( real a[, bool reset ])
+=== generate a rotation matrix (rotation around X axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.rotateY [method]
+
+== mat4.rotateY( real a[, bool reset ])
+=== generate a rotation matrix (rotation around Y axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.rotateZ [method]
+
+== mat4.rotateZ( real a[, bool reset ])
+=== generate a rotation matrix (rotation around Z axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.rotate_axis_angle [method]
+
+== mat4.rotate_axis_angle( real x, real y, real z, real a[, bool reset ])
+=== generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.rotate_axis_angle_v3 [method]
+
+== mat4.rotate_axis_angle( vec3 v, real a[, bool reset ])
+=== generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.scale [method]
+
+== mat4.scale( real x, real y, real z[, bool reset ])
+=== generate a scale matrix and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.scale_v3 [method]
+
+== mat4.scale_v3( vec3 v[, bool reset ])
+=== generate a scale matrix and multiply or set it to this matrix
+
+- if `reset` is true, the generated matrix is directly set to this matrix
+-- otherwise, generated matrix is right-multiplied to this matrix
+-- if current matrix is an identity matrix, `reset` has no effect
+
+
+# mat4.transform [method]
+
+== mat4.transform( vec4 v )
+=== multiply a 4D vector by this matrix
+
+
+# mat4.transform_pos [method]
+
+== mat4.transform_pos( vec3 v )
+=== multiply a 3D position vector by this matrix
+
+- multiply vec4( v.x, v.y, v.z, 1 ) by this matrix, return vec3( x / w, y / w, z / w )
+
+
+# mat4.transform_normal [method]
+
+== mat4.transform_normal( vec3 v )
+=== multiply a 3D normal vector by this matrix
+
+- multiply vec4( v.x, v.y, v.z, 0 ) by this matrix, return vec3( x, y, z )
+
+
+# mat4 [function]
+
+== mat4( mat4 m )
+=== copy the matrix
+== mat4( vec4 row1, vec4 row2, vec4 row3[, vec4 row4 ])
+=== create a matrix from 3 or 4 rows
+== mat4( real v[16] )
+=== create a matrix from 16 real values
+
+
+
+# floatarray [object]
+
+- methods
+-- @clear<floatarray.clear> - set all values to 0
+-- @set1<floatarray.set1> - set all values to 1
+-- @negate<floatarray.negate> - negate all values
+-- @assign<floatarray.assign> - copy values from another source
+-- @negate_from<floatarray.negate_from> - copy negated values
+-- @*[_assign]<floatarray.*[_assign] (add> - combine values with arithmetic operations
+-- @randbox<floatarray.randbox> - set values to random between two sources
+-- @randext<floatarray.randext> - set values to random around source 1 in the range of source 2
+-- @multiply_add_assign<floatarray.multiply_add_assign> - multiply two sources and add the result to this one
+-- @lerp_to<floatarray.lerp_to> - linearly interpolate this source and another to the factor of the third one
+-- @to_*_buffer<floatarray.to_*_buffer> - convert values to byte buffer, optionally scaling them
+- read-only properties
+-- [aabb2] aabb2 - returns 2D bounding box of data, assuming data contains 2D vectors
+-- [aabb3] aabb3 - returns 3D bounding box of data, assuming data contains 3D vectors
+-- [int] size - returns array size - the number of values in this array
+-- [int] size2 - returns array size / 2 - the number of vec2 values in this array
+-- [int] size3 - returns array size / 3 - the number of vec3 values in this array
+-- [int] size4 - returns array size / 4 - the number of vec4 values in this array
+-- [int] size16 - returns array size / 16 - the number of mat4 values in this array
+- other features:
+-- cloning support
+-- serialization support
+-- GC-safe
+-- indexing support for indices 0 - (size-1): returns/sets the specified subvalue
+-- tostring = "floatarray"
+-- dump: first 64 values, array formatting
+
+
+# floatarray data transformation methods [info]
+
+- 'source' type can take `int`, `real`, `vec2`, `vec3`, `vec4`, `mat4` and `floatarray` sources.
+- source values are accessed, indexed by (i % source.size)
+- function works on all values inside array
+
+
+# floatarray.clear [method]
+
+== floatarray.clear()
+=== set all values to 0
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.set1 [method]
+
+== floatarray.set1()
+=== set all values to 1
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.negate [method]
+
+== floatarray.negate()
+=== swap the sign on all values
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.assign [method]
+
+== floatarray.assign( s1 )
+=== copy values from another source
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.negate_from [method]
+
+== floatarray.negate_from( s1 )
+=== copy negated values from another source
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.*[_assign] (add|sub|mul|div|mod|pow) [methods]
+
+== floatarray.add( s1, s2 )
+=== add values from two sources to this floatarray (this = s1 + s2)
+== floatarray.sub( s1, s2 )
+=== subtract values from two sources to this floatarray (this = s1 - s2)
+== floatarray.mul( s1, s2 )
+=== multiply values from two sources to this floatarray (this = s1 * s2)
+== floatarray.div( s1, s2 )
+=== divide values from two sources to this floatarray (this = s1 / s2)
+== floatarray.mod( s1, s2 )
+=== set modulo from two sources to this floatarray (this = s1 % s2)
+== floatarray.pow( s1, s2 )
+=== set power of two sources to this floatarray (this = s1 ^ s2)
+
+== floatarray.add_assign( s1 )
+=== add values from another source to floatarray (this = this + s1)
+== floatarray.sub_assign( s1 )
+=== subtract values from another source to floatarray (this = this - s1)
+== floatarray.mul_assign( s1 )
+=== subtract values from another source to floatarray (this = this * s1)
+== floatarray.div_assign( s1 )
+=== subtract values from another source to floatarray (this = this / s1)
+== floatarray.mod_assign( s1 )
+=== subtract values from another source to floatarray (this = this % s1)
+== floatarray.pow_assign( s1 )
+=== subtract values from another source to floatarray (this = this ^ s1)
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.randbox [method]
+
+== floatarray.randbox( s1, s2 )
+=== set values to random between two sources (`this = lerp( s1, s2, randf() )`)
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.randext [method]
+
+== floatarray.randext( s1, s2 )
+=== set values to random around source 1 in the range of source 2 (`this = lerp( s1 - s2, s1 + s2, randf() )`)
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.multiply_add_assign [method]
+
+== floatarray.multiply_add_assign( s1, s2 )
+=== multiply two sources and add the result to this one (`this += s1 * s2`)
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.lerp_to [method]
+
+== floatarray.lerp_to( s1, s2 )
+=== linearly interpolate this source and another to the factor of the third one (`this = lerp( this, s1, s2 )`)
+
+! for more info, refer to this page: @"floatarray data transformation methods"
+
+
+# floatarray.to_*_buffer [method]
+
+== floatarray.to_int8_buffer( real scale = 1 )
+== floatarray.to_int16_buffer( real scale = 1 )
+== floatarray.to_int32_buffer( real scale = 1 )
+== floatarray.to_int64_buffer( real scale = 1 )
+== floatarray.to_uint8_buffer( real scale = 1 )
+== floatarray.to_uint16_buffer( real scale = 1 )
+== floatarray.to_uint32_buffer( real scale = 1 )
+== floatarray.to_uint64_buffer( real scale = 1 )
+== floatarray.to_float32_buffer( real scale = 1 )
+== floatarray.to_float64_buffer( real scale = 1 )
+=== create a byte buffer from floatarray contents, optionally scaling the values
+
+
+# floatarray_buffer [function]
+
+== floatarray_buffer( int size )
+=== create a floatarray of the specified size, filled with zeroes
+
+
+# floatarray [function]
+
+== floatarray([ int/real v0, ... ])
+=== create a floatarray from a list of int/real values
+== floatarray( array varr )
+=== create a floatarray from an array of int/real values
+
+
+# vec2array [function]
+
+== vec2array([ int/real v0, ... ])
+=== create a floatarray from a list of int/real values (must be a multiple of 2)
+== vec2array([ vec2 v0, ... ])
+=== create a floatarray from a list of vec2 values
+== vec2array( array varr )
+=== create a floatarray from an array of vec2 values
+
+
+# vec3array [function]
+
+== vec3array([ int/real v0, ... ])
+=== create a floatarray from a list of int/real values (must be a multiple of 3)
+== vec3array([ vec3 v0, ... ])
+=== create a floatarray from a list of vec3 values
+== vec3array( array varr )
+=== create a floatarray from an array of vec3 values
+
+
+# vec4array [function]
+
+== vec4array([ int/real v0, ... ])
+=== create a floatarray from a list of int/real values (must be a multiple of 4)
+== vec4array([ vec4 v0, ... ])
+=== create a floatarray from a list of vec4 values
+== vec4array( array varr )
+=== create a floatarray from an array of vec4 values
+
+
+# floatarray_from_*_buffer [function]
+
+== floatarray_from_int8_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_int16_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_int32_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_int64_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_uint8_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_uint16_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_uint32_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_uint64_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_float32_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+== floatarray_from_float64_buffer( string buffer, scale = 1, stride = 1, offset = 0 )
+=== create a floatarray from byte buffer, optionally specifying scale, stride and offset to first value
+
+
+# ray_plane_intersect [function]
+
+== ray_plane_intersect( vec3 ray_pos, vec3 ray_dir, vec4 plane )
+=== tests for an intersection between ray and plane, returning all relevant output data
+
+- if ray is (near-)parallel to plane, false is returned
+-- otherwise, signed distance along ray and signed origin distance from plane are returned
+-- if signed distance along ray to plane is larger than 0, plane is in front of ray
+-- if signed distance from origin to plane is larger than 0, ray origin is in front of the plane
+
+
+# ray_sphere_intersect [function]
+
+== ray_sphere_intersect( vec3 ray_pos, vec3 ray_dir, vec3 sphere_pos, real radius )
+=== tests for an intersection between ray and sphere, returning the distance
+
+- if ray does not intersect sphere, false is returned
+-- otherwise, signed distance between ray and sphere is returned
+-- if signed distance along ray to sphere is larger than 0, sphere is in front of ray
+
+
+# distance_lines [function]
+
+== distance_lines( vec3 a1, vec3 a2, vec3 b1, vec3 b2 )
+=== returns distance between two straight lines, defined by two intersection points
+
+! This function may not return the expected result if either of the lines has zero length. In such cases, prefer using @distance_point_line
+
+
+# distance_line_segments [function]
+
+== distance_line_segments( vec3 a1, vec3 a2, vec3 b1, vec3 b2 )
+=== returns distance between two line segments
+
+! This function may not return the expected result if either of the lines has zero length. In such cases, prefer using @distance_point_line_segment
+
+
+# distance_point_line [function]
+
+== distance_point_line( vec3 p, vec3 l1, vec3 l2 )
+=== returns distance between point and a straight line, defined by two intersection points
+
+
+# distance_point_line_segment [function]
+
+== distance_point_line_segment( vec3 p, vec3 l1, vec3 l2 )
+=== returns distance between point and a line segment
+
+
+# All SGScript objects (A-Z) [info]
+
+~!~ render = list_pages_asc
+~!~ filter_type = object
+
+
+# All SGScript functions (A-Z) [info]
+
+~!~ render = list_pages_asc
+~!~ filter_type = function,functions,function alias,function aliases
+
+
+# <<<
+
+
+# C API [info]
+
+- XGM_VT - floating point type used throughout the API, alias of `float` by default
+- @xgm_vtarray - @floatarray<floatarray [object]> data
+- @xgm_*_iface - object interfaces
+- @sgs_Create* - xgmath object creation functions
+- @sgs_Parse* - xgmath object parsing functions
+- @sgs_ArgCheck_* - xgmath LoadArgs parsing functions
+
+
+# >>>
+
+
+# xgm_vtarray [struct]
+
+== xgm_vtarray
+=== @floatarray<floatarray [object]> data
+
+- properties:
+-- XGM_VT* data - array of floating point values
+-- sgs_SizeVal size - current size of array (current item count)
+-- sgs_SizeVal mem - max. size of array (capacity, allocated item count)
+
+
+# xgm_*_iface [interfaces]
+
+== sgs_ObjInterface xgm_vec2_iface[1]
+=== interface for @vec2<vec2 [object]> objects
+== sgs_ObjInterface xgm_vec3_iface[1]
+=== interface for @vec3<vec3 [object]> objects
+== sgs_ObjInterface xgm_vec4_iface[1]
+=== interface for @vec4<vec4 [object]> objects
+== sgs_ObjInterface xgm_aabb2_iface[1]
+=== interface for @aabb2<aabb2 [object]> objects
+== sgs_ObjInterface xgm_aabb3_iface[1]
+=== interface for @aabb3<aabb3 [object]> objects
+== sgs_ObjInterface xgm_color_iface[1]
+=== interface for @color<color [object]> objects
+== sgs_ObjInterface xgm_mat4_iface[1]
+=== interface for @mat4<mat4 [object]> objects
+== sgs_ObjInterface xgm_floatarr_iface[1]
+=== interface for @floatarray<floatarray [object]> objects
+
+
+# sgs_Create* [functions]
+
+== SGSONE sgs_CreateVec2( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y )
+== SGSONE sgs_CreateVec3( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y, XGM_VT z )
+== SGSONE sgs_CreateVec4( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y, XGM_VT z, XGM_VT w )
+== SGSONE sgs_CreateAABB2( SGS_CTX, sgs_Variable* var, XGM_VT x1, XGM_VT y1, XGM_VT x2, XGM_VT y2 )
+== SGSONE sgs_CreateAABB3( SGS_CTX, sgs_Variable* var, const XGM_VT* v3f1, const XGM_VT* v3f2 )
+== SGSONE sgs_CreateColor( SGS_CTX, sgs_Variable* var, XGM_VT r, XGM_VT g, XGM_VT b, XGM_VT a )
+== SGSONE sgs_CreateQuat( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y, XGM_VT z, XGM_VT w )
+== SGSONE sgs_CreateMat3( SGS_CTX, sgs_Variable* var, const XGM_VT* v9f, int transpose )
+== SGSONE sgs_CreateMat4( SGS_CTX, sgs_Variable* var, const XGM_VT* v16f, int transpose )
+== SGSONE sgs_CreateFloatArray( SGS_CTX, sgs_Variable* var, const XGM_VT* vfn, sgs_SizeVal size )
+== SGSONE sgs_CreateVec2p( SGS_CTX, sgs_Variable* var, const XGM_VT* v2f )
+== SGSONE sgs_CreateVec3p( SGS_CTX, sgs_Variable* var, const XGM_VT* v3f )
+== SGSONE sgs_CreateVec4p( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )
+== SGSONE sgs_CreateAABB2p( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )
+== SGSONE sgs_CreateAABB3p( SGS_CTX, sgs_Variable* var, const XGM_VT* v6f )
+== SGSONE sgs_CreateColorp( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )
+== SGSONE sgs_CreateColorvp( SGS_CTX, sgs_Variable* var, const XGM_VT* vf, int numfloats )
+== SGSONE sgs_CreateQuatp( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )
+=== push/initialize a variable of the right type to the specified arguments
+
+Notes:
+- if var == NULL, variable is pushed to stack
+- functions here always return 1 (SGSONE), making them suitable for a "return sgs_Create***" construct
+- v*f - array of the specified number of XGM_VT values
+- sgs_InitColorvp accepts 0, 1, 2, 3 or 4 for `numfloats`
+-- if 0: R, G, B, A = 0
+-- if 1: R, G, B, A = arg1
+-- if 2: R, G, B = arg1; A = arg2
+-- if 3: R = arg1; G = arg2; B = arg3; A = 1
+-- otherwise arguments are mapped to components sequentially
+- the `p` postfix for functions means that function accepts arrays instead of plain values, if that's what the non -p function takes
+
+
+
+# sgs_Parse* [functions]
+
+== SGSBOOL sgs_ParseVT( SGS_CTX, sgs_StkIdx item, XGM_VT* out )
+== SGSBOOL sgs_ParseVec2( SGS_CTX, sgs_StkIdx item, XGM_VT* v2f, int strict )
+== SGSBOOL sgs_ParseVec3( SGS_CTX, sgs_StkIdx item, XGM_VT* v3f, int strict )
+== SGSBOOL sgs_ParseVec4( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f, int strict )
+== SGSBOOL sgs_ParseAABB2( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f )
+== SGSBOOL sgs_ParseAABB3( SGS_CTX, sgs_StkIdx item, XGM_VT* v6f )
+== SGSBOOL sgs_ParseColor( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f, int strict )
+== SGSBOOL sgs_ParseQuat( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f, int strict )
+== SGSBOOL sgs_ParseMat3( SGS_CTX, sgs_StkIdx item, XGM_VT* v9f )
+== SGSBOOL sgs_ParseMat4( SGS_CTX, sgs_StkIdx item, XGM_VT* v16f )
+== SGSBOOL sgs_ParseFloatArray( SGS_CTX, sgs_StkIdx item, XGM_VT** vfa, sgs_SizeVal* osz )
+=== parse the specified stack item to retrieve object data
+
+- `strict` means that only the object of the specified type is allowed to be parsed
+-- otherwise, real values are parsed too
+
+
+# sgs_ArgCheck_* [functions]
+
+== int sgs_ArgCheck_Vec2( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_Vec3( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_Vec4( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_AABB2( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_AABB3( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_Color( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_Quat( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_Mat3( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_Mat4( SGS_CTX, int argid, va_list* args, int flags )
+== int sgs_ArgCheck_FloatArray( SGS_CTX, int argid, va_list* args, int flags )
+=== argument parsing functions for sgs_LoadArgs* function family
+
+- variable argument list expectations if output is enabled:
+-- Vec2: XGM_VT[2]
+-- Vec3: XGM_VT[3]
+-- Vec4: XGM_VT[4]
+-- AABB2: XGM_VT[4]
+-- AABB3: XGM_VT[6]
+-- Color: XGM_VT[4]
+-- Quat: XGM_VT[4]
+-- Mat3: XGM_VT[9]
+-- Mat4: XGM_VT[16]
+-- FloatArray: @xgm_vtarray**
+
+
+# All C interfaces (A-Z) [info]
+
+~!~ render = list_pages_asc
+~!~ filter_type = struct,interface,interfaces
+
+
+# All C functions (A-Z) [info]
+
+~!~ render = list_pages_asc
+~!~ filter_type = function,functions,function alias,function aliases
+
+
+# <<<
+

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\ext\sgsvm.c" />
+    <ClCompile Include="..\..\..\ext\sgs_idbg.c" />
+    <ClCompile Include="..\..\..\ext\sgs_prof.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\ext\sgs_idbg.h" />
+    <ClInclude Include="..\..\..\ext\sgs_prof.h" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,160 @@
+
+global ERRORS;
+global tests_failed, tests_ran;
+
+ERRORS = "";
+include "math", "sgsxgmath";
+
+testEqual( typeof(vec2), "cfunc", "sgsxgmath library is loaded" );
+testEqual( ERRORS, "", "sgsxgmath library loaded without errors" );
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+
+// tests whether all subvalues of items have the same type
+function testClose( v1, v2, name )
+{
+	haderror = false;
+	sz1 = v1.size;
+	sz2 = v2.size;
+	if( typeof(v1) != typeof(v2) )
+		testEqual( v1, v2, name );
+	if( sz1 != sz2 )
+	{
+		haderror = true;
+		testEqual( sz1, sz2, "[size] " $ name );
+	}
+	for( i = 0; i < sz1; ++i )
+	{
+		val1 = v1[ i ];
+		val2 = v2[ i ];
+		if( abs( val1 - val2 ) > 0.001 )
+		{
+			haderror = true;
+			testEqual( val1, val2, "[#" $ i $ "] " $ name );
+		}
+	}
+	if( !haderror )
+		testEqual( 1, 1, name );
+}
+
+
+//
+print( "\n\n-- XGMATH --\n" );
+//
+
+
+	section( "vec2" );
+
+v2_a = vec2(3.14159,1/3);
+v2_b = vec2(1,2);
+
+testEqual( ''$v2_b, "vec2(1;2)", "vec2 - create/tostring" );
+testEqual( ''$(v2_b+vec2(2,3)), "vec2(3;5)", "vec2 - create/ADD/tostring" );
+testEqual( ''$(v2_b-vec2(2,3)), "vec2(-1;-1)", "vec2 - create/SUB/tostring" );
+testEqual( ''$(v2_b*vec2(2,3)), "vec2(2;6)", "vec2 - create/MUL/tostring" );
+testEqual( ''$(vec2(1,4)/vec2(4,2)), "vec2(0.25;2)", "vec2 - create/DIV/tostring" );
+testEqual( ''$(vec2(1,4)%vec2(4,2)), "vec2(1;0)", "vec2 - create/MOD/tostring" );
+testEqual( vec2(1.5,3) == vec2(1.5,3), true, "vec2 - compare equal" );
+testEqual( vec2(1.5,3) == vec2(1,3), false, "vec2 - compare not equal" );
+testEqual( vec2_dot(v2_b,vec2(2,3)), 8.0, "vec2_dot" );
+testEqual( v2_a === clone(v2_a), true, "vec2 clone returns equal" );
+testEqual( toptr(v2_a) != toptr(clone(v2_a)), true, "vec2 clone does not return same" );
+testEqual( v2_b.x $ v2_b.y $ v2_b[0] $ v2_b[1], "1212", "vec2 .x, .y" );
+testEqual( vec2(5,0).length, 5.0, "vec2 .length" );
+testEqual( vec2(0,5).length_squared, 25.0, "vec2 .length_squared" );
+testEqual( vec2(2,0).normalized == vec2(1,0), true, "vec2 .normalized" );
+testEqual( vec2(1,0).angle, 0.0, "vec2 .angle" );
+testEqual( v2_b.perp, vec2(-2,1), "vec2 .perp" );
+testEqual( v2_b.perp2, vec2(2,-1), "vec2 .perp2" );
+testEqual( vec2(0,0).size, 2, "vec2 .size" );
+
+
+	section( "vec3" );
+
+v3_a = vec3(3.14159,1/3,2.5);
+v3_b = vec3(1,2,3);
+
+testEqual( ''$v3_b, "vec3(1;2;3)", "vec3 - create/tostring" );
+testEqual( ''$(v3_b+vec3(2,3,4)), "vec3(3;5;7)", "vec3 - create/ADD/tostring" );
+testEqual( ''$(v3_b-vec3(2,3,4)), "vec3(-1;-1;-1)", "vec3 - create/SUB/tostring" );
+testEqual( ''$(v3_b*vec3(2,3,4)), "vec3(2;6;12)", "vec3 - create/MUL/tostring" );
+testEqual( ''$(vec3(1,4,3)/vec3(4,2,1)), "vec3(0.25;2;3)", "vec3 - create/DIV/tostring" );
+testEqual( ''$(vec3(1,4,3)%vec3(4,2,2)), "vec3(1;0;1)", "vec3 - create/MOD/tostring" );
+testEqual( vec3(1.5,3,5) == vec3(1.5,3,5), true, "vec3 - compare equal" );
+testEqual( vec3(1.5,3,5) == vec3(1.5,3,5.01), false, "vec3 - compare not equal" );
+testEqual( vec3_dot(v3_b,vec3(2,3,4)), 20.0, "vec3_dot" );
+testEqual( v3_a === clone(v3_a), true, "vec3 clone returns equal" );
+testEqual( toptr(v3_a) != toptr(clone(v3_a)), true, "vec3 clone does not return same" );
+testEqual( v3_b.x $ v3_b.y $ v3_b.z $ v3_b[0] $ v3_b[1] $ v3_b[2], "123123", "vec3 .x, .y, .z" );
+testEqual( vec3(0,0,5).length, 5.0, "vec3 .length" );
+testEqual( vec3(0,5,0).length_squared, 25.0, "vec3 .length_squared" );
+testEqual( vec3(0,0,2).normalized == vec3(0,0,1), true, "vec3 .normalized" );
+testEqual( vec3(0,0,0).size, 3, "vec3 .size" );
+
+
+	section( "vec4" );
+
+v3_a = vec4(3.14159,1/3,2.5,800);
+v3_b = vec4(1,2,3,4);
+
+testEqual( ''$v3_b, "vec4(1;2;3;4)", "vec4 - create/tostring" );
+testEqual( ''$(v3_b+vec4(2,3,4,5)), "vec4(3;5;7;9)", "vec4 - create/ADD/tostring" );
+testEqual( ''$(v3_b-vec4(2,3,4,5)), "vec4(-1;-1;-1;-1)", "vec4 - create/SUB/tostring" );
+testEqual( ''$(v3_b*vec4(2,3,4,5)), "vec4(2;6;12;20)", "vec4 - create/MUL/tostring" );
+testEqual( ''$(vec4(1,4,3,1)/vec4(4,2,1,5)), "vec4(0.25;2;3;0.2)", "vec4 - create/DIV/tostring" );
+testEqual( ''$(vec4(1,4,3,2)%vec4(4,2,2,2)), "vec4(1;0;1;0)", "vec4 - create/MOD/tostring" );
+testEqual( vec4(1.5,3,5,8.33) == vec4(1.5,3,5,8.33), true, "vec4 - compare equal" );
+testEqual( vec4(1.5,3,5,8.33) == vec4(1.5,3,5,8.333), false, "vec4 - compare not equal" );
+testEqual( vec4_dot(v3_b,vec4(2,3,4,5)), 40.0, "vec4_dot" );
+testEqual( v3_a === clone(v3_a), true, "vec4 clone returns equal" );
+testEqual( toptr(v3_a) != toptr(clone(v3_a)), true, "vec4 clone does not return same" );
+testEqual( v3_b.x $ v3_b.y $ v3_b.z $ v3_b.w $ v3_b[0] $ v3_b[1] $ v3_b[2] $ v3_b[3], "12341234", "vec4 .x, .y, .z, .w" );
+testEqual( vec4(0,0,0,5).length, 5.0, "vec4 .length" );
+testEqual( vec4(0,5,0,0).length_squared, 25.0, "vec4 .length_squared" );
+testEqual( vec4(0,0,0,2).normalized == vec4(0,0,0,1), true, "vec4 .normalized" );
+testEqual( vec4(0,0,0,0).size, 4, "vec4 .size" );
+
+
+	section( "quat" );
+
+testClose( quat().rotateZ( deg2rad(90), true ), quat(0,0,0.7071,0.7071), "quat - rotateZ" );
+testClose( quat().rotateZ( deg2rad(90) ), quat(0,0,0.7071,0.7071), "quat - rotateZ (apply via mult)" );
+
+
+	section( "transform equalities" );
+
+testClose( quat().rotate_axis_angle( 1, 0, 0, 1 ), quat().rotateX( 1 ), "quat:r-axis-angle vs quat:r-x" );
+testClose( mat3().rotate_axis_angle( 1, 0, 0, 1 ), mat3().rotateX( 1 ), "mat3:r-axis-angle vs mat3:r-x" );
+testClose( mat4().rotate_axis_angle( 1, 0, 0, 1 ), mat4().rotateX( 1 ), "mat4:r-axis-angle vs mat4:r-x" );
+testClose( quat().rotate_axis_angle( 0, 1, 0, 1 ), quat().rotateY( 1 ), "quat:r-axis-angle vs quat:r-y" );
+testClose( mat3().rotate_axis_angle( 0, 1, 0, 1 ), mat3().rotateY( 1 ), "mat3:r-axis-angle vs mat3:r-y" );
+testClose( mat4().rotate_axis_angle( 0, 1, 0, 1 ), mat4().rotateY( 1 ), "mat4:r-axis-angle vs mat4:r-y" );
+testClose( quat().rotate_axis_angle( 0, 0, 1, 1 ), quat().rotateZ( 1 ), "quat:r-axis-angle vs quat:r-z" );
+testClose( mat3().rotate_axis_angle( 0, 0, 1, 1 ), mat3().rotateZ( 1 ), "mat3:r-axis-angle vs mat3:r-z" );
+testClose( mat4().rotate_axis_angle( 0, 0, 1, 1 ), mat4().rotateZ( 1 ), "mat4:r-axis-angle vs mat4:r-z" );
+testClose( quat().rotateZ( 1 ).multiply( quat().rotateZ( -1 ) ), quat(), "quat:r-z:mul-rev vs quat:identity" );
+testClose( mat3().rotateZ( 1 ).multiply( mat3().rotateZ( -1 ) ), mat3(), "mat3:r-z:mul-rev vs mat3:identity" );
+testClose( mat4().rotateZ( 1 ).multiply( mat4().rotateZ( -1 ) ), mat4(), "mat4:r-z:mul-rev vs mat4:identity" );
+testClose( mat3().rotateZ( 1 ), mat4().rotateZ( 1 ).mat3, "mat3:r-z vs mat4:r-z=>mat3" );
+testClose( mat4().rotateZ( 1 ), mat3().rotateZ( 1 ).mat4, "mat4:r-z vs mat3:r-z=>mat4" );
+testClose( quat().rotateZ( 1 ), mat3().rotateZ( 1 ).quat, "quat:r-z vs mat3:r-z=>quat" );
+testClose( mat3().rotateZ( 1 ), quat().rotateZ( 1 ).mat3, "mat3:r-z vs quat:r-z=>mat3" );
+for( i = 0; i < 4; ++i )
+{
+	a = i * M_PI * 0.5 + 0.1;
+	testClose( mat3().rotateX(a).transform(vec3(0,1,2)),
+		quat().rotateX(a).transform(vec3(0,1,2)),
+		"mat3:r-x:xform vs quat:r-x:xform [angle="$toint(rad2deg(a))$"]");
+	testClose( mat3().rotateY(a).transform(vec3(2,0,1)),
+		quat().rotateY(a).transform(vec3(2,0,1)),
+		"mat3:r-y:xform vs quat:r-y:xform [angle="$toint(rad2deg(a))$"]");
+	testClose( mat3().rotateZ(a).transform(vec3(1,2,0)),
+		quat().rotateZ(a).transform(vec3(1,2,0)),
+		"mat3:r-z:xform vs quat:r-z:xform [angle="$toint(rad2deg(a))$"]");
+}
+
+
+//
+print( "\n\nTesting finished!\nRan ", tests_ran, " tests of which ", tests_failed, " failed.\n" );
+//

@@ -1,0 +1,12 @@
+function test( x )
+{
+	if( x > 0 )
+		test( x - 1 );
+	while( x > 0 )
+	{
+		print( "#" );
+		x -= 1;
+	}
+	print( "\n" );
+}
+test( 10 );

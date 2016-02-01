@@ -1,0 +1,283 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		30EC898917E2507F00056110 /* sgs_bcg.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC897917E2507F00056110 /* sgs_bcg.c */; };
+		30EC898B17E2507F00056110 /* sgs_ctx.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC897B17E2507F00056110 /* sgs_ctx.c */; };
+		30EC898C17E2507F00056110 /* sgs_fnt.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC897C17E2507F00056110 /* sgs_fnt.c */; };
+		30EC898D17E2507F00056110 /* sgs_int.h in Headers */ = {isa = PBXBuildFile; fileRef = 30EC897D17E2507F00056110 /* sgs_int.h */; };
+		30EC898E17E2507F00056110 /* sgs_proc.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC897E17E2507F00056110 /* sgs_proc.c */; };
+		30EC898F17E2507F00056110 /* sgs_regex.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC897F17E2507F00056110 /* sgs_regex.c */; };
+		30EC899017E2507F00056110 /* sgs_regex.h in Headers */ = {isa = PBXBuildFile; fileRef = 30EC898017E2507F00056110 /* sgs_regex.h */; };
+		30EC899117E2507F00056110 /* sgs_std.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC898117E2507F00056110 /* sgs_std.c */; };
+		30EC899217E2507F00056110 /* sgs_stdL.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC898217E2507F00056110 /* sgs_stdL.c */; };
+		30EC899317E2507F00056110 /* sgs_tok.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC898317E2507F00056110 /* sgs_tok.c */; };
+		30EC899417E2507F00056110 /* sgs_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC898417E2507F00056110 /* sgs_util.c */; };
+		30EC899517E2507F00056110 /* sgs_util.h in Headers */ = {isa = PBXBuildFile; fileRef = 30EC898517E2507F00056110 /* sgs_util.h */; };
+		30EC899617E2507F00056110 /* sgs_xpc.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EC898617E2507F00056110 /* sgs_xpc.c */; };
+		30EC899817E2507F00056110 /* sgscript.h in Headers */ = {isa = PBXBuildFile; fileRef = 30EC898817E2507F00056110 /* sgscript.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		30EC894E17E2502400056110 /* libSGScript.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSGScript.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		30EC897917E2507F00056110 /* sgs_bcg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_bcg.c; path = ../../src/sgs_bcg.c; sourceTree = "<group>"; };
+		30EC897B17E2507F00056110 /* sgs_ctx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_ctx.c; path = ../../src/sgs_ctx.c; sourceTree = "<group>"; };
+		30EC897C17E2507F00056110 /* sgs_fnt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_fnt.c; path = ../../src/sgs_fnt.c; sourceTree = "<group>"; };
+		30EC897D17E2507F00056110 /* sgs_int.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sgs_int.h; path = ../../src/sgs_int.h; sourceTree = "<group>"; };
+		30EC897E17E2507F00056110 /* sgs_proc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_proc.c; path = ../../src/sgs_proc.c; sourceTree = "<group>"; };
+		30EC897F17E2507F00056110 /* sgs_regex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_regex.c; path = ../../src/sgs_regex.c; sourceTree = "<group>"; };
+		30EC898017E2507F00056110 /* sgs_regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sgs_regex.h; path = ../../src/sgs_regex.h; sourceTree = "<group>"; };
+		30EC898117E2507F00056110 /* sgs_std.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_std.c; path = ../../src/sgs_std.c; sourceTree = "<group>"; };
+		30EC898217E2507F00056110 /* sgs_stdL.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_stdL.c; path = ../../src/sgs_stdL.c; sourceTree = "<group>"; };
+		30EC898317E2507F00056110 /* sgs_tok.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_tok.c; path = ../../src/sgs_tok.c; sourceTree = "<group>"; };
+		30EC898417E2507F00056110 /* sgs_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_util.c; path = ../../src/sgs_util.c; sourceTree = "<group>"; };
+		30EC898517E2507F00056110 /* sgs_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sgs_util.h; path = ../../src/sgs_util.h; sourceTree = "<group>"; };
+		30EC898617E2507F00056110 /* sgs_xpc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sgs_xpc.c; path = ../../src/sgs_xpc.c; sourceTree = "<group>"; };
+		30EC898817E2507F00056110 /* sgscript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sgscript.h; path = ../../src/sgscript.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		30EC894B17E2502400056110 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		30EC894517E2502400056110 = {
+			isa = PBXGroup;
+			children = (
+				30EC897817E2507600056110 /* src */,
+				30EC894F17E2502400056110 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		30EC894F17E2502400056110 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				30EC894E17E2502400056110 /* libSGScript.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		30EC897817E2507600056110 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				30EC897917E2507F00056110 /* sgs_bcg.c */,
+				30EC897B17E2507F00056110 /* sgs_ctx.c */,
+				30EC897C17E2507F00056110 /* sgs_fnt.c */,
+				30EC897D17E2507F00056110 /* sgs_int.h */,
+				30EC897E17E2507F00056110 /* sgs_proc.c */,
+				30EC897F17E2507F00056110 /* sgs_regex.c */,
+				30EC898017E2507F00056110 /* sgs_regex.h */,
+				30EC898117E2507F00056110 /* sgs_std.c */,
+				30EC898217E2507F00056110 /* sgs_stdL.c */,
+				30EC898317E2507F00056110 /* sgs_tok.c */,
+				30EC898417E2507F00056110 /* sgs_util.c */,
+				30EC898517E2507F00056110 /* sgs_util.h */,
+				30EC898617E2507F00056110 /* sgs_xpc.c */,
+				30EC898817E2507F00056110 /* sgscript.h */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		30EC894C17E2502400056110 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30EC899017E2507F00056110 /* sgs_regex.h in Headers */,
+				30EC898D17E2507F00056110 /* sgs_int.h in Headers */,
+				30EC899517E2507F00056110 /* sgs_util.h in Headers */,
+				30EC899817E2507F00056110 /* sgscript.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		30EC894D17E2502400056110 /* SGScript */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 30EC897217E2502400056110 /* Build configuration list for PBXNativeTarget "SGScript" */;
+			buildPhases = (
+				30EC894A17E2502400056110 /* Sources */,
+				30EC894B17E2502400056110 /* Frameworks */,
+				30EC894C17E2502400056110 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SGScript;
+			productName = SGScript;
+			productReference = 30EC894E17E2502400056110 /* libSGScript.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		30EC894617E2502400056110 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+				ORGANIZATIONNAME = snake5;
+			};
+			buildConfigurationList = 30EC894917E2502400056110 /* Build configuration list for PBXProject "SGScript" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 30EC894517E2502400056110;
+			productRefGroup = 30EC894F17E2502400056110 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				30EC894D17E2502400056110 /* SGScript */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		30EC894A17E2502400056110 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30EC899417E2507F00056110 /* sgs_util.c in Sources */,
+				30EC899617E2507F00056110 /* sgs_xpc.c in Sources */,
+				30EC899217E2507F00056110 /* sgs_stdL.c in Sources */,
+				30EC898917E2507F00056110 /* sgs_bcg.c in Sources */,
+				30EC899117E2507F00056110 /* sgs_std.c in Sources */,
+				30EC898C17E2507F00056110 /* sgs_fnt.c in Sources */,
+				30EC899317E2507F00056110 /* sgs_tok.c in Sources */,
+				30EC898F17E2507F00056110 /* sgs_regex.c in Sources */,
+				30EC898B17E2507F00056110 /* sgs_ctx.c in Sources */,
+				30EC898E17E2507F00056110 /* sgs_proc.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		30EC897017E2502400056110 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		30EC897117E2502400056110 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		30EC897317E2502400056110 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		30EC897417E2502400056110 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		30EC894917E2502400056110 /* Build configuration list for PBXProject "SGScript" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				30EC897017E2502400056110 /* Debug */,
+				30EC897117E2502400056110 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		30EC897217E2502400056110 /* Build configuration list for PBXNativeTarget "SGScript" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				30EC897317E2502400056110 /* Debug */,
+				30EC897417E2502400056110 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 30EC894617E2502400056110 /* Project object */;
+}

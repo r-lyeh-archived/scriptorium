@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>D88631B9-2BA5-4926-864A-C888971EBBE1</string>
+	<key>IDESourceControlProjectName</key>
+	<string>SGScript</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>FF6F4422-5176-4CF6-AFF5-649E6B296CBD</key>
+		<string>https://github.com/snake5/sgscript.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>build/xcode/SGScript.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>FF6F4422-5176-4CF6-AFF5-649E6B296CBD</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/snake5/sgscript.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>FF6F4422-5176-4CF6-AFF5-649E6B296CBD</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>FF6F4422-5176-4CF6-AFF5-649E6B296CBD</string>
+			<key>IDESourceControlWCCName</key>
+			<string>sgscript</string>
+		</dict>
+	</array>
+</dict>
+</plist>

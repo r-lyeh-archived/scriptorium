@@ -1,0 +1,7 @@
+include_library( "math" );
+
+function test( x )
+{	var y;	y = x;	while( x )
+	{		print( '#' );		x -= 1;	}	print( ' cos x = ', cos( y ), '\n' );}
+var x, y;x = 10;while( x )
+{	test( x );	y += x -= 1;	print( 'x = ', x, ', y = ', y, '\n' );}

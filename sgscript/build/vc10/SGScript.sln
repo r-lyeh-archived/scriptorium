@@ -1,0 +1,94 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SGScript", "SGScript\SGScript.vcxproj", "{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgsjson (JSON library)", "sgsjson\sgsjson.vcxproj", "{5502D47D-7A93-41C5-A005-E9F55E9A91C8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgsxgmath (eXtended Game Math library)", "sgsxgmath\sgsxgmath.vcxproj", "{CDFD2448-51C8-4402-8061-71CEA1D5AF3A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgssockets (Network socket library)", "sgssockets\sgssockets.vcxproj", "{E57FD86B-3796-4B64-AFD5-C3DCDF6B8522}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgspproc (Parallel processing library)", "sgspproc\sgspproc.vcxproj", "{FC3DCBA1-6B29-4286-8E42-F41A46516CE4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgsmeta (Language utility library)", "sgsmeta\sgsmeta.vcxproj", "{850CF552-2D58-4266-9CFF-34F95743895E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgstest (Test Tool)", "sgstest\sgstest.vcxproj", "{A3DC82EA-F984-4E7E-8FBA-1C236F2815D5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CDFD2448-51C8-4402-8061-71CEA1D5AF3A} = {CDFD2448-51C8-4402-8061-71CEA1D5AF3A}
+		{5502D47D-7A93-41C5-A005-E9F55E9A91C8} = {5502D47D-7A93-41C5-A005-E9F55E9A91C8}
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgsvm (Virtual Machine)", "sgsvm\sgsvm.vcxproj", "{A06EC187-1CA7-445C-A1AE-448132CADAF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgsapitest (API Test Tool)", "sgsapitest\sgsapitest.vcxproj", "{7BA2461B-5FD7-48CA-8502-24BDF2C33381}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD} = {A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}.Debug|Win32.Build.0 = Debug|Win32
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}.Release|Win32.ActiveCfg = Release|Win32
+		{A9CCE7BB-A9AF-4AC9-9BE2-966BEE47DFFD}.Release|Win32.Build.0 = Release|Win32
+		{5502D47D-7A93-41C5-A005-E9F55E9A91C8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5502D47D-7A93-41C5-A005-E9F55E9A91C8}.Debug|Win32.Build.0 = Debug|Win32
+		{5502D47D-7A93-41C5-A005-E9F55E9A91C8}.Release|Win32.ActiveCfg = Release|Win32
+		{5502D47D-7A93-41C5-A005-E9F55E9A91C8}.Release|Win32.Build.0 = Release|Win32
+		{CDFD2448-51C8-4402-8061-71CEA1D5AF3A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CDFD2448-51C8-4402-8061-71CEA1D5AF3A}.Debug|Win32.Build.0 = Debug|Win32
+		{CDFD2448-51C8-4402-8061-71CEA1D5AF3A}.Release|Win32.ActiveCfg = Release|Win32
+		{CDFD2448-51C8-4402-8061-71CEA1D5AF3A}.Release|Win32.Build.0 = Release|Win32
+		{E57FD86B-3796-4B64-AFD5-C3DCDF6B8522}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E57FD86B-3796-4B64-AFD5-C3DCDF6B8522}.Debug|Win32.Build.0 = Debug|Win32
+		{E57FD86B-3796-4B64-AFD5-C3DCDF6B8522}.Release|Win32.ActiveCfg = Release|Win32
+		{E57FD86B-3796-4B64-AFD5-C3DCDF6B8522}.Release|Win32.Build.0 = Release|Win32
+		{FC3DCBA1-6B29-4286-8E42-F41A46516CE4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FC3DCBA1-6B29-4286-8E42-F41A46516CE4}.Debug|Win32.Build.0 = Debug|Win32
+		{FC3DCBA1-6B29-4286-8E42-F41A46516CE4}.Release|Win32.ActiveCfg = Release|Win32
+		{FC3DCBA1-6B29-4286-8E42-F41A46516CE4}.Release|Win32.Build.0 = Release|Win32
+		{850CF552-2D58-4266-9CFF-34F95743895E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{850CF552-2D58-4266-9CFF-34F95743895E}.Debug|Win32.Build.0 = Debug|Win32
+		{850CF552-2D58-4266-9CFF-34F95743895E}.Release|Win32.ActiveCfg = Release|Win32
+		{850CF552-2D58-4266-9CFF-34F95743895E}.Release|Win32.Build.0 = Release|Win32
+		{A3DC82EA-F984-4E7E-8FBA-1C236F2815D5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A3DC82EA-F984-4E7E-8FBA-1C236F2815D5}.Debug|Win32.Build.0 = Debug|Win32
+		{A3DC82EA-F984-4E7E-8FBA-1C236F2815D5}.Release|Win32.ActiveCfg = Release|Win32
+		{A3DC82EA-F984-4E7E-8FBA-1C236F2815D5}.Release|Win32.Build.0 = Release|Win32
+		{A06EC187-1CA7-445C-A1AE-448132CADAF1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A06EC187-1CA7-445C-A1AE-448132CADAF1}.Debug|Win32.Build.0 = Debug|Win32
+		{A06EC187-1CA7-445C-A1AE-448132CADAF1}.Release|Win32.ActiveCfg = Release|Win32
+		{A06EC187-1CA7-445C-A1AE-448132CADAF1}.Release|Win32.Build.0 = Release|Win32
+		{7BA2461B-5FD7-48CA-8502-24BDF2C33381}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7BA2461B-5FD7-48CA-8502-24BDF2C33381}.Debug|Win32.Build.0 = Debug|Win32
+		{7BA2461B-5FD7-48CA-8502-24BDF2C33381}.Release|Win32.ActiveCfg = Release|Win32
+		{7BA2461B-5FD7-48CA-8502-24BDF2C33381}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

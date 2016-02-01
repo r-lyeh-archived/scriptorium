@@ -1,0 +1,12 @@
+
+a = 1 ?? 2;
+b = null ?? 2;
+c = 1 ?? null;
+d = null ?? null;
+e = null ?? null ?? 1 ?? null ?? 2 ?? null ?? null;
+
+testEqual( a, 1, "FNN - both good" );
+testEqual( b, 2, "FNN - last good" );
+testEqual( c, 1, "FNN - first good" );
+testEqual( d, null, "FNN - none good" );
+testEqual( e, 1, "FNN - chaining" );

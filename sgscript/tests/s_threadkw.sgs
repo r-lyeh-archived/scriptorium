@@ -1,0 +1,8 @@
+function f(){}
+global o = { f };
+thread f(1);
+a = thread o.f(2);
+thread o!f(3);
+subthread f(1);
+subthread o.f(2);
+b = subthread o!f(3);

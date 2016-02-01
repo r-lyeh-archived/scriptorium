@@ -1,0 +1,126 @@
+
+
+function pseudosleep( time )
+{
+	t = ftime();
+	while( ftime() - t < time );
+}
+
+
+global Action = {};
+
+function Action.create( init )
+{
+	data =
+	{
+		name = '<unnamed>',
+		type = '',
+		onstart = null,
+		ontick = null,
+		onend = null,
+		ended = false,
+	};
+	foreach( k, v : init )
+		data[ k ] = v;
+	return class( data, Action );
+}
+
+function Action.createTimed( init )
+{
+	if( !isset( init, "time" ) )
+		init.time = 1.0;
+	if( !isset( init, "type" ) )
+		init.type = "Timed";
+	
+	if( isset( init, "ontick" ) )
+	{
+		oldtick = init.ontick;
+		init.ontick = function() use( oldtick )
+		{
+			this.time -= DT;
+			if( this.time <= 0 )
+				this.end();
+			else if( oldtick )
+				oldtick.call( this );
+		};
+	}
+	else
+	{
+		init.ontick = function()
+		{
+			this.time -= DT;
+			if( this.time <= 0 )
+				this.end();
+		};
+	}
+	
+	return Action.create( init );
+}
+
+function Action.end()
+{
+	this.ended = true;
+}
+
+global ActionFlow =
+{
+	actions = [],
+};
+
+function ActionFlow.tick()
+{
+	var AA = this.actions;
+	for( i = 0; i < AA.size; ++i )
+	{
+		action = AA[ i ];
+		if( action.ontick )
+			action.ontick();
+		if( action.ended )
+		{
+			if( action.onend )
+				action.onend();
+			AA.erase( i-- );
+		}
+	}
+}
+
+function ActionFlow.addAction( act )
+{
+	this.actions.push( act );
+	if( act.onstart )
+		act.onstart();
+}
+
+function ActionFlow.hasActions()
+{
+	return !!this.actions;
+}
+
+
+// Test prep
+
+function intro_fade()
+{
+	println( "time: ", this.time );
+}
+function intro_end()
+{
+	ActionFlow.addAction( Action.createTimed({ named = "Stopping...", time = 1.0 }) );
+	println( "Stopping in 1 sec!" );
+}
+
+ActionFlow.addAction( Action.createTimed({ name = "Intro", time = 2.0, ontick = intro_fade, onend = intro_end }) );
+
+
+// Test action
+
+starttime = ftime();
+while( ActionFlow.hasActions() )
+{
+	curtime = ftime();
+	global DT = curtime - starttime;
+	ActionFlow.tick();
+	starttime = curtime;
+	
+	pseudosleep( 0.01 );
+}

@@ -1,0 +1,8 @@
+function fn( a ) use(fn)
+{
+	if( a >= 10 )
+		return a + 1;
+	else
+		return fn( a + 2 );
+}
+println( fn(0) );

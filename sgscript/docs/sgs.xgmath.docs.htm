@@ -1,0 +1,599 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	<html><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>SGScript eXtended Game Math library</title>
+		<link rel="stylesheet" type="text/css" href="docs.css">
+		<script type="text/javascript" src="docs.js"></script>
+	</head><body>
+	<h1>SGScript eXtended Game Math library</h1><div><h2>Table of Contents</h2><ul><li><a href='#Description'>Description</a>
+</li><li><a href='#SGScript-API'>SGScript API</a>
+<ul><li><a href='#floatarray-data-transformation-methods'>floatarray data transformation methods</a>
+</li><li><a href='#All-SGScript-objects-A-Z'>All SGScript objects (A-Z)</a>
+</li><li><a href='#All-SGScript-functions-A-Z'>All SGScript functions (A-Z)</a>
+</li></ul><li><a href='#C-API'>C API</a>
+<ul><li><a href='#All-C-interfaces-A-Z'>All C interfaces (A-Z)</a>
+</li><li><a href='#All-C-functions-A-Z'>All C functions (A-Z)</a>
+</li></ul></li></ul></div><div>
+<div class='item'><a name='Description'></a><hr><h2>Description</h2><p>
+The goal of this library is to provide the mathematical objects commonly used in games:
+</p><ul><li>all values have 32 bit floating point type unless otherwise noted
+</li><li><a href="#vec2-object">vec2</a>, <a href="#vec3-object">vec3</a>, <a href="#vec4-object">vec4</a> (2,3 and 4 dimension vectors)
+</li><li><a href="#mat4-object">mat4</a> (4x4 matrix)
+</li><li><a href="#aabb2-object">aabb2</a> (2D axis-aligned bounding box)
+</li><li><a href="#aabb3-object">aabb3</a> (3D axis-aligned bounding box)
+</li><li><a href="#color-object">color</a> (red, green, blue, alpha values)
+</li><li><a href="#floatarray-object">floatarray</a> (array of floating point values)</li></ul><p>
+The library is compiled to a &#39;sgsxgmath&#39; shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+</p><pre>include &quot;sgsxgmath&quot;;</pre><p>
+<em class='notice-bgr'>It is extremely important that only one instance of this library is loaded in the application for constant sharing to enable object interface recognition.</em>
+</p></div>
+<div class='item'><a name='SGScript-API'></a><hr><h2>SGScript API</h2><h4>Objects:</h4><ul><li><a href="#vec2-object">vec2</a>
+</li><li><a href="#vec3-object">vec3</a>
+</li><li><a href="#vec4-object">vec4</a>
+</li><li><a href="#aabb2-object">aabb2</a>
+</li><li><a href="#aabb3-object">aabb3</a>
+</li><li><a href="#color-object">color</a>
+</li><li><a href="#mat4-object">mat4</a>
+</li><li><a href="#floatarray-object">floatarray</a></li></ul><h4>Functions:</h4><ul><li><a href="#vec2-function">vec2</a> - create a vec2 object
+</li><li><a href="#vec2-dot-function">vec2_dot</a> - return dot product of two 2D vectors
+</li><li><a href="#vec3-function">vec3</a> - create a vec3 object
+</li><li><a href="#vec3-dot-function">vec3_dot</a> - return dot product of two 3D vectors
+</li><li><a href="#vec3-cross-function">vec3_cross</a> - return cross product of two 3D vectors
+</li><li><a href="#vec4-function">vec4</a> - create a vec4 object
+</li><li><a href="#vec4-dot-function">vec4_dot</a> - return dot product of two 4D vectors
+</li><li><a href="#aabb2-function">aabb2</a> - create a 2D AABB from 4 real values
+</li><li><a href="#aabb2v-function">aabb2v</a> - create a 2D AABB from 2 2D vectors
+</li><li><a href="#aabb2-intersect-function">aabb2_intersect</a> - intersect two 2D AABB values
+</li><li><a href="#aabb3-function">aabb3</a> - create a 3D AABB from 6 real values
+</li><li><a href="#aabb3v-function">aabb3v</a> - create a 3D AABB from 2 3D vectors
+</li><li><a href="#aabb3-intersect-function">aabb3_intersect</a> - intersect two 3D AABB values
+</li><li><a href="#color-function">color</a>
+</li><li><a href="#mat4-function">mat4</a>
+</li><li><a href="#floatarray-function">floatarray</a> - create floatarray from array/list of int/real values
+</li><li><a href="#floatarray-buffer-function">floatarray_buffer</a> - create 0-initialized floatarray
+</li><li><a href="#vec2array-function">vec2array</a> - create floatarray from array/list of int/real/vec2 values
+</li><li><a href="#vec3array-function">vec3array</a> - create floatarray from array/list of int/real/vec3 values
+</li><li><a href="#vec4array-function">vec4array</a> - create floatarray from array/list of int/real/vec4 values
+</li><li><a href="#floatarray-from-buffer-function">floatarray_from_*_buffer</a> - create floatarray from byte buffer</li></ul></div>
+<div class='item'><a name='vec2-object'></a><hr><h2>vec2 [object]</h2><ul><li>methods
+<ul><li><a href="#vec2-rotate-method">rotate</a> - return vector, rotated by specified angle
+</li></ul><li>read-only properties
+<ul><li>[real] length
+</li><li>[real] length_squared
+</li><li>[vec2] normalized - return a vector with length = 1 if possible, length = 0 if too short
+</li><li>[vec2] perp - returns vec2(-y,x) - 90 degree clockwise vector
+</li><li>[vec2] perp2 - returns vec2(y,-x) - 90 degree counter-clockwise vector
+</li><li>[int] size - returns 2 - the number of components in this vector
+</li></ul><li>read/write properties
+<ul><li>[real] x
+</li><li>[real] y
+</li><li>[real] angle
+</li></ul><li>overloaded operators
+<ul><li><code>+</code> - adds two vec2/real values
+</li><li><code>-</code> - subtracts two vec2/real values
+</li><li><code>*</code> - multiplies two vec2/real values
+</li><li><code>/</code> - divides two vec2/real values
+</li><li><code>%</code> - returns modulo of two vec2/real values
+</li><li>comparison between vec2 values: first by X, then by Y
+</li><li>unary <code>-</code> - returns negated vec2
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - 1: returns/sets the specified subvalue
+</li><li>tostring, dump = &quot;vec2(&lt;x&gt;;&lt;y&gt;)&quot;</li></ul></li></ul></div>
+<div class='item'><a name='vec2-rotate-method'></a><hr><h2>vec2.rotate [method]</h2><h3>vec2.rotate( real angle )</h3><h4>return vec2, rotated by angle in radians</h4></div>
+<div class='item'><a name='vec2-function'></a><hr><h2>vec2 [function]</h2><h3>vec2( real x[, real y ])</h3><h4>create a vec2 value from 1 - 2 real values</h4><ul><li>if only one argument is given, it is used for both <code>x</code> and <code>y</code></li></ul></div>
+<div class='item'><a name='vec2-dot-function'></a><hr><h2>vec2_dot [function]</h2><h3>vec2_dot( vec2 v1, vec2 v2 )</h3><h4>return the dot product of both vectors</h4><ul><li>returns <code>v1.x <i> v2.x + v1.y </i> v2.y</code></li></ul></div>
+<div class='item'><a name='vec3-object'></a><hr><h2>vec3 [object]</h2><ul><li>read-only properties
+<ul><li>[real] length
+</li><li>[real] length_squared
+</li><li>[vec3] normalized - return a vector with length = 1 if possible, length = 0 if too short
+</li><li>[int] size - returns 3 - the number of components in this vector
+</li></ul><li>read/write properties
+<ul><li>[real] x
+</li><li>[real] y
+</li><li>[real] z
+</li></ul><li>overloaded operators
+<ul><li><code>+</code> - adds two vec3/real values
+</li><li><code>-</code> - subtracts two vec3/real values
+</li><li><code>*</code> - multiplies two vec3/real values
+</li><li><code>/</code> - divides two vec3/real values
+</li><li><code>%</code> - returns modulo of two vec3/real values
+</li><li>comparison between vec3 values: first by X, then by Y, then by Z
+</li><li>unary <code>-</code> - returns negated vec3
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - 2: returns/sets the specified subvalue
+</li><li>tostring, dump = &quot;vec3(&lt;x&gt;;&lt;y&gt;;&lt;z&gt;)&quot;</li></ul></li></ul></div>
+<div class='item'><a name='vec3-function'></a><hr><h2>vec3 [function]</h2><h3>vec3( real x[, real y[, real z ]])</h3><h4>create a vec3 value from 1 or 3 real values</h4><ul><li>if only one argument is given, it is used for <code>x</code>, <code>y</code> and <code>z</code></li></ul></div>
+<div class='item'><a name='vec3-dot-function'></a><hr><h2>vec3_dot [function]</h2><h3>vec3_dot( vec3 v1, vec3 v2 )</h3><h4>return the dot product of both vectors</h4><ul><li>returns <code>v1.x <i> v2.x + v1.y </i> v2.y + v1.z * v2.z</code></li></ul></div>
+<div class='item'><a name='vec3-cross-function'></a><hr><h2>vec3_cross [function]</h2><h3>vec3_cross( vec3 v1, vec3 v2 )</h3><h4>return the cross product of both vectors</h4><ul><li>returns <code>vec3( v1.y <i> v2.z - v1.z </i> v2.y, v1.z <i> v2.x - v1.x </i> v2.z, v1.x <i> v2.y - v1.y </i> v2.x )</code></li></ul></div>
+<div class='item'><a name='vec4-object'></a><hr><h2>vec4 [object]</h2><ul><li>read-only properties
+<ul><li>[real] length
+</li><li>[real] length_squared
+</li><li>[vec4] normalized - return a vector with length = 1 if possible, length = 0 if too short
+</li><li>[int] size - returns 4 - the number of components in this vector
+</li></ul><li>read/write properties
+<ul><li>[real] x
+</li><li>[real] y
+</li><li>[real] z
+</li><li>[real] w
+</li></ul><li>overloaded operators
+<ul><li><code>+</code> - adds two vec4/real values
+</li><li><code>-</code> - subtracts two vec4/real values
+</li><li><code>*</code> - multiplies two vec4/real values
+</li><li><code>/</code> - divides two vec4/real values
+</li><li><code>%</code> - returns modulo of two vec4/real values
+</li><li>comparison between vec4 values: first by X, then by Y, then by Z, then by W
+</li><li>unary <code>-</code> - returns negated vec4
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - 3: returns/sets the specified subvalue
+</li><li>tostring, dump = &quot;vec4(&lt;x&gt;;&lt;y&gt;;&lt;z&gt;;&lt;w&gt;)&quot;</li></ul></li></ul></div>
+<div class='item'><a name='vec4-function'></a><hr><h2>vec4 [function]</h2><h3>vec4( real x[, real y[, real z[, real w ]]])</h3><h4>create a vec4 value from 1, 2 or 4 real values</h4><ul><li>if only one argument is given, it is used for <code>x</code>, <code>y</code>, <code>z</code> and <code>w</code>
+</li><li>if two arguments are given, use argument 1 for <code>x</code>, <code>y</code> and <code>z</code> ; argument 2 for <code>w</code></li></ul></div>
+<div class='item'><a name='vec4-dot-function'></a><hr><h2>vec4_dot [function]</h2><h3>vec4_dot( vec4 v1, vec4 v2 )</h3><h4>return the dot product of both vectors</h4><ul><li>returns <code>v1.x <i> v2.x + v1.y </i> v2.y + v1.z <i> v2.z + v1.w </i> v2.w</code></li></ul></div>
+<div class='item'><a name='aabb2-object'></a><hr><h2>aabb2 [object]</h2><p>
+In this object, assume 1 = min and 2 = max.
+</p><ul><li>methods
+<ul><li><a href="#aabb2-expand-function">expand</a> - include other vec2/aabb2 items in current AABB
+</li></ul><li>read-only properties
+<ul><li>[real] width -- x2 - x1
+</li><li>[real] height -- y2 - y1
+</li><li>[vec2] center -- (p1 + p2) / 2
+</li><li>[real] area -- width * height
+</li><li>[bool] valid -- returns if x1 &lt;= x2 and y1 &lt;= y2
+</li></ul><li>read/write properties
+<ul><li>[real] x1
+</li><li>[real] y1
+</li><li>[real] x2
+</li><li>[real] y2
+</li><li>[vec2] p1
+</li><li>[vec2] p2
+</li></ul><li>overloaded operators
+<ul><li>comparison between aabb2 values: first by X1, then by Y1, then by X2, then by Y2
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>tostring, dump = &quot;aabb2(&lt;x1&gt;;&lt;y1&gt; - &lt;x2&gt;;&lt;y2&gt;)&quot;</li></ul></li></ul></div>
+<div class='item'><a name='aabb2-expand-function'></a><hr><h2>aabb2.expand( ... ) [function]</h2><h3>aabb2.expand( ... )</h3><h4>include other vec2/aabb2 items in current AABB</h4></div>
+<div class='item'><a name='aabb2-function'></a><hr><h2>aabb2 [function]</h2><h3>aabb2( real x1, real y1, real x2, real y2 )</h3><h4>create a 2D AABB object from 4 real values</h4></div>
+<div class='item'><a name='aabb2v-function'></a><hr><h2>aabb2v [function]</h2><h3>aabb2v( vec2 p1, vec2 p2 )</h3><h4>create a 2D AABB object from 2 vec2 values</h4></div>
+<div class='item'><a name='aabb2-intersect-function'></a><hr><h2>aabb2_intersect [function]</h2><h3>aabb2_intersect( aabb2 bb1, aabb2 bb2 )</h3><h4>check if two AABBs intersect</h4></div>
+<div class='item'><a name='aabb3-object'></a><hr><h2>aabb3 [object]</h2><p>
+In this object, assume 1 = min and 2 = max.
+</p><ul><li>methods
+<ul><li><a href="#aabb3-expand-function">expand</a> - include other vec3/aabb3 items in current AABB
+</li></ul><li>read-only properties
+<ul><li>[real] width -- x2 - x1
+</li><li>[real] height -- y2 - y1
+</li><li>[real] depth -- z2 - z1
+</li><li>[vec3] center -- (p1 + p2) / 2
+</li><li>[real] area -- width <i> height </i> depth
+</li><li>[bool] valid -- returns if x1 &lt;= x2 and y1 &lt;= y2 and z1 &lt;= z2
+</li></ul><li>read/write properties
+<ul><li>[real] x1
+</li><li>[real] y1
+</li><li>[real] z1
+</li><li>[real] x2
+</li><li>[real] y2
+</li><li>[real] z2
+</li><li>[vec3] p1
+</li><li>[vec3] p2
+</li></ul><li>overloaded operators
+<ul><li>comparison between aabb3 values: first by X1, then by Y1, then by Z1, then by X2, then by Y2, then by Z2
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>tostring, dump = &quot;aabb3(&lt;x1&gt;;&lt;y1&gt;;&lt;z1&gt; - &lt;x2&gt;;&lt;y2&gt;;&lt;z2&gt;)&quot;</li></ul></li></ul></div>
+<div class='item'><a name='aabb3-expand-function'></a><hr><h2>aabb3.expand( ... ) [function]</h2><h3>aabb3.expand( ... )</h3><h4>include other vec3/aabb3 items in current AABB</h4></div>
+<div class='item'><a name='aabb3-function'></a><hr><h2>aabb3 [function]</h2><h3>aabb3( real x1, real y1, real x2, real y2 )</h3><h4>create a 2D AABB object from 4 real values</h4></div>
+<div class='item'><a name='aabb3v-function'></a><hr><h2>aabb3v [function]</h2><h3>aabb3v( vec3 p1, vec3 p2 )</h3><h4>create a 2D AABB object from 2 vec3 values</h4></div>
+<div class='item'><a name='aabb3-intersect-function'></a><hr><h2>aabb3_intersect [function]</h2><h3>aabb3_intersect( aabb3 bb1, aabb3 bb2 )</h3><h4>check if two AABBs intersect</h4></div>
+<div class='item'><a name='color-object'></a><hr><h2>color [object]</h2><ul><li>read-only properties
+<ul><li>[int] size - returns 4 - the number of components in this vector
+</li></ul><li>read/write properties
+<ul><li>[real] r
+</li><li>[real] g
+</li><li>[real] b
+</li><li>[real] a
+</li></ul><li>overloaded operators
+<ul><li><code>+</code> - adds two color/real values
+</li><li><code>-</code> - subtracts two color/real values
+</li><li><code>*</code> - multiplies two color/real values
+</li><li><code>/</code> - divides two color/real values
+</li><li><code>%</code> - returns modulo of two color/real values
+</li><li>comparison between color values: first by R, then by G, then by B, then by A
+</li><li>unary <code>-</code> - returns negated color
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - 3: returns/sets the specified subvalue
+</li><li>tostring, dump = &quot;color(&lt;r&gt;;&lt;g&gt;;&lt;b&gt;;&lt;a&gt;)&quot;</li></ul></li></ul></div>
+<div class='item'><a name='color-function'></a><hr><h2>color [function]</h2><h3>color( real r[, real g[, real b[, real a ]]])</h3><h4>create a color value from 1 to 4 real values</h4><ul><li>if one argument is given, it is used for all components
+</li><li>if two arguments are given, argument 1 is used for R, G and B, argument 2 is used for A
+</li><li>if three arguments are given, they&#39;re used for R, G and B; 1 is the value of A</li></ul></div>
+<div class='item'><a name='quat-object'></a><hr><h2>quat [object]</h2><p>
+A quaternion
+</p><ul><li>methods
+<ul><li><a href="#quat-identity-method">identity</a> - set quaternion to identity
+</li><li><a href="#quat-multiply-method">multiply</a> - multiply this quaternion with another one
+</li><li><a href="#quat-multiply-left-method">multiply_left</a> - left-multiply this quaternion with another one
+</li><li><a href="#quat-multiply2-method">multiply2</a> - multiply two matrices into this one
+</li><li><a href="#quat-invert-method">invert</a> - invert quaternion
+</li><li><a href="#quat-invert-from-method">invert_from</a> - invert another quaternion into this one
+</li><li><a href="#quat-rotateX-method">rotateX</a> - set or multiply a X-axis rotation quaternion
+</li><li><a href="#quat-rotateY-method">rotateY</a> - set or multiply a Y-axis rotation quaternion
+</li><li><a href="#quat-rotateZ-method">rotateZ</a> - set or multiply a Z-axis rotation quaternion
+</li><li><a href="#quat-rotate-axis-angle-method">rotate_axis_angle</a> - set or multiply a custom axis rotation quaternion
+</li><li><a href="#quat-rotate-axis-angle-v3-method">rotate_axis_angle_v3</a> - set or multiply a custom axis rotation quaternion (vec3 argument)
+</li><li><a href="#quat-transform-method">transform</a> - transform a 3D vector
+</li></ul><li>read-only properties
+<ul><li>[real] length
+</li><li>[real] length_squared
+</li><li>[quat] normalized - return a quaternion with length = 1 if possible, length = 0 if too short
+</li><li>[int] size - returns 4 - the number of components in this vector
+</li><li>[mat3] mat3 - returns a 3x3 matrix, generated from this quaternion
+</li><li>[mat4] mat4 - returns a 4x4 matrix, generated from this quaternion
+</li></ul><li>read/write properties
+<ul><li>[real] m[0-2][0-2]
+</li></ul><li>overloaded operators
+<ul><li>comparison between subvalues: column-major subvalue order
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - 8: returns/sets the specified subvalue
+</li><li>tostring = &quot;quat&quot;
+</li><li>dump:</li></ul></li></ul><pre>quat(&lt;x&gt;;&lt;y&gt;;&lt;z&gt;|&lt;w&gt;)</pre></div>
+<div class='item'><a name='quat-identity-method'></a><hr><h2>quat.identity [method]</h2><h3>quat.identity()</h3><h4>set the quaternion to identity</h4></div>
+<div class='item'><a name='quat-multiply-method'></a><hr><h2>quat.multiply [method]</h2><h3>quat.multiply( quat m )</h3><h4>multiply this quaternion and another quaternion, putting the other quaternion on the right side of multiplication</h4></div>
+<div class='item'><a name='quat-multiply-left-method'></a><hr><h2>quat.multiply_left [method]</h2><h3>quat.multiply_left( quat m )</h3><h4>multiply this quaternion and another quaternion, putting the other quaternion on the left side of multiplication</h4></div>
+<div class='item'><a name='quat-multiply2-method'></a><hr><h2>quat.multiply2 [method]</h2><h3>quat.multiply2( quat m1, quat m2 )</h3><h4>multiply two matrices into this quaternion</h4></div>
+<div class='item'><a name='quat-invert-method'></a><hr><h2>quat.invert [method]</h2><h3>quat.invert()</h3><h4>invert this quaternion into itself</h4></div>
+<div class='item'><a name='quat-invert-from-method'></a><hr><h2>quat.invert_from [method]</h2><h3>quat.invert_from( quat m )</h3><h4>invert another quaternion into this quaternion</h4></div>
+<div class='item'><a name='quat-rotateX-method'></a><hr><h2>quat.rotateX [method]</h2><h3>quat.rotateX( real a[, bool reset ])</h3><h4>generate a rotation quaternion (rotation around X axis) and multiply or set it to this quaternion</h4><ul><li>if <code>reset</code> is true, the generated quaternion is directly set to this quaternion
+<ul><li>otherwise, generated quaternion is right-multiplied to this quaternion
+</li><li>if current quaternion is an identity quaternion, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='quat-rotateY-method'></a><hr><h2>quat.rotateY [method]</h2><h3>quat.rotateY( real a[, bool reset ])</h3><h4>generate a rotation quaternion (rotation around Y axis) and multiply or set it to this quaternion</h4><ul><li>if <code>reset</code> is true, the generated quaternion is directly set to this quaternion
+<ul><li>otherwise, generated quaternion is right-multiplied to this quaternion
+</li><li>if current quaternion is an identity quaternion, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='quat-rotateZ-method'></a><hr><h2>quat.rotateZ [method]</h2><h3>quat.rotateZ( real a[, bool reset ])</h3><h4>generate a rotation quaternion (rotation around Z axis) and multiply or set it to this quaternion</h4><ul><li>if <code>reset</code> is true, the generated quaternion is directly set to this quaternion
+<ul><li>otherwise, generated quaternion is right-multiplied to this quaternion
+</li><li>if current quaternion is an identity quaternion, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='quat-rotate-axis-angle-method'></a><hr><h2>quat.rotate_axis_angle [method]</h2><h3>quat.rotate_axis_angle( real x, real y, real z, real a[, bool reset ])</h3><h4>generate a rotation quaternion (rotation around specified axis) and multiply or set it to this quaternion</h4><ul><li>if <code>reset</code> is true, the generated quaternion is directly set to this quaternion
+<ul><li>otherwise, generated quaternion is right-multiplied to this quaternion
+</li><li>if current quaternion is an identity quaternion, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='quat-rotate-axis-angle-v3-method'></a><hr><h2>quat.rotate_axis_angle_v3 [method]</h2><h3>quat.rotate_axis_angle( vec3 v, real a[, bool reset ])</h3><h4>generate a rotation quaternion (rotation around specified axis) and multiply or set it to this quaternion</h4><ul><li>if <code>reset</code> is true, the generated quaternion is directly set to this quaternion
+<ul><li>otherwise, generated quaternion is right-multiplied to this quaternion
+</li><li>if current quaternion is an identity quaternion, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='quat-transform-method'></a><hr><h2>quat.transform [method]</h2><h3>quat.transform( vec3 v )</h3><h4>multiply a 3D vector by this quaternion</h4></div>
+<div class='item'><a name='quat-function'></a><hr><h2>quat [function]</h2><h3>quat( real v[4] )</h3><h4>create a quaternion from 4 real values</h4></div>
+<div class='item'><a name='mat3-object'></a><hr><h2>mat3 [object]</h2><p>
+A 3x3 column-major matrix
+</p><ul><li>methods
+<ul><li><a href="#mat3-identity-method">identity</a> - set matrix to identity
+</li><li><a href="#mat3-multiply-method">multiply</a> - multiply this matrix with another one
+</li><li><a href="#mat3-multiply-left-method">multiply_left</a> - left-multiply this matrix with another one
+</li><li><a href="#mat3-multiply2-method">multiply2</a> - multiply two matrices into this one
+</li><li><a href="#mat3-transpose-method">transpose</a> - transpose matrix
+</li><li><a href="#mat3-transpose-from-method">transpose_from</a> - transpose another matrix into this one
+</li><li><a href="#mat3-invert-method">invert</a> - invert matrix
+</li><li><a href="#mat3-invert-from-method">invert_from</a> - invert another matrix into this one
+</li><li><a href="#mat3-rotateX-method">rotateX</a> - set or multiply a X-axis rotation matrix
+</li><li><a href="#mat3-rotateY-method">rotateY</a> - set or multiply a Y-axis rotation matrix
+</li><li><a href="#mat3-rotateZ-method">rotateZ</a> - set or multiply a Z-axis rotation matrix
+</li><li><a href="#mat3-rotate-axis-angle-method">rotate_axis_angle</a> - set or multiply a custom axis rotation matrix
+</li><li><a href="#mat3-rotate-axis-angle-v3-method">rotate_axis_angle_v3</a> - set or multiply a custom axis rotation matrix (vec3 argument)
+</li><li><a href="#mat3-scale-method">scale</a> - set or multiply a scale matrix
+</li><li><a href="#mat3-scale-v3-method">scale_v3</a> - set or multiply a scale matrix (vec3 argument)
+</li><li><a href="#mat3-transform-method">transform</a> - transform a 3D vector
+</li></ul><li>read-only properties
+<ul><li>[int] size - returns 9 - the number of components in this vector
+</li><li>[quat] quat - returns the quaternion version of this matrix
+</li><li>[mat4] mat4 - returns a 4x4 version of this matrix, expanded with identity matrix data
+</li></ul><li>read/write properties
+<ul><li>[real] m[0-2][0-2]
+</li></ul><li>overloaded operators
+<ul><li>comparison between subvalues: column-major subvalue order
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - 8: returns/sets the specified subvalue
+</li><li>tostring = &quot;mat3&quot;
+</li><li>dump:</li></ul></li></ul><pre>mat3
+(
+	&lt;m00&gt; &lt;m10&gt; &lt;m20&gt;
+	&lt;m01&gt; &lt;m11&gt; &lt;m21&gt;
+	&lt;m02&gt; &lt;m12&gt; &lt;m22&gt;
+)</pre></div>
+<div class='item'><a name='mat3-identity-method'></a><hr><h2>mat3.identity [method]</h2><h3>mat3.identity()</h3><h4>set the matrix to identity</h4></div>
+<div class='item'><a name='mat3-multiply-method'></a><hr><h2>mat3.multiply [method]</h2><h3>mat3.multiply( mat3 m )</h3><h4>multiply this matrix and another matrix, putting the other matrix on the right side of multiplication</h4></div>
+<div class='item'><a name='mat3-multiply-left-method'></a><hr><h2>mat3.multiply_left [method]</h2><h3>mat3.multiply_left( mat3 m )</h3><h4>multiply this matrix and another matrix, putting the other matrix on the left side of multiplication</h4></div>
+<div class='item'><a name='mat3-multiply2-method'></a><hr><h2>mat3.multiply2 [method]</h2><h3>mat3.multiply2( mat3 m1, mat3 m2 )</h3><h4>multiply two matrices into this matrix</h4></div>
+<div class='item'><a name='mat3-transpose-method'></a><hr><h2>mat3.transpose [method]</h2><h3>mat3.transpose()</h3><h4>transpose this matrix into itself</h4></div>
+<div class='item'><a name='mat3-transpose-from-method'></a><hr><h2>mat3.transpose_from [method]</h2><h3>mat3.transpose_from( mat3 m )</h3><h4>transpose another matrix into this matrix</h4></div>
+<div class='item'><a name='mat3-invert-method'></a><hr><h2>mat3.invert [method]</h2><h3>mat3.invert()</h3><h4>invert this matrix into itself, return if successful</h4></div>
+<div class='item'><a name='mat3-invert-from-method'></a><hr><h2>mat3.invert_from [method]</h2><h3>mat3.invert_from( mat3 m )</h3><h4>invert another matrix into this matrix</h4></div>
+<div class='item'><a name='mat3-rotateX-method'></a><hr><h2>mat3.rotateX [method]</h2><h3>mat3.rotateX( real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around X axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat3-rotateY-method'></a><hr><h2>mat3.rotateY [method]</h2><h3>mat3.rotateY( real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around Y axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat3-rotateZ-method'></a><hr><h2>mat3.rotateZ [method]</h2><h3>mat3.rotateZ( real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around Z axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat3-rotate-axis-angle-method'></a><hr><h2>mat3.rotate_axis_angle [method]</h2><h3>mat3.rotate_axis_angle( real x, real y, real z, real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat3-rotate-axis-angle-v3-method'></a><hr><h2>mat3.rotate_axis_angle_v3 [method]</h2><h3>mat3.rotate_axis_angle( vec3 v, real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat3-scale-method'></a><hr><h2>mat3.scale [method]</h2><h3>mat3.scale( real x, real y, real z[, bool reset ])</h3><h4>generate a scale matrix and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat3-scale-v3-method'></a><hr><h2>mat3.scale_v3 [method]</h2><h3>mat3.scale_v3( vec3 v[, bool reset ])</h3><h4>generate a scale matrix and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat3-transform-method'></a><hr><h2>mat3.transform [method]</h2><h3>mat3.transform( vec3 v )</h3><h4>multiply a 3D vector by this matrix</h4></div>
+<div class='item'><a name='mat3-function'></a><hr><h2>mat3 [function]</h2><h3>mat3( mat3 m )</h3><h4>copy the matrix</h4><h3>mat3( vec3 row1, vec3 row2, vec3 row3 )</h3><h4>create a matrix from 3 rows</h4><h3>mat3( real v[9] )</h3><h4>create a matrix from 9 real values</h4></div>
+<div class='item'><a name='mat4-object'></a><hr><h2>mat4 [object]</h2><p>
+A 4x4 column-major matrix
+</p><ul><li>methods
+<ul><li><a href="#mat4-identity-method">identity</a> - set matrix to identity
+</li><li><a href="#mat4-multiply-method">multiply</a> - multiply this matrix with another one
+</li><li><a href="#mat4-multiply-left-method">multiply_left</a> - left-multiply this matrix with another one
+</li><li><a href="#mat4-multiply2-method">multiply2</a> - multiply two matrices into this one
+</li><li><a href="#mat4-transpose-method">transpose</a> - transpose matrix
+</li><li><a href="#mat4-transpose-from-method">transpose_from</a> - transpose another matrix into this one
+</li><li><a href="#mat4-invert-method">invert</a> - invert matrix
+</li><li><a href="#mat4-invert-from-method">invert_from</a> - invert another matrix into this one
+</li><li><a href="#mat4-translate-method">translate</a> - set or multiply a translation matrix
+</li><li><a href="#mat4-translate-v3-method">translate_v3</a> - set or multiply a translation matrix (vec3 argument)
+</li><li><a href="#mat4-rotateX-method">rotateX</a> - set or multiply a X-axis rotation matrix
+</li><li><a href="#mat4-rotateY-method">rotateY</a> - set or multiply a Y-axis rotation matrix
+</li><li><a href="#mat4-rotateZ-method">rotateZ</a> - set or multiply a Z-axis rotation matrix
+</li><li><a href="#mat4-rotate-axis-angle-method">rotate_axis_angle</a> - set or multiply a custom axis rotation matrix
+</li><li><a href="#mat4-rotate-axis-angle-v3-method">rotate_axis_angle_v3</a> - set or multiply a custom axis rotation matrix (vec3 argument)
+</li><li><a href="#mat4-scale-method">scale</a> - set or multiply a scale matrix
+</li><li><a href="#mat4-scale-v3-method">scale_v3</a> - set or multiply a scale matrix (vec3 argument)
+</li><li><a href="#mat4-transform-method">transform</a> - transform a 4D vector
+</li><li><a href="#mat4-transform-pos-method">transform_pos</a> - transform a 3D position vector
+</li><li><a href="#mat4-transform-normal-method">transform_normal</a> - transform a 3D normal vector
+</li></ul><li>read-only properties
+<ul><li>[int] size - returns 16 - the number of components in this vector
+</li><li>[quat] quat - returns the quaternion version of the 3x3 part of this matrix
+</li><li>[mat3] mat3 - returns the 3x3 part of this matrix
+</li></ul><li>read/write properties
+<ul><li>[real] m[0-3][0-3]
+</li></ul><li>overloaded operators
+<ul><li>comparison between subvalues: column-major subvalue order
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - 15: returns/sets the specified subvalue
+</li><li>tostring = &quot;mat4&quot;
+</li><li>dump:</li></ul></li></ul><pre>mat4
+(
+	&lt;m00&gt; &lt;m10&gt; &lt;m20&gt; &lt;m30&gt;
+	&lt;m01&gt; &lt;m11&gt; &lt;m21&gt; &lt;m31&gt;
+	&lt;m02&gt; &lt;m12&gt; &lt;m22&gt; &lt;m32&gt;
+	&lt;m03&gt; &lt;m13&gt; &lt;m23&gt; &lt;m33&gt;
+)</pre></div>
+<div class='item'><a name='mat4-identity-method'></a><hr><h2>mat4.identity [method]</h2><h3>mat4.identity()</h3><h4>set the matrix to identity</h4></div>
+<div class='item'><a name='mat4-multiply-method'></a><hr><h2>mat4.multiply [method]</h2><h3>mat4.multiply( mat4 m )</h3><h4>multiply this matrix and another matrix, putting the other matrix on the right side of multiplication</h4></div>
+<div class='item'><a name='mat4-multiply-left-method'></a><hr><h2>mat4.multiply_left [method]</h2><h3>mat4.multiply_left( mat4 m )</h3><h4>multiply this matrix and another matrix, putting the other matrix on the left side of multiplication</h4></div>
+<div class='item'><a name='mat4-multiply2-method'></a><hr><h2>mat4.multiply2 [method]</h2><h3>mat4.multiply2( mat4 m1, mat4 m2 )</h3><h4>multiply two matrices into this matrix</h4></div>
+<div class='item'><a name='mat4-transpose-method'></a><hr><h2>mat4.transpose [method]</h2><h3>mat4.transpose()</h3><h4>transpose this matrix into itself</h4></div>
+<div class='item'><a name='mat4-transpose-from-method'></a><hr><h2>mat4.transpose_from [method]</h2><h3>mat4.transpose_from( mat4 m )</h3><h4>transpose another matrix into this matrix</h4></div>
+<div class='item'><a name='mat4-invert-method'></a><hr><h2>mat4.invert [method]</h2><h3>mat4.invert()</h3><h4>invert this matrix into itself, return if successful</h4></div>
+<div class='item'><a name='mat4-invert-from-method'></a><hr><h2>mat4.invert_from [method]</h2><h3>mat4.invert_from( mat4 m )</h3><h4>invert another matrix into this matrix</h4></div>
+<div class='item'><a name='mat4-translate-method'></a><hr><h2>mat4.translate [method]</h2><h3>mat4.translate( real x, real y, real z[, bool reset ])</h3><h4>generate a translation matrix and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-translate-v3-method'></a><hr><h2>mat4.translate_v3 [method]</h2><h3>mat4.translate_v3( vec3 v[, bool reset ])</h3><h4>generate a translation matrix and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-rotateX-method'></a><hr><h2>mat4.rotateX [method]</h2><h3>mat4.rotateX( real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around X axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-rotateY-method'></a><hr><h2>mat4.rotateY [method]</h2><h3>mat4.rotateY( real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around Y axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-rotateZ-method'></a><hr><h2>mat4.rotateZ [method]</h2><h3>mat4.rotateZ( real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around Z axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-rotate-axis-angle-method'></a><hr><h2>mat4.rotate_axis_angle [method]</h2><h3>mat4.rotate_axis_angle( real x, real y, real z, real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-rotate-axis-angle-v3-method'></a><hr><h2>mat4.rotate_axis_angle_v3 [method]</h2><h3>mat4.rotate_axis_angle( vec3 v, real a[, bool reset ])</h3><h4>generate a rotation matrix (rotation around specified axis) and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-scale-method'></a><hr><h2>mat4.scale [method]</h2><h3>mat4.scale( real x, real y, real z[, bool reset ])</h3><h4>generate a scale matrix and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-scale-v3-method'></a><hr><h2>mat4.scale_v3 [method]</h2><h3>mat4.scale_v3( vec3 v[, bool reset ])</h3><h4>generate a scale matrix and multiply or set it to this matrix</h4><ul><li>if <code>reset</code> is true, the generated matrix is directly set to this matrix
+<ul><li>otherwise, generated matrix is right-multiplied to this matrix
+</li><li>if current matrix is an identity matrix, <code>reset</code> has no effect</li></ul></li></ul></div>
+<div class='item'><a name='mat4-transform-method'></a><hr><h2>mat4.transform [method]</h2><h3>mat4.transform( vec4 v )</h3><h4>multiply a 4D vector by this matrix</h4></div>
+<div class='item'><a name='mat4-transform-pos-method'></a><hr><h2>mat4.transform_pos [method]</h2><h3>mat4.transform_pos( vec3 v )</h3><h4>multiply a 3D position vector by this matrix</h4><ul><li>multiply vec4( v.x, v.y, v.z, 1 ) by this matrix, return vec3( x / w, y / w, z / w )</li></ul></div>
+<div class='item'><a name='mat4-transform-normal-method'></a><hr><h2>mat4.transform_normal [method]</h2><h3>mat4.transform_normal( vec3 v )</h3><h4>multiply a 3D normal vector by this matrix</h4><ul><li>multiply vec4( v.x, v.y, v.z, 0 ) by this matrix, return vec3( x, y, z )</li></ul></div>
+<div class='item'><a name='mat4-function'></a><hr><h2>mat4 [function]</h2><h3>mat4( mat4 m )</h3><h4>copy the matrix</h4><h3>mat4( vec4 row1, vec4 row2, vec4 row3[, vec4 row4 ])</h3><h4>create a matrix from 3 or 4 rows</h4><h3>mat4( real v[16] )</h3><h4>create a matrix from 16 real values</h4></div>
+<div class='item'><a name='floatarray-object'></a><hr><h2>floatarray [object]</h2><ul><li>methods
+<ul><li><a href="#floatarray-clear-method">clear</a> - set all values to 0
+</li><li><a href="#floatarray-set1-method">set1</a> - set all values to 1
+</li><li><a href="#floatarray-negate-method">negate</a> - negate all values
+</li><li><a href="#floatarray-assign-method">assign</a> - copy values from another source
+</li><li><a href="#floatarray-negate-from-method">negate_from</a> - copy negated values
+</li><li><a href="#floatarray-assign-add-sub-mul-div-mod-pow-methods">*[_assign]</a> - combine values with arithmetic operations
+</li><li><a href="#floatarray-randbox-method">randbox</a> - set values to random between two sources
+</li><li><a href="#floatarray-randext-method">randext</a> - set values to random around source 1 in the range of source 2
+</li><li><a href="#floatarray-multiply-add-assign-method">multiply_add_assign</a> - multiply two sources and add the result to this one
+</li><li><a href="#floatarray-lerp-to-method">lerp_to</a> - linearly interpolate this source and another to the factor of the third one
+</li><li><a href="#floatarray-to-buffer-method">to_*_buffer</a> - convert values to byte buffer, optionally scaling them
+</li></ul><li>read-only properties
+<ul><li>[aabb2] aabb2 - returns 2D bounding box of data, assuming data contains 2D vectors
+</li><li>[aabb3] aabb3 - returns 3D bounding box of data, assuming data contains 3D vectors
+</li><li>[int] size - returns array size - the number of values in this array
+</li><li>[int] size2 - returns array size / 2 - the number of vec2 values in this array
+</li><li>[int] size3 - returns array size / 3 - the number of vec3 values in this array
+</li><li>[int] size4 - returns array size / 4 - the number of vec4 values in this array
+</li><li>[int] size16 - returns array size / 16 - the number of mat4 values in this array
+</li></ul><li>other features:
+<ul><li>cloning support
+</li><li>serialization support
+</li><li>GC-safe
+</li><li>indexing support for indices 0 - (size-1): returns/sets the specified subvalue
+</li><li>tostring = &quot;floatarray&quot;
+</li><li>dump: first 64 values, array formatting</li></ul></li></ul></div>
+<div class='item'><a name='floatarray-data-transformation-methods'></a><hr><h2>floatarray data transformation methods</h2><ul><li>&#39;source&#39; type can take <code>int</code>, <code>real</code>, <code>vec2</code>, <code>vec3</code>, <code>vec4</code>, <code>mat4</code> and <code>floatarray</code> sources.
+</li><li>source values are accessed, indexed by (i % source.size)
+</li><li>function works on all values inside array</li></ul></div>
+<div class='item'><a name='floatarray-clear-method'></a><hr><h2>floatarray.clear [method]</h2><h3>floatarray.clear()</h3><h4>set all values to 0</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-set1-method'></a><hr><h2>floatarray.set1 [method]</h2><h3>floatarray.set1()</h3><h4>set all values to 1</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-negate-method'></a><hr><h2>floatarray.negate [method]</h2><h3>floatarray.negate()</h3><h4>swap the sign on all values</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-assign-method'></a><hr><h2>floatarray.assign [method]</h2><h3>floatarray.assign( s1 )</h3><h4>copy values from another source</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-negate-from-method'></a><hr><h2>floatarray.negate_from [method]</h2><h3>floatarray.negate_from( s1 )</h3><h4>copy negated values from another source</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-assign-add-sub-mul-div-mod-pow-methods'></a><hr><h2>floatarray.*[_assign] (add|sub|mul|div|mod|pow) [methods]</h2><h3>floatarray.add( s1, s2 )</h3><h4>add values from two sources to this floatarray (this = s1 + s2)</h4><h3>floatarray.sub( s1, s2 )</h3><h4>subtract values from two sources to this floatarray (this = s1 - s2)</h4><h3>floatarray.mul( s1, s2 )</h3><h4>multiply values from two sources to this floatarray (this = s1 * s2)</h4><h3>floatarray.div( s1, s2 )</h3><h4>divide values from two sources to this floatarray (this = s1 / s2)</h4><h3>floatarray.mod( s1, s2 )</h3><h4>set modulo from two sources to this floatarray (this = s1 % s2)</h4><h3>floatarray.pow( s1, s2 )</h3><h4>set power of two sources to this floatarray (this = s1 ^ s2)</h4><h3>floatarray.add_assign( s1 )</h3><h4>add values from another source to floatarray (this = this + s1)</h4><h3>floatarray.sub_assign( s1 )</h3><h4>subtract values from another source to floatarray (this = this - s1)</h4><h3>floatarray.mul_assign( s1 )</h3><h4>subtract values from another source to floatarray (this = this * s1)</h4><h3>floatarray.div_assign( s1 )</h3><h4>subtract values from another source to floatarray (this = this / s1)</h4><h3>floatarray.mod_assign( s1 )</h3><h4>subtract values from another source to floatarray (this = this % s1)</h4><h3>floatarray.pow_assign( s1 )</h3><h4>subtract values from another source to floatarray (this = this ^ s1)</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-randbox-method'></a><hr><h2>floatarray.randbox [method]</h2><h3>floatarray.randbox( s1, s2 )</h3><h4>set values to random between two sources (<code>this = lerp( s1, s2, randf() )</code>)</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-randext-method'></a><hr><h2>floatarray.randext [method]</h2><h3>floatarray.randext( s1, s2 )</h3><h4>set values to random around source 1 in the range of source 2 (<code>this = lerp( s1 - s2, s1 + s2, randf() )</code>)</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-multiply-add-assign-method'></a><hr><h2>floatarray.multiply_add_assign [method]</h2><h3>floatarray.multiply_add_assign( s1, s2 )</h3><h4>multiply two sources and add the result to this one (<code>this += s1 * s2</code>)</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-lerp-to-method'></a><hr><h2>floatarray.lerp_to [method]</h2><h3>floatarray.lerp_to( s1, s2 )</h3><h4>linearly interpolate this source and another to the factor of the third one (<code>this = lerp( this, s1, s2 )</code>)</h4><p>
+<em class='notice-bgr'>for more info, refer to this page: <a href="#floatarray-data-transformation-methods">floatarray data transformation methods</a></em>
+</p></div>
+<div class='item'><a name='floatarray-to-buffer-method'></a><hr><h2>floatarray.to_*_buffer [method]</h2><h3>floatarray.to_int8_buffer( real scale = 1 )</h3><h3>floatarray.to_int16_buffer( real scale = 1 )</h3><h3>floatarray.to_int32_buffer( real scale = 1 )</h3><h3>floatarray.to_int64_buffer( real scale = 1 )</h3><h3>floatarray.to_uint8_buffer( real scale = 1 )</h3><h3>floatarray.to_uint16_buffer( real scale = 1 )</h3><h3>floatarray.to_uint32_buffer( real scale = 1 )</h3><h3>floatarray.to_uint64_buffer( real scale = 1 )</h3><h3>floatarray.to_float32_buffer( real scale = 1 )</h3><h3>floatarray.to_float64_buffer( real scale = 1 )</h3><h4>create a byte buffer from floatarray contents, optionally scaling the values</h4></div>
+<div class='item'><a name='floatarray-buffer-function'></a><hr><h2>floatarray_buffer [function]</h2><h3>floatarray_buffer( int size )</h3><h4>create a floatarray of the specified size, filled with zeroes</h4></div>
+<div class='item'><a name='floatarray-function'></a><hr><h2>floatarray [function]</h2><h3>floatarray([ int/real v0, ... ])</h3><h4>create a floatarray from a list of int/real values</h4><h3>floatarray( array varr )</h3><h4>create a floatarray from an array of int/real values</h4></div>
+<div class='item'><a name='vec2array-function'></a><hr><h2>vec2array [function]</h2><h3>vec2array([ int/real v0, ... ])</h3><h4>create a floatarray from a list of int/real values (must be a multiple of 2)</h4><h3>vec2array([ vec2 v0, ... ])</h3><h4>create a floatarray from a list of vec2 values</h4><h3>vec2array( array varr )</h3><h4>create a floatarray from an array of vec2 values</h4></div>
+<div class='item'><a name='vec3array-function'></a><hr><h2>vec3array [function]</h2><h3>vec3array([ int/real v0, ... ])</h3><h4>create a floatarray from a list of int/real values (must be a multiple of 3)</h4><h3>vec3array([ vec3 v0, ... ])</h3><h4>create a floatarray from a list of vec3 values</h4><h3>vec3array( array varr )</h3><h4>create a floatarray from an array of vec3 values</h4></div>
+<div class='item'><a name='vec4array-function'></a><hr><h2>vec4array [function]</h2><h3>vec4array([ int/real v0, ... ])</h3><h4>create a floatarray from a list of int/real values (must be a multiple of 4)</h4><h3>vec4array([ vec4 v0, ... ])</h3><h4>create a floatarray from a list of vec4 values</h4><h3>vec4array( array varr )</h3><h4>create a floatarray from an array of vec4 values</h4></div>
+<div class='item'><a name='floatarray-from-buffer-function'></a><hr><h2>floatarray_from_*_buffer [function]</h2><h3>floatarray_from_int8_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_int16_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_int32_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_int64_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_uint8_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_uint16_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_uint32_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_uint64_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_float32_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h3>floatarray_from_float64_buffer( string buffer, scale = 1, stride = 1, offset = 0 )</h3><h4>create a floatarray from byte buffer, optionally specifying scale, stride and offset to first value</h4></div>
+<div class='item'><a name='ray-plane-intersect-function'></a><hr><h2>ray_plane_intersect [function]</h2><h3>ray_plane_intersect( vec3 ray_pos, vec3 ray_dir, vec4 plane )</h3><h4>tests for an intersection between ray and plane, returning all relevant output data</h4><ul><li>if ray is (near-)parallel to plane, false is returned
+<ul><li>otherwise, signed distance along ray and signed origin distance from plane are returned
+</li><li>if signed distance along ray to plane is larger than 0, plane is in front of ray
+</li><li>if signed distance from origin to plane is larger than 0, ray origin is in front of the plane</li></ul></li></ul></div>
+<div class='item'><a name='ray-sphere-intersect-function'></a><hr><h2>ray_sphere_intersect [function]</h2><h3>ray_sphere_intersect( vec3 ray_pos, vec3 ray_dir, vec3 sphere_pos, real radius )</h3><h4>tests for an intersection between ray and sphere, returning the distance</h4><ul><li>if ray does not intersect sphere, false is returned
+<ul><li>otherwise, signed distance between ray and sphere is returned
+</li><li>if signed distance along ray to sphere is larger than 0, sphere is in front of ray</li></ul></li></ul></div>
+<div class='item'><a name='distance-lines-function'></a><hr><h2>distance_lines [function]</h2><h3>distance_lines( vec3 a1, vec3 a2, vec3 b1, vec3 b2 )</h3><h4>returns distance between two straight lines, defined by two intersection points</h4><p>
+<em class='notice-bgr'>This function may not return the expected result if either of the lines has zero length. In such cases, prefer using <a href="#distance-point-line-function">distance_point_line</a></em>
+</p></div>
+<div class='item'><a name='distance-line-segments-function'></a><hr><h2>distance_line_segments [function]</h2><h3>distance_line_segments( vec3 a1, vec3 a2, vec3 b1, vec3 b2 )</h3><h4>returns distance between two line segments</h4><p>
+<em class='notice-bgr'>This function may not return the expected result if either of the lines has zero length. In such cases, prefer using <a href="#distance-point-line-segment-function">distance_point_line_segment</a></em>
+</p></div>
+<div class='item'><a name='distance-point-line-function'></a><hr><h2>distance_point_line [function]</h2><h3>distance_point_line( vec3 p, vec3 l1, vec3 l2 )</h3><h4>returns distance between point and a straight line, defined by two intersection points</h4></div>
+<div class='item'><a name='distance-point-line-segment-function'></a><hr><h2>distance_point_line_segment [function]</h2><h3>distance_point_line_segment( vec3 p, vec3 l1, vec3 l2 )</h3><h4>returns distance between point and a line segment</h4></div>
+<div class='item'><a name='All-SGScript-objects-A-Z'></a><hr><h2>All SGScript objects (A-Z)</h2><ul><li><a href="#aabb2-object">aabb2 [object]</a>
+</li><li><a href="#aabb3-object">aabb3 [object]</a>
+</li><li><a href="#color-object">color [object]</a>
+</li><li><a href="#floatarray-object">floatarray [object]</a>
+</li><li><a href="#mat3-object">mat3 [object]</a>
+</li><li><a href="#mat4-object">mat4 [object]</a>
+</li><li><a href="#quat-object">quat [object]</a>
+</li><li><a href="#vec2-object">vec2 [object]</a>
+</li><li><a href="#vec3-object">vec3 [object]</a>
+</li><li><a href="#vec4-object">vec4 [object]</a></li></ul></div>
+<div class='item'><a name='All-SGScript-functions-A-Z'></a><hr><h2>All SGScript functions (A-Z)</h2><ul><li><a href="#aabb2-function">aabb2 [function]</a>
+</li><li><a href="#aabb2-expand-function">aabb2.expand( ... ) [function]</a>
+</li><li><a href="#aabb2-intersect-function">aabb2_intersect [function]</a>
+</li><li><a href="#aabb2v-function">aabb2v [function]</a>
+</li><li><a href="#aabb3-function">aabb3 [function]</a>
+</li><li><a href="#aabb3-expand-function">aabb3.expand( ... ) [function]</a>
+</li><li><a href="#aabb3-intersect-function">aabb3_intersect [function]</a>
+</li><li><a href="#aabb3v-function">aabb3v [function]</a>
+</li><li><a href="#color-function">color [function]</a>
+</li><li><a href="#distance-line-segments-function">distance_line_segments [function]</a>
+</li><li><a href="#distance-lines-function">distance_lines [function]</a>
+</li><li><a href="#distance-point-line-function">distance_point_line [function]</a>
+</li><li><a href="#distance-point-line-segment-function">distance_point_line_segment [function]</a>
+</li><li><a href="#floatarray-function">floatarray [function]</a>
+</li><li><a href="#floatarray-buffer-function">floatarray_buffer [function]</a>
+</li><li><a href="#floatarray-from-buffer-function">floatarray_from_*_buffer [function]</a>
+</li><li><a href="#mat3-function">mat3 [function]</a>
+</li><li><a href="#mat4-function">mat4 [function]</a>
+</li><li><a href="#quat-function">quat [function]</a>
+</li><li><a href="#ray-plane-intersect-function">ray_plane_intersect [function]</a>
+</li><li><a href="#ray-sphere-intersect-function">ray_sphere_intersect [function]</a>
+</li><li><a href="#vec2-function">vec2 [function]</a>
+</li><li><a href="#vec2-dot-function">vec2_dot [function]</a>
+</li><li><a href="#vec2array-function">vec2array [function]</a>
+</li><li><a href="#vec3-function">vec3 [function]</a>
+</li><li><a href="#vec3-cross-function">vec3_cross [function]</a>
+</li><li><a href="#vec3-dot-function">vec3_dot [function]</a>
+</li><li><a href="#vec3array-function">vec3array [function]</a>
+</li><li><a href="#vec4-function">vec4 [function]</a>
+</li><li><a href="#vec4-dot-function">vec4_dot [function]</a>
+</li><li><a href="#vec4array-function">vec4array [function]</a></li></ul></div>
+<div class='item'><a name='C-API'></a><hr><h2>C API</h2><ul><li>XGM_VT - floating point type used throughout the API, alias of <code>float</code> by default
+</li><li><a href="#xgm-vtarray-struct">xgm_vtarray</a> - <a href="#floatarray-object">floatarray</a> data
+</li><li><a href="#xgm-iface-interfaces">xgm_*_iface</a> - object interfaces
+</li><li><a href="#sgs-Create-functions">sgs_Create*</a> - xgmath object creation functions
+</li><li><a href="#sgs-Parse-functions">sgs_Parse*</a> - xgmath object parsing functions
+</li><li><a href="#sgs-ArgCheck-functions">sgs_ArgCheck_*</a> - xgmath LoadArgs parsing functions</li></ul></div>
+<div class='item'><a name='xgm-vtarray-struct'></a><hr><h2>xgm_vtarray [struct]</h2><h3>xgm_vtarray</h3><h4><a href="#floatarray-object">floatarray</a> data</h4><ul><li>properties:
+<ul><li>XGM_VT* data - array of floating point values
+</li><li>sgs_SizeVal size - current size of array (current item count)
+</li><li>sgs_SizeVal mem - max. size of array (capacity, allocated item count)</li></ul></li></ul></div>
+<div class='item'><a name='xgm-iface-interfaces'></a><hr><h2>xgm_*_iface [interfaces]</h2><h3>sgs_ObjInterface xgm_vec2_iface[1]</h3><h4>interface for <a href="#vec2-object">vec2</a> objects</h4><h3>sgs_ObjInterface xgm_vec3_iface[1]</h3><h4>interface for <a href="#vec3-object">vec3</a> objects</h4><h3>sgs_ObjInterface xgm_vec4_iface[1]</h3><h4>interface for <a href="#vec4-object">vec4</a> objects</h4><h3>sgs_ObjInterface xgm_aabb2_iface[1]</h3><h4>interface for <a href="#aabb2-object">aabb2</a> objects</h4><h3>sgs_ObjInterface xgm_aabb3_iface[1]</h3><h4>interface for <a href="#aabb3-object">aabb3</a> objects</h4><h3>sgs_ObjInterface xgm_color_iface[1]</h3><h4>interface for <a href="#color-object">color</a> objects</h4><h3>sgs_ObjInterface xgm_mat4_iface[1]</h3><h4>interface for <a href="#mat4-object">mat4</a> objects</h4><h3>sgs_ObjInterface xgm_floatarr_iface[1]</h3><h4>interface for <a href="#floatarray-object">floatarray</a> objects</h4></div>
+<div class='item'><a name='sgs-Create-functions'></a><hr><h2>sgs_Create* [functions]</h2><h3>SGSONE sgs_CreateVec2( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y )</h3><h3>SGSONE sgs_CreateVec3( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y, XGM_VT z )</h3><h3>SGSONE sgs_CreateVec4( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y, XGM_VT z, XGM_VT w )</h3><h3>SGSONE sgs_CreateAABB2( SGS_CTX, sgs_Variable* var, XGM_VT x1, XGM_VT y1, XGM_VT x2, XGM_VT y2 )</h3><h3>SGSONE sgs_CreateAABB3( SGS_CTX, sgs_Variable* var, const XGM_VT* v3f1, const XGM_VT* v3f2 )</h3><h3>SGSONE sgs_CreateColor( SGS_CTX, sgs_Variable* var, XGM_VT r, XGM_VT g, XGM_VT b, XGM_VT a )</h3><h3>SGSONE sgs_CreateQuat( SGS_CTX, sgs_Variable* var, XGM_VT x, XGM_VT y, XGM_VT z, XGM_VT w )</h3><h3>SGSONE sgs_CreateMat3( SGS_CTX, sgs_Variable* var, const XGM_VT* v9f, int transpose )</h3><h3>SGSONE sgs_CreateMat4( SGS_CTX, sgs_Variable* var, const XGM_VT* v16f, int transpose )</h3><h3>SGSONE sgs_CreateFloatArray( SGS_CTX, sgs_Variable* var, const XGM_VT* vfn, sgs_SizeVal size )</h3><h3>SGSONE sgs_CreateVec2p( SGS_CTX, sgs_Variable* var, const XGM_VT* v2f )</h3><h3>SGSONE sgs_CreateVec3p( SGS_CTX, sgs_Variable* var, const XGM_VT* v3f )</h3><h3>SGSONE sgs_CreateVec4p( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )</h3><h3>SGSONE sgs_CreateAABB2p( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )</h3><h3>SGSONE sgs_CreateAABB3p( SGS_CTX, sgs_Variable* var, const XGM_VT* v6f )</h3><h3>SGSONE sgs_CreateColorp( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )</h3><h3>SGSONE sgs_CreateColorvp( SGS_CTX, sgs_Variable* var, const XGM_VT* vf, int numfloats )</h3><h3>SGSONE sgs_CreateQuatp( SGS_CTX, sgs_Variable* var, const XGM_VT* v4f )</h3><h4>push/initialize a variable of the right type to the specified arguments</h4><p>
+Notes:
+</p><ul><li>if var == NULL, variable is pushed to stack
+</li><li>functions here always return 1 (SGSONE), making them suitable for a &quot;return sgs_Create***&quot; construct
+</li><li>v*f - array of the specified number of XGM_VT values
+</li><li>sgs_InitColorvp accepts 0, 1, 2, 3 or 4 for <code>numfloats</code>
+<ul><li>if 0: R, G, B, A = 0
+</li><li>if 1: R, G, B, A = arg1
+</li><li>if 2: R, G, B = arg1; A = arg2
+</li><li>if 3: R = arg1; G = arg2; B = arg3; A = 1
+</li><li>otherwise arguments are mapped to components sequentially
+</li></ul><li>the <code>p</code> postfix for functions means that function accepts arrays instead of plain values, if that&#39;s what the non -p function takes</li></ul></div>
+<div class='item'><a name='sgs-Parse-functions'></a><hr><h2>sgs_Parse* [functions]</h2><h3>SGSBOOL sgs_ParseVT( SGS_CTX, sgs_StkIdx item, XGM_VT* out )</h3><h3>SGSBOOL sgs_ParseVec2( SGS_CTX, sgs_StkIdx item, XGM_VT* v2f, int strict )</h3><h3>SGSBOOL sgs_ParseVec3( SGS_CTX, sgs_StkIdx item, XGM_VT* v3f, int strict )</h3><h3>SGSBOOL sgs_ParseVec4( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f, int strict )</h3><h3>SGSBOOL sgs_ParseAABB2( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f )</h3><h3>SGSBOOL sgs_ParseAABB3( SGS_CTX, sgs_StkIdx item, XGM_VT* v6f )</h3><h3>SGSBOOL sgs_ParseColor( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f, int strict )</h3><h3>SGSBOOL sgs_ParseQuat( SGS_CTX, sgs_StkIdx item, XGM_VT* v4f, int strict )</h3><h3>SGSBOOL sgs_ParseMat3( SGS_CTX, sgs_StkIdx item, XGM_VT* v9f )</h3><h3>SGSBOOL sgs_ParseMat4( SGS_CTX, sgs_StkIdx item, XGM_VT* v16f )</h3><h3>SGSBOOL sgs_ParseFloatArray( SGS_CTX, sgs_StkIdx item, XGM_VT** vfa, sgs_SizeVal* osz )</h3><h4>parse the specified stack item to retrieve object data</h4><ul><li><code>strict</code> means that only the object of the specified type is allowed to be parsed
+<ul><li>otherwise, real values are parsed too</li></ul></li></ul></div>
+<div class='item'><a name='sgs-ArgCheck-functions'></a><hr><h2>sgs_ArgCheck_* [functions]</h2><h3>int sgs_ArgCheck_Vec2( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_Vec3( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_Vec4( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_AABB2( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_AABB3( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_Color( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_Quat( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_Mat3( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_Mat4( SGS_CTX, int argid, va_list* args, int flags )</h3><h3>int sgs_ArgCheck_FloatArray( SGS_CTX, int argid, va_list* args, int flags )</h3><h4>argument parsing functions for sgs_LoadArgs* function family</h4><ul><li>variable argument list expectations if output is enabled:
+<ul><li>Vec2: XGM_VT[2]
+</li><li>Vec3: XGM_VT[3]
+</li><li>Vec4: XGM_VT[4]
+</li><li>AABB2: XGM_VT[4]
+</li><li>AABB3: XGM_VT[6]
+</li><li>Color: XGM_VT[4]
+</li><li>Quat: XGM_VT[4]
+</li><li>Mat3: XGM_VT[9]
+</li><li>Mat4: XGM_VT[16]
+</li><li>FloatArray: <a href="#xgm-vtarray-struct">xgm_vtarray**</a></li></ul></li></ul></div>
+<div class='item'><a name='All-C-interfaces-A-Z'></a><hr><h2>All C interfaces (A-Z)</h2><ul><li><a href="#xgm-iface-interfaces">xgm_*_iface [interfaces]</a>
+</li><li><a href="#xgm-vtarray-struct">xgm_vtarray [struct]</a></li></ul></div>
+<div class='item'><a name='All-C-functions-A-Z'></a><hr><h2>All C functions (A-Z)</h2><ul><li><a href="#sgs-ArgCheck-functions">sgs_ArgCheck_* [functions]</a>
+</li><li><a href="#sgs-Create-functions">sgs_Create* [functions]</a>
+</li><li><a href="#sgs-Parse-functions">sgs_Parse* [functions]</a></li></ul></div>
+</div>
+	</body></html>
+	

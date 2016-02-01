@@ -1,0 +1,95 @@
+
+function wait( iters )
+{
+	for( i = 0; i < iters; ++i )
+		yield();
+	println( "waited " $ iters $ " iterations" );
+}
+
+function corotest1()
+{
+	println( "== 1 ==" );
+	println( "starting threads" );
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	println( "syncing" );
+	sync( a, b, c );
+	println( "done" );
+}
+thread corotest1();
+while( process_threads() );
+
+function corotest2()
+{
+	println( "== 2 ==" );
+	println( "starting threads" );
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	println( "syncing" );
+	sync( a, sync( b, c ) );
+	println( "done" );
+}
+thread corotest2();
+while( process_threads() );
+
+function corotest3()
+{
+	println( "== 3 ==" );
+	println( "starting threads" );
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	println( "syncing -- this should not be done yet..." );
+	t = 0.9;
+	sync( a, sync( b, c, 0.4 ), t );
+	println( "done" );
+}
+thread corotest3();
+for( i = 0; i < 9; ++i )
+	process_threads(0.1);
+println( "-- now it should be done:" );
+while( process_threads(0.1) );
+
+function corotestB1()
+{
+	println( "== B1 ==" );
+	println( "starting threads" );
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	println( "racing" );
+	race( a, b, c );
+	println( "done" );
+}
+thread corotestB1();
+while( process_threads() );
+
+function corotestB2()
+{
+	println( "== B2 ==" );
+	println( "starting threads" );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	println( "racing" );
+	race( b, c, 0.4 );
+	println( "done" );
+}
+thread corotestB2();
+while( process_threads(0.1) );
+
+function corotestC1()
+{
+	println( "== C1 ==" );
+	println( "starting threads" );
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 8 );
+	println( "racing" );
+	race( sync( a, b, c ), 6 );
+	println( "done" );
+}
+thread corotestC1();
+while( process_threads(1) );
+

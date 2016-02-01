@@ -1,0 +1,11 @@
+
+function fnA(){ return 1; }
+function fnB(){ return 2; }
+
+orig_fnA = fnA;
+function fnA() use( orig_fnA ){ return orig_fnA(); }
+
+orig_fnB = fnB;
+function fnB() use( orig_fnB ){ return orig_fnB(); }
+
+testEqual( fnB(), 2 );

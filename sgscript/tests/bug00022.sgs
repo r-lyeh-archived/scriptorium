@@ -1,0 +1,8 @@
+global Q = 0;
+function test()
+{
+	global Q;
+	while( Q < 5 )
+		Q++;
+}
+test();

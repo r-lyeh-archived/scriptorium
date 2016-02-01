@@ -1,0 +1,12 @@
+q = function(b,x)
+{
+	y = true;
+	return function() use( x, y )
+	{
+		return x;
+	};
+};
+fn = q(true,5);
+printvar( fn );
+println( fn() );
+gc_collect();

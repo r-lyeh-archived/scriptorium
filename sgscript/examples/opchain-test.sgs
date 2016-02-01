@@ -1,0 +1,7 @@
+
+include_library( "string" );
+include_library( "io" );
+
+sum = 1000;
+code = "print(" $ string_repeat( "+1", sum - 1 ) $ ");";
+eval( code );

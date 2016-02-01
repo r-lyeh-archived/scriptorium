@@ -1,0 +1,2 @@
+testEqual( 3 $ 4 + 5, "39" );
+testEqual( 'X' $ false || true, "Xfalse" );

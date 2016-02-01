@@ -1,0 +1,54 @@
+/*
+	A simple page usefulness-based pagination
+	algorithm demonstrates the power of
+	sort_mapped (sorting one array by another)
+	"the power", of course, might feel like an
+	overblown statement considering there's only
+	one line of it but that's it - all you need
+	is one line to make it work (as opposed to
+	50+ lines and a custom sorting algorithm
+	that doesn't get near the speed of C)
+*/
+
+include_library( "string" );
+include_library( "math" );
+
+numpages = 137;
+numslots = 9;
+curpage = 8;
+
+pages = [];
+weights = [];
+for( i = 1; i <= numpages; ++i )
+{
+	w = 1 / i + 1 / ( numpages + 1 - i ) +
+		1 / ( abs( i - curpage ) + 1 );
+	pages.push( i );
+	weights.push( w );
+}
+
+pages.sort_mapped( weights, true );
+if( pages.size > numslots )
+	pages.resize( numslots );
+pages.sort();
+
+// printvar( pages );
+
+println( "numpages = ", numpages );
+println( "numslots = ", numslots );
+println( "curpage = ", curpage );
+
+out = '|';
+foreach( p : pages )
+{
+	padchr = ' ';
+	if( p == curpage )
+		padchr = '-';
+	out $= string_pad( p, 3, padchr,
+		STRING_PAD_LEFT | STRING_PAD_RIGHT ) $ '|';
+}
+side = string_repeat( '-', out.length );
+
+println( side );
+println( out );
+println( side );

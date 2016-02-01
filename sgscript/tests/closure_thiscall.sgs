@@ -1,0 +1,8 @@
+
+a = 5;
+function fn1( x ) use( a )
+{
+	printlns( this, x, a );
+}
+fn1.call( true, "arg1" );
+fn1.apply( false, [ "arg2" ]);

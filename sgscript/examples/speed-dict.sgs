@@ -1,0 +1,57 @@
+
+function fmt_bytenum( n )
+{
+	on = n;
+	i = 0;
+	units = [ "B", "kB", "MB" ];
+	while( n > 2048 && i < units.size - 1 )
+	{
+		n /= 1024;
+		i++;
+	}
+	return n $ " " $ units[i] $ " (" $ on $ " bytes)";
+}
+
+count = 100000;
+
+mem_base = sys_stat(3);
+num_base = sys_stat(6);
+obj = {};
+t0 = ftime();
+for( var i = 0; i < count; ++i )
+	obj[ i ] = ftime();
+mem_load = sys_stat(3);
+num_load = sys_stat(6);
+
+t1 = ftime();
+for( var i = 0; i < count; ++i )
+	dummy = obj[ i ];
+
+t2 = ftime();
+for( var i = 0; i < count; ++i )
+	unset( obj, i );
+mem_unload = sys_stat(3);
+num_unload = sys_stat(6);
+
+t3 = ftime();
+
+obj = null;
+mem_free = sys_stat(3);
+
+printlns( "-- info --", "count: " $ count );
+printlns( "-- time --", "set: " $ t1-t0, "get: " $ t2-t1, "unset: " $ t3-t2 );
+printlns
+(
+	"-- memory --",
+	"before: " $ fmt_bytenum( mem_base ),
+	"load: " $ fmt_bytenum( mem_load ),
+	"unload: " $ fmt_bytenum( mem_unload ),
+	"memory after dict free: " $ fmt_bytenum( mem_free ),
+	"delta: " $ fmt_bytenum( mem_load - mem_base ),
+	"junk memory after unset: " $ fmt_bytenum( mem_unload - mem_free ),
+	"accumulated overhead: " $ fmt_bytenum( mem_free - mem_base ),
+	"-- allocation count --",
+	"before: " $ num_base,
+	"load: " $ num_load,
+	"unload: " $ num_unload
+);

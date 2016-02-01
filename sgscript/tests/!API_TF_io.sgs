@@ -1,0 +1,53 @@
+
+global ERRORS;
+global tests_failed, tests_ran;
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+print( "\n\n-- I/O FUNCTIONS --\n" );
+include_library( "string" );
+include_library( "io" );
+//
+
+	section( "io_setcwd/io_getcwd" );
+testEqual( io_setcwd('tests'), true, "io_setcwd - basic directory change" );
+testEqual( string_cut( io_getcwd(), -5, -1 ), 'tests', "io_getcwd - validation of prev. change" );
+testEqual( io_setcwd('..'), true, "io_setcwd - reverting change" );
+testEqual( io_setcwd('doesnotexist'), false, "io_setcwd - invalid directory change" );
+
+	section( "io_file_write/io_file_read" );
+testEqual( io_file_write('tests/data/t.txt', 'four five six'), true, "io_file_write - basic write" );
+testEqual( io_file_read('tests/data/t.txt'), 'four five six', "io_file_read - basic read" );
+testEqual( io_file_read('tests/data/doesnotexist.txt'), null, "io_file_read - invalid read" );
+
+	section( "io_dir_create" );
+testEqual( io_dir_create('tests/data/testdir'), true, "io_dir_create - basic creation" );
+testEqual( io_dir_create('tests/data/doesnotexist/testdir'), false, "io_dir_create - impossible creation" );
+
+	section( "io_rename" );
+testEqual( io_rename('tests/data/testdir','tests/data/td2'), true, "io_rename - basic renaming" );
+testEqual( io_rename('tests/data/td2','tests/data/testdir'), true, "io_rename - basic renaming back" );
+testEqual( io_rename('tests/data/doesnotexist','yeah'), false, "io_rename - invalid renaming" );
+
+	section( "io_file_exists/io_dir_exists" );
+testEqual( io_file_exists('tests/data/t.txt'), true, "io_file_exists - valid path" );
+testEqual( io_file_exists('tests/data/doesnotexist.txt'), false, "io_file_exists - invalid path" );
+testEqual( io_dir_exists('tests/data/testdir'), true, "io_dir_exists - valid path" );
+testEqual( io_dir_exists('tests/data/doesnotexist'), false, "io_dir_exists - invalid path" );
+
+	section( "io_stat" );
+printvar( io_stat( "tests/data/t.txt" ) );
+printvar( io_stat( "tests/data/testdir" ) );
+testEqual( io_stat('tests/data/doesnotexist.txt'), null, "io_stat - invalid path" );
+testEqual( io_stat('tests/data/doesnotexist'), null, "io_stat - invalid path" );
+
+	section( "io_dir_delete/io_file_delete" );
+testEqual( io_file_delete('tests/data/t.txt'), true, "io_file_delete - valid file" );
+testEqual( io_file_delete('tests/data/doesnotexist.txt'), false, "io_file_delete - invalid file" );
+testEqual( io_dir_delete('tests/data/testdir'), true, "io_dir_delete - valid directory" );
+testEqual( io_dir_delete('tests/data/doesnotexist'), false, "io_dir_delete - invalid directory" );
+
+
+//
+print( "\n\nTesting finished!\nRan ", tests_ran, " tests of which ", tests_failed, " failed.\n" );
+//

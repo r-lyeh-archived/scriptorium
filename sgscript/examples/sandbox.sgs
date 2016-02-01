@@ -1,0 +1,41 @@
+restrict = function( name )
+{
+	println( "==\n= The use of '" $ name $ "' is restricted!\n==" );
+};
+closure = function( clbl, data )
+{
+	return function() use( clbl, data )
+	{
+		args = va_get_args();
+		args.unshift( data );
+		sys_apply( clbl, this, args );
+	};
+};
+safe_include_lib = function( data, libname )
+{
+	libname = tostring( libname );
+	if( ["string","math","re","fmt","os"].find( libname ) === null )
+	{
+		println( "info: cannot include files and system access libraries here" );
+		return;
+	}
+	data( libname );
+	if( libname == "os" )
+	{
+		unset( _G, "os_command" );
+		unset( _G, "os_getenv" );
+		unset( _G, "os_putenv" );
+	}
+};
+safe_include = function( libname )
+{
+	return include_library( libname );
+};
+global include_library = closure( safe_include_lib, include_library );
+global include = safe_include;
+global include_shared = closure( restrict, "include_shared" );
+global import_cfunc = closure( restrict, "import_cfunc" );
+global include_file = closure( restrict, "include_file" );
+global eval_file = closure( restrict, "eval_file" );
+
+include "string", "math", "re", "fmt", "os";

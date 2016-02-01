@@ -1,0 +1,6 @@
+print(
+	"NOT function: ",
+	function( x )
+	{
+		return x;
+);

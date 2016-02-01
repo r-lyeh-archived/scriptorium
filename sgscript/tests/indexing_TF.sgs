@@ -1,0 +1,12 @@
+
+global ERRORS;
+
+//     012345678901
+//    -210987654321
+str = "what is this";
+
+testEqual( str[0]$str[3]$str[11]$str[-5]$str[-1]$str[-12], "wts sw", "string indexing - valid" );
+
+ERRORS = "";
+testEqual( str[-13]$str[12]$str[str], "nullnullnull", "string indexing - invalid" );
+testEqual( ERRORS, "[W:String index out of bounds][W:String index out of bounds][W:Expected integer as string index]", "string indexing [invalid] - errors" );

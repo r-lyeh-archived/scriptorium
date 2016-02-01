@@ -1,0 +1,291 @@
+
+global ERRORS, tests_failed, tests_ran;
+
+//
+section = function section( x ){ print( "\n\t<< ", x, " >>\n" ); };
+mostempty = function(){};
+print( "\n\n-- CORE FUNCTIONS --\n" );
+include "os", "string";
+//
+
+	section( "coroutines" );
+function testfn(x) use(testfn_clsr){ println(testfn_clsr,x); yield(x); }
+(function(){
+	global ERRORS;
+	ERRORS = ""; testEqual( co_create( "wat" ), null ); testEqual( ERRORS, "[W:co_create(): argument 1 - expected callable, got string]" );
+	ERRORS = "";
+	co = co_create(function(i)
+	{
+		i ??= 0;
+		for( ; i < 3; ++i )
+			testEqual( yield( i ), 123, "coroutine - yield return" );
+		return 1337;
+	});
+	testEqual( typeof(co), "thread", "coroutine - created" );
+	testEqual( co.not_started, true, "coroutine - not started yet" );
+	testEqual( co.running, false, "coroutine - not yet running" );
+	testEqual( co_resume( co, 1 ), 1, "coroutine - resume [1]" );
+	testEqual( co.not_started, false, "coroutine - started" );
+	testEqual( co.running, true, "coroutine - running" );
+	testEqual( co_resume( co, 123 ), 2, "coroutine - resume [2]" );
+	testEqual( co_resume( co, 123 ), 1337, "coroutine - return" );
+	testEqual( co.running, false, "coroutine - not running any more" );
+	testEqual( ERRORS, "", "coroutine - no errors" );
+	ERRORS = ""; testEqual( co_resume( co ), null ); testEqual( ERRORS, "[W:co_resume(): coroutine is finished, cannot resume]" );
+	
+	ERRORS = "";
+	global _Tcomp = co_create(function(){ yield(); testEqual( _T, _Tcomp, "_T - correct value" ); });
+	co_resume( _Tcomp );
+	_Tcomp = null;
+	testEqual( ERRORS, "", "_T - no errors" );
+	
+	ERRORS = "";
+	testfn_clsr = "[tfn] ";
+	anon_clsr = "[cl] ";
+	co = co_create(function(x) use(anon_clsr){ for(i=0;i<2;++i){ testfn(anon_clsr$i$":"$x); } return "end"; });
+	testEqual( typeof(co), "thread", "[srlz] coroutine - created" );
+	testEqual( co_resume(co,"text"), "[cl] 0:text", "[srlz] coroutine - resume [1]" );
+	cos = serialize2( co ); testEqual( typeof(cos), "string", "[srlz] coroutine - serialized successfully" );
+	println( "size of the serialized coroutine: " $ cos.length );
+	co = unserialize2( cos ); testEqual( typeof(co), "thread", "[srlz] coroutine - unserialized successfully" );
+	testEqual( co_resume(co), "[cl] 1:text", "[srlz] coroutine - resume [2]" );
+	testEqual( co_resume(co), "end", "[srlz] coroutine - resume [3,final]" );
+	testEqual( ERRORS, "", "[srlz] coroutine - no errors" );
+	ERRORS = ""; testEqual( co_resume(co), null, "[srlz] coroutine - resume [4,failed]" );
+	testEqual( ERRORS, "[W:co_resume(): coroutine is finished, cannot resume]" );
+	// ...and again!
+	ERRORS = "";
+	co = unserialize2( cos ); testEqual( typeof(co), "thread", "[srlz #2] coroutine - unserialized successfully" );
+	testEqual( co_resume(co), "[cl] 1:text", "[srlz #2] coroutine - resume [2]" );
+	testEqual( co_resume(co), "end", "[srlz #2] coroutine - resume [3,final]" );
+	testEqual( ERRORS, "", "[srlz #2] coroutine - no errors" );
+	ERRORS = ""; testEqual( co_resume(co), null, "[srlz #2] coroutine - resume [4,failed]" );
+	testEqual( ERRORS, "[W:co_resume(): coroutine is finished, cannot resume]" );
+}()); // cleanup
+
+	section( "threading" );
+global testval0 = 1;
+testEqual( sys_stat(1), 1, "state count = 1" );
+(function(){
+	testEqual( typeof( thread_create( function(){ global testval0 = 2; } ) ), "thread", "thread creation success" );
+	testEqual( testval0, 2, "thread function was called" );
+	testEqual( typeof( thread_create( function(){}, 1, 2 ) ), "thread", "thread - argument passing" );
+}()); // force cleanup
+testEqual( sys_stat(1), 1, "state count = 1" );
+(function(){
+	testEqual( typeof( t = thread_create( function(){ for(;;) yield(); } ) ),
+		"thread", "thread with infinite yield loop was partially run" );
+	testEqual( sys_stat(1), 2, "state count = 2" );
+	testEqual( t.was_aborted, false, "thread is not aborted yet" );
+	t.abort();
+	testEqual( t.was_aborted, true, "thread is aborted now" );
+	t = null;
+	process_threads();
+}()); // force cleanup
+testEqual( sys_stat(1), 1, "state count after aborting infinite loop = 1" );
+testval0 = 3;
+testEqual( typeof( thread_create( function(){ global testval0 = 4; yield(1); testval0 = 5; yield(1); testval0 = 6; } ) ),
+	"thread", "waiting thread creation success" );
+testEqual( testval0, 4, "waiting thread - first segment executed" );
+process_threads( 0.5 ); // total waiting time [real = 0.5, thread = 0.5]
+testEqual( testval0, 4, "waiting thread - not continued" );
+process_threads( 1 ); // total waiting time [real = 1.5, thread = 1]
+testEqual( testval0, 5, "waiting thread - continued, second segment executed" );
+process_threads( 1 ); // total waiting time [real = 2.5, thread = 2]
+testEqual( testval0, 6, "waiting thread - continued, final segment executed" );
+
+	section( "multi-threading" );
+ERRORS = "";
+global testval1 = 1, testval2 = 1;
+thread_create(function(){ yield(); global testval1 = 2; });
+thread_create(function(){ yield(); global testval2 = 2; });
+process_threads();
+testEqual( testval1, 2, "MT - thread 1 was continued" );
+testEqual( testval2, 2, "MT - thread 2 was continued" );
+
+thread_create(function()
+{
+	global testval1 = 3;
+	thread_create(function()
+	{
+		global testval2 = 3;
+	});
+});
+testEqual( testval1, 3, "MT - thread 1 was started" );
+testEqual( testval2, 3, "MT - thread 2 was started" );
+testEqual( ERRORS, "", "MT - no errors" );
+
+	section( "thread syntax" );
+ERRORS = "";
+global TSTCUR = "";
+global TSTID = 0;
+function tstf0(a,b)
+{
+	global TSTID; TSTID++;
+	testEqual( typeof(this), "null", "thread syntax - " $ TSTCUR $ " - this is null" );
+	testEqual( typeof(a), "bool", "thread syntax - " $ TSTCUR $ " - a is bool" );
+	testEqual( typeof(b), "int", "thread syntax - " $ TSTCUR $ " - b is int" );
+}
+function tstf1(a,b)
+{
+	global TSTID; TSTID++;
+	testEqual( typeof(this), "dict", "thread syntax - " $ TSTCUR $ " - this is dict" );
+	testEqual( typeof(a), "bool", "thread syntax - " $ TSTCUR $ " - a is bool" );
+	testEqual( typeof(b), "int", "thread syntax - " $ TSTCUR $ " - b is int" );
+}
+global t;
+function tstst( exp )
+{
+	testEqual( typeof(t), "thread", TSTCUR $ " - returned thread" );
+	testEqual( TSTID, exp, TSTCUR $ " - test was called" );
+}
+tsfOBJ = { tstf1 };
+TSTCUR = "[thread] basic call"; t = thread tstf0( true, 1 ); tstst( 1 );
+TSTCUR = "[thread] this-call"; t = thread tsfOBJ.tstf1( true, 1 ); tstst( 2 );
+TSTCUR = "[thread] CF-call"; t = thread tsfOBJ!tstf1( true, 1 ); tstst( 3 );
+TSTCUR = "[subthread] basic call"; t = subthread tstf0( true, 1 ); tstst( 4 );
+TSTCUR = "[subthread] this-call"; t = subthread tsfOBJ.tstf1( true, 1 ); tstst( 5 );
+TSTCUR = "[subthread] CF-call"; t = subthread tsfOBJ!tstf1( true, 1 ); tstst( 6 );
+t = null;
+testEqual( ERRORS, "", "thread syntax - no errors" );
+
+	section( "sync/race" );
+global syarr = [];
+function wait( iters )
+{
+	for( i = 0; i < iters; ++i )
+		yield();
+	syarr.push( iters );
+}
+
+function corotestA1()
+{
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	sync( a, b, c );
+}
+global syarr = [];
+thread corotestA1();
+gc_collect();
+while( process_threads() );
+testEqual( ''$syarr, "[3,5,7]", "sync A1 - all done" );
+
+function corotestA2()
+{
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	sync( a, sync( b, c ) );
+}
+global syarr = [];
+thread corotestA2();
+while( process_threads() );
+testEqual( ''$syarr, "[3,5,7]", "sync A2 - all done" );
+
+function corotestA3()
+{
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	t = 0.9;
+	sync( a, sync( b, c, 0.4 ), t );
+	syarr.push("done");
+}
+global syarr = [];
+thread corotestA3();
+gc_collect();
+for( i = 0; i < 9; ++i )
+	process_threads(0.1);
+testEqual( ''$syarr, "[3,5,7]", "sync A3 - almost done" );
+while( process_threads(0.1) );
+testEqual( ''$syarr, "[3,5,7,done]", "sync A3 - all done" );
+
+function corotestB1()
+{
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	race( a, b, c );
+}
+global syarr = [];
+thread corotestB1();
+gc_collect();
+while( process_threads() );
+testEqual( ''$syarr, "[3]", "race B1 - all done" );
+
+function corotestB2()
+{
+	b = subthread wait( 5 );
+	c = subthread wait( 7 );
+	race( b, c, 0.35 );
+}
+global syarr = [];
+thread corotestB2();
+gc_collect();
+while( process_threads(0.1) );
+testEqual( ''$syarr, "[]", "race B2 - all done" );
+
+function corotestC1()
+{
+	a = subthread wait( 3 );
+	b = subthread wait( 5 );
+	c = subthread wait( 8 );
+	race( sync( a, b, c ), 6 );
+}
+global syarr = [];
+thread corotestC1();
+gc_collect();
+while( process_threads(1) );
+testEqual( ''$syarr, "[3,5]", "sync/race C1 - all done" );
+
+	section( "events" );
+ev = event();
+function corotestD1( ev )
+{
+	global syarr;
+	syarr.push( 3 );
+	sync( ev );
+	syarr.push( 5 );
+}
+global syarr = [];
+thread corotestD1( ev );
+gc_collect();
+for( i = 0; i < 3; ++i ) process_threads();
+testEqual( ''$syarr, "[3]", "event - waiting for signal" );
+ev.signaled = true;
+for( i = 0; i < 3; ++i ) process_threads();
+testEqual( ''$syarr, "[3,5]", "event - signaled, thread finished" );
+
+evpool = {};
+global syarr = [];
+thread corotestD1( pooled_event( evpool, "test1" ) );
+gc_collect();
+for( i = 0; i < 3; ++i ) process_threads();
+testEqual( ''$syarr, "[3]", "event [pooled] - waiting for signal" );
+pooled_event( evpool, "test1" ).signaled = true;
+for( i = 0; i < 3; ++i ) process_threads();
+testEqual( ''$syarr, "[3,5]", "event [pooled] - signaled, thread finished" );
+
+ev = event();
+function corotestE1( ev )
+{
+	end_on( ev );
+	syarr.push( 3 );
+	yield; yield; yield;
+	syarr.push( 5 );
+}
+global syarr = [];
+thread corotestE1( ev );
+gc_collect();
+process_threads();
+testEqual( ''$syarr, "[3]", "event [end-on] - waiting for signal" );
+ev.signaled = true;
+for( i = 0; i < 5; ++i ) process_threads();
+testEqual( ''$syarr, "[3]", "event [end-on] - signaled, thread aborted" );
+
+
+
+//
+print( "\n\nTesting finished!\nRan ", tests_ran, " tests of which ", tests_failed, " failed.\n" );
+//

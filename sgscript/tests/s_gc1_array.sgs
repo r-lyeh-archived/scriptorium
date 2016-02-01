@@ -1,0 +1,7 @@
+x = array( 5 );
+y = array( 6, x );
+x.push( y );
+print( gc_collect() );
+x = null;
+y = null;
+print( gc_collect() );

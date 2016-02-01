@@ -1,0 +1,102 @@
+
+global ERRORS;
+global tests_failed, tests_ran;
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+print( "\n\n-- SYNTAX --\n" );
+include "string";
+//
+
+function str2ias( str )
+{
+	out = [];
+	for( i = 0; i < str.length; ++i )
+		out.push( string_charcode( str[ i ] ) );
+	return tostring( out );
+}
+
+	section( "integer constants" );
+testEqual( eval( "return tostring(1234567890);" ), "1234567890", "long integer" );
+testEqual( eval( "return tostring(-1234567890);" ), "-1234567890", "long negative integer" );
+testEqual( eval( "return tostring(00000000001);" ), "1", "0-pfx decimal number" );
+testEqual( eval( "return tostring(13489de2984);" ), null, "invalid decimal number" );
+testEqual( eval( "return tostring(0b001011012);" ), null, "invalid binary number" );
+testEqual( eval( "return tostring(0b001de1010);" ), null, "invalid binary number 2" );
+testEqual( eval( "return tostring(0o014367438);" ), null, "invalid octal number" );
+testEqual( eval( "return tostring(0o21405ef12);" ), null, "invalid octal number 2" );
+testEqual( eval( "return tostring(0xdcbABCD);" ), "231451597", "multicap hex number" );
+testEqual( eval( "return tostring(0xx0123);" ), null, "invalid hex number" );
+testEqual( eval( "return tostring(0q0);" ), null, "invalid number type char" );
+
+	section( "real constants" );
+testEqual( eval( "return toint(1.0);" ), 1, "basic real" );
+testEqual( eval( "return toint(1e+1);" ), 10, "exp real" );
+testEqual( eval( "return toint(0.0001e+13);" ), 1000000000, "exp real 2" );
+testEqual( eval( "return 0.1e+  ;" ), 0.1, "incomplete but valid exp real with space" );
+testEqual( eval( "return 0.1e  ;" ), 0.1, "incomplete but valid exp real with space 2" );
+testEqual( eval( "return 0.1e+;" ), 0.1, "incomplete but valid exp real" );
+testEqual( eval( "return 0.1e;" ), 0.1, "incomplete but valid exp real 2" );
+
+	section( "string constants" );
+testEqual( eval( "return str2ias('\\0');" ), "[0]", "oct - 1 char - valid (0)" );
+testEqual( eval( "return str2ias('\\7');" ), "[7]", "oct - 1 char - valid (7)" );
+testEqual( eval( "return str2ias('\\77');" ), "[63]", "oct - 2 chars - valid (77)" );
+testEqual( eval( "return str2ias('\\777');" ), "[31,255]", "oct - 3 chars - valid (777)" );
+testEqual( eval( "return str2ias('\\7777');" ), "[31,255,55]", "oct - 3 chars - valid (777) + char 7" );
+testEqual( eval( "return str2ias('\\x0');" ), "[120,48]", "hex - 1 char - valid, broken hex (0)" );
+testEqual( eval( "return str2ias('\\x00');" ), "[0]", "hex - 2 chars - valid (00)" );
+testEqual( eval( "return str2ias('\\x000');" ), "[0,48]", "hex - 3 chars - valid, broken hex (000)" );
+testEqual( eval( "return str2ias('\\x0000');" ), "[0,0]", "hex - 4 chars - valid (0000)" );
+testEqual( eval( "return str2ias('\\x00000');" ), "[0,0,48]", "hex - 5 chars - valid, broken hex (00000)" );
+testEqual( eval( "return str2ias('\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\"');" ),
+	"[7,8,12,10,13,9,11,92,39,34]", "escaped characters" );
+
+	section( "object literals" );
+test = eval( "return [" $ string_repeat("0,",15) $ "];" );
+testEqual( typeof(test), "array", "array literal with 15 items" );
+testEqual( test[0], 0, ".. first item" );
+testEqual( test[15-1], 0, ".. last item" );
+test = eval( "return [" $ string_repeat("0,",256) $ "];" );
+testEqual( typeof(test), "array", "array literal with 256 items" );
+testEqual( test[0], 0, ".. first item" );
+testEqual( test[256-1], 0, ".. last item" );
+test = eval( "return [" $ string_repeat("0,",1000) $ "];" );
+testEqual( typeof(test), "array", "array literal with 1000 items" );
+testEqual( test[0], 0, ".. first item" );
+testEqual( test[1000-1], 0, ".. last item" );
+printvar(ERRORS);
+test = eval( "return [" $ string_repeat("0,",50000) $ "];" );
+testEqual( typeof(test), "array", "array literal with 50000 items" );
+testEqual( test[0], 0, ".. first item" );
+testEqual( test[50000-1], 0, ".. last item" );
+
+	section( "keywords" );
+keywords = ["var","global","null","true","false","if","else","do","while",
+	"for","foreach","break","continue","function","use","return","this"];
+foreach( kw : keywords )
+	testEqual( eval( "("$kw$")=5;" ), null, "recognized keyword '"$kw$"' as wrong for left side of assignment" );
+
+	section( "operators" );
+ERRORS = "";
+testEqual( eval( "return ! 5;" ), false, "!5 => false" );
+testEqual( eval( "return - + 5;" ), -5, "-+5 => -5" );
+testEqual( eval( "return + - 5;" ), -5, "+-5 => -5" );
+testEqual( eval( "return - - 5;" ), 5, "- -5 => 5" );
+testEqual( eval( "return - - - 5;" ), -5, "- - -5 => -5" );
+testEqual( eval( "return - ! ! 5;" ), -1, "-!!5 => -1" );
+testEqual( eval( "return - - ~ ~ 5;" ), 5, "- -~~5 => 5" );
+testEqual( ERRORS, "", "operators - no errors" );
+
+	section( "table (dict/map) keys" );
+testEqual( ''$eval( "return {a=1,b=2};" ), "{a=1,b=2}", "basic dict literal" );
+testEqual( ''$eval( "return {'a'=1,\"b\"=2};" ), "{a=1,b=2}", "string keys in dict literal" );
+testEqual( ''$eval( "kn1 = 'a'; kn2 = 'b'; return {[kn1]=1,[kn2]=2};" ), "{a=1,b=2}", "variable keys in dict literal" );
+testEqual( ''$eval( "kn1 = print; return map{[kn1]=1};" ), "[map]{C function=1}", "variable keys in map literal" );
+testEqual( eval( "kn1 = print; return map{[kn1]=1}[print];" ), 1, "retrieval by var.key in map literal" );
+testEqual( ''$eval( "kn1 = print; return {[kn1]=1};" ), "{C function=1}", "variable keys in dict literal (to string)" );
+
+
+//
+print( "\n\nTesting finished!\nRan ", tests_ran, " tests of which ", tests_failed, " failed.\n" );
+//

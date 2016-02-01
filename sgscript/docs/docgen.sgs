@@ -1,0 +1,732 @@
+
+println( "--- SGScript documentation generator ---" );
+
+include "string", "fmt", "io", "re", "sgsjson";
+include "markdown";
+
+
+function generate_alias( name )
+{
+	if( string_find( name, "//" ) !== null )
+		return name;
+	name = re_replace( name, "#[^a-zA-Z0-9]+#", "-" );
+	name = string_trim( name, "-" );
+//	name = string_tolower( name );
+	return name;
+}
+
+function full_alias( name, type )
+{
+	if( type != "info" )
+		name $= " " $ type;
+	return generate_alias( name );
+}
+
+
+///////////////////////
+// LOADING & PARSING //
+///////////////////////
+
+function load_docfile( name )
+{
+	println( "parsing documentation file '" $ name $ "'..." );
+
+	raw = io_file_read( name $ ".txt" );
+
+	/*
+		EXTRACT TAGS
+	*/
+	lines = string_explode( string_replace( raw, ["\r\n","\r"], "\n" ), "\n" );
+	doc_title = lines.shift();
+	tags = [];
+	foreach( id, line : lines )
+	{
+		if( line.length < 1 || line[0] != "#" )
+		{
+			if( tags.size && isset( tags.last, "lines" ) )
+			{
+				if( string_find( line, "~!~" ) === 0 && string_find( line, "=" ) !== false )
+				{
+					paramdata = string_explode( string_part( line, 3 ), "=" );
+					key = string_trim( paramdata.shift() );
+					value = string_trim( string_implode( paramdata, "=" ) );
+					tags.last[ key ] = value;
+				}
+				else
+					tags.last.lines.push( line );
+			}
+			
+			continue;
+		}
+		
+		if( string_find( line, ">>>" ) !== null )
+		{
+			alias = string_trim( string_cut( line, 2, string_find( line, ">>>" ) - 1 ) );
+			tags.push({ id = id, type = ">", alias = alias });
+		}
+		else if( string_find( line, "<<<" ) !== null )
+		{
+			tags.push({ id = id, type = "<" });
+		}
+		else
+		{
+			pos2 = string_find_rev( line, "]" );
+			if( pos2 !== null )
+			{
+				pos1 = string_find_rev( line, "[" );
+				if( pos1 !== null && pos1 < pos2 )
+				{
+					page_name = string_trim( string_cut( line, 2, pos1 - 1 ) );
+					page_type = string_trim( string_part( line, pos1 + 1, pos2 - pos1 - 1 ) );
+					tags.push
+					({
+						id = id,
+						type = "+",
+						pagename = page_name,
+						pagetype = page_type,
+						lines = []
+					});
+				}
+			}
+		}
+	}
+	
+	return doc_title, tags;
+}
+
+
+///////////////////////
+//   RENDERING       //
+///////////////////////
+
+function render_pages( tags )
+{
+	/*
+		GENERATE PAGES
+	*/
+	
+	pgstack = [];
+	lastpage = null;
+	parts = [];
+	to_render = [];
+	foreach( tag_id, tag : tags )
+	{
+		if( tag.type == "+" )
+		{
+			alias = full_alias( tag.pagename, tag.pagetype );
+			path = clone( pgstack ).push( alias );
+			ipath = string_implode( path, "/" );
+			path_str = alias; // string_implode( path, "/" );
+			title = tag.pagename;
+			if( tag.pagetype != "info" && tag.pagetype != "toc" )
+				title $= " [" $ tag.pagetype $ "]";
+			lastpage = alias;
+			part =
+			{
+				path = path,
+				ipath = ipath,
+				path_str = path_str,
+				pagename = tag.pagename,
+				pagetype = tag.pagetype,
+				title = title,
+				body = null
+			};
+			if( isset( tag, "render" ) )
+			{
+				to_render.push({ mode = tag.render, filter_type = tag.filter_type, part = part });
+			}
+			else
+			{
+				part.body = string_implode( tag.lines, "\n" );
+			}
+			parts.push( part );
+		}
+		else if( tag.type == ">" )
+		{
+			pgstack.push( lastpage );
+		}
+		else if( tag.type == "<" )
+		{
+			pgstack.pop();
+		}
+	}
+	
+	foreach( render_item : to_render )
+	{
+		if( render_item.mode == "list_pages_asc" )
+		{
+			part = render_item.part;
+			types = string_explode( render_item.filter_type, "," );
+			array_process( types, function( v ){ return string_trim( v ); } );
+			
+			basepath = clone( part.path );
+			basepath[ basepath.size - 1 ] = "";
+			basepath = string_implode( basepath, "/" );
+			
+			items = [];
+			foreach( P : parts )
+			{
+				if( string_find( P.ipath, basepath ) === 0 && types.find( P.pagetype ) !== null )
+				{
+					items.push( "- @\"" $ P.title $ "\"" );
+				}
+			}
+			items.sort();
+			
+			part.body = string_implode( items, "\n" );
+		}
+	}
+	
+	return parts;
+}
+
+
+///////////////////////
+//   COMPOSITION     //
+///////////////////////
+
+function find_closest_pathstr( link, pages )
+{
+	matches = [];
+	foreach( P : pages )
+	{
+		if( string_find( P.path_str, link ) === 0 )
+			matches.push( P.path_str );
+	}
+	if( matches )
+	{
+		matches.sort_custom( function( a, b ){ return a.length - b.length; } );
+		return matches[ 0 ];
+	}
+	println( "warning: match for link '" $ link $ "' was not found!" );
+	return link;
+}
+
+function linkhandler_htm( title, link, pages )
+{
+	tgt = false;
+	link ||= title;
+	link = generate_alias( link );
+	if( string_find( link, "//" ) === null )
+		link = "#" $ find_closest_pathstr( link, pages );
+	else
+	{
+		tgt = true;
+		if( string_find( link, "docs://" ) !== null )
+		{
+			link = string_trim( string_replace( link, "docs://", "" ) );
+			parts = string_explode( link, "/" );
+			if( parts.size != 2 )
+				println( "warning: wrong ext.docs link" );
+			else
+			{
+				link = parts[0] $ ".docs.htm";
+				if( parts[1] )
+					link $= "#" $ generate_alias( parts[1] );
+			}
+		}
+	}
+	return '<a href="' $ htmlencode( link ) $ '"' $
+		if( tgt, ' target="_blank"', '' ) $ '>' $ htmlencode( title ) $ '</a>';
+}
+
+function output_data_htm( name, doc_title, tags, pages )
+{
+	data = "<h1>" $ htmlencode( doc_title ) $ "</h1>";
+	
+	// check if TOC already exists
+	has_toc = false;
+	foreach( P : pages )
+	{
+		if( P.pagetype == "toc" )
+		{
+			has_toc = true;
+			break;
+		}
+	}
+	
+	// add TOC if there's none
+	if( !has_toc )
+	{
+		data $= "<div><h2>Table of Contents</h2>";
+		ulevel = 0;
+		foreach( P : pages )
+		{
+			if( !P.path_str || P.pagetype != "info" )
+				continue;
+			newulev = P.path.size;
+			data $= uladjust( ulevel, newulev );
+			data $= "<a href='#" $ P.path_str $ "'>" $ htmlencode( P.title ) $ "</a>\r\n";
+			ulevel = newulev;
+		}
+		data $= uladjust( ulevel, 0 );
+		data $= "</div>";
+	}
+	
+	mdlh = function( title, link ) use( pages ){ return linkhandler_htm( title, link, pages ); };
+	
+	data $= "<div>";
+	foreach( P : pages )
+	{
+		if( !P.path_str )
+			continue;
+		
+		data $= "\n<div class='item'>";
+		data $= "<a name='" $ P.path_str $ "'></a>";
+		data $= "<hr><h2>";
+		data $= htmlencode( P.title );
+		data $= "</h2>";
+		
+		data $= markdown2html( P.body, mdlh );
+		
+		data $= "</div>";
+	}
+	data $= "\n</div>";
+	
+	fullfile = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '$
+		'"http://www.w3.org/TR/html4/loose.dtd">
+	<html><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>' $ htmlencode( doc_title ) $ '</title>
+		<link rel="stylesheet" type="text/css" href="docs.css">
+		<script type="text/javascript" src="docs.js"></script>
+	</head><body>
+	'  $ data $ '
+	</body></html>
+	';
+
+	fullfile = string_replace( fullfile, ["\r\n","\r"], "\n" );
+	
+	io_file_write( name $ ".htm", fullfile );
+}
+
+function linkhandler_web( title, link, pages )
+{
+	tgt = false;
+	link ||= title;
+	link = generate_alias( link );
+	if( string_find( link, "//" ) === null )
+		link = find_closest_pathstr( link, pages );
+	else
+	{
+		tgt = true;
+		if( string_find( link, "docs://" ) !== null )
+		{
+			link = string_trim( string_replace( link, "docs://", "" ) );
+			parts = string_explode( link, "/" );
+			if( parts.size != 2 )
+				println( "warning: wrong ext.docs link" );
+			else
+			{
+				link = "docs://" $ parts[0];
+				if( parts[1] )
+					link $= "/" $ generate_alias( parts[1] );
+			}
+		}
+	}
+	return '<a href="' $ htmlencode( link ) $ '"' $
+		if( tgt, ' target="_blank"', '' ) $ '>' $ htmlencode( title ) $ '</a>';
+}
+
+
+/// SEARCH DATA
+function html_to_text( text )
+{
+	text = re_replace( text, "#<[^>]+>#", "" );
+	text = string_translate( text, {
+		"&quot;" = "\"",
+		"&#39;" = "\'",
+		"&lt;" = "<",
+		"&gt;" = ">",
+		"&amp;" = "&",
+	});
+	return text;
+}
+
+global unnecessary_words = string_explode(
+	"and,or,if,else,for,but,when,is,not,however,it,this,to,the,in,thus,be,that,of,"$
+	"get,set,does,doesn,t,a,all,none,some,many,with,its,can,also,the,there,are,do,"$
+	"while,yes,no,maybe,any,than,then,pre,post,isn",
+	"," );
+function necessary_word( word )
+{
+	if( word.length <= 3 )
+		return null;
+	return unnecessary_words.find( word ) === null;
+}
+
+function normalize_word( word )
+{
+	if( string_find( word, "_" ) !== null )
+		return word;
+	return re_replace( word, "#(tion|ing|er|ed|es|y|e|s|t)$#", "" );
+}
+
+function split_into_normalized_words( text )
+{
+	text = re_replace( text, "#[^a-zA-Z0-9_]+#", " " );
+	words = string_explode( text, " " );
+	out = [].reserve( words.size );
+	foreach( word : words )
+	{
+		word = string_tolower( word );
+		if( word && necessary_word( word ) )
+		{
+			word = normalize_word( word );
+			if( necessary_word( word ) )
+				out.push( word );
+		}
+	}
+	return out;
+}
+
+function set_insert( set, item )
+{
+	if( isset( set, item ) )
+		return set[ item ];
+	else
+	{
+		id = dict_size( set );
+		set[ item ] = id;
+		return id;
+	}
+}
+
+function mapset_insert( mapset, key, value )
+{
+	if( !isset( mapset, key ) )
+		mapset[ key ] = {};
+	return set_insert( mapset[ key ], value );
+}
+
+global Indexer = {};
+function Indexer.create()
+{
+	data =
+	{
+		words = {},
+		pages = {},
+		firsttwo = {},
+	};
+	return class( data, Indexer );
+}
+function Indexer.addPage( page_url )
+{
+	page_id = dict_size( this.pages );
+	this.pages[ page_url ] = page_id;
+	return page_id;
+}
+function Indexer.index( page_id, text, factor )
+{
+	factor = toreal( factor );
+	if( !factor )
+		return WARNING( "invalid factor specified" );
+	wordlist = split_into_normalized_words( text );
+	
+	foreach( word : wordlist )
+	{
+		wordinfo = @this.words[ word ];
+		
+		if( !wordinfo )
+		{
+			word_id = dict_size( this.words );
+			this.words[ word ] = wordinfo = [ word_id, word, {} ];
+		}
+		else
+			word_id = wordinfo[0];
+		
+		wordpages = wordinfo[2];
+		if( !isset( wordpages, page_id ) )
+			wordpages[ page_id ] = factor;
+		else
+			wordpages[ page_id ] += factor;
+		
+		for( i = 0; i < word.length - 2; ++i )
+		{
+			ftw = string_part( word, i, 2 );
+			mapset_insert( this.firsttwo, ftw, word_id );
+		}
+	}
+}
+function Indexer.getData()
+{
+	out_words = [];
+	out_pages = [];
+	out_firsttwo = {};
+	
+	foreach( word : this.words )
+		out_words.push([ word[1], word[2] ]);
+	
+	foreach( page ,: this.pages )
+		out_pages.push( page );
+	
+	foreach( key, item : this.firsttwo )
+	{
+		widlist = [];
+		foreach( wid ,: item )
+			widlist.push( toint( wid ) );
+		out_firsttwo[ key ] = widlist;
+	}
+	
+	return
+	{
+		words = out_words,
+		pages = out_pages,
+		firsttwo = out_firsttwo,
+	};
+}
+
+function generate_search_data_web( pages )
+{
+	/*
+		Expected search process:
+		INPUT: word-list
+		OUTPUT: page-list, sorted
+		DATA:
+		- words - array( word[ word_text, pages = array( pageref[ page_id, factor ] ) ] )
+		- pages - array( page[ page_url ] )
+		- firsttwo - map( {string,2} => array( word_id ) )
+		ALGORITHM:
+		- gather possible-word-id-list from word-list via 'firsttwo'
+		- gather word-id-list from possible-word-id-list by filtering via 'words.word_text'
+		- gather page-id-list from word-id-list via 'words.pages', add factors
+		- sort page-id-list by factor
+	*/
+	
+	indexer = Indexer.create();
+	
+	foreach( P : pages )
+	{
+		page_id = indexer.addPage( P.path_str );
+		
+		pp_title = string_trim( re_replace( P.title, "#^(.*)\\[.*?\\]$#", "$1" ) );
+		matches = re_match_all( P.body, "#^==+ (.+)$#mi", RE_RETURN_CAPTURED );
+		pp_imptext = "";
+		foreach( match : matches )
+		{
+			pp_imptext $= " " $ match[1];
+		}
+		pp_text = html_to_text( P.body );
+		
+		indexer.index( page_id, pp_title, 1.3 );
+		indexer.index( page_id, pp_imptext, 1.2 );
+		indexer.index( page_id, pp_text, 1.0 );
+	}
+	
+	return indexer.getData();
+}
+///
+
+
+function generate_advdoc_page( doc_title, toclist, pagelist, searchdata )
+{
+	newtoc = [];
+	foreach( ti : toclist )
+	{
+		// leave only path(ID) and title
+		newtoc.push([ string_replace( ti[2], "/", ":" ), ti[3] ]);
+	}
+	
+	fullfile = '<!DOCTYPE html>
+<html><head>
+	<meta charset="UTF-8">
+	<title>' $ htmlencode( doc_title ) $ '</title>
+	<script type="text/javascript">
+	window.sgs_toc = ' $ json_encode( newtoc ) $ ';
+	window.sgs_searchindex = ' $ json_encode( searchdata ) $ ';
+	</script>';
+	
+	if( output_devmode )
+	{
+		fullfile $= '
+	<link rel="stylesheet" type="text/css" href="../docs.css">
+	<link rel="stylesheet" type="text/css" href="../advdoc.css">
+	<script type="text/javascript" src="../advdoc.js"></script>
+	<script type="text/javascript" src="../docs.js"></script>';
+	}
+	else
+	{
+		fullfile $= '
+	<style type="text/css">
+	' $ io_file_read( "docs.css" ) $ '
+	</style>
+	<style type="text/css">
+	' $ io_file_read( "advdoc.css" ) $ '
+	</style>
+	<script type="text/javascript">
+	' $ io_file_read( "advdoc.js" ) $ '
+	</script>
+	<script type="text/javascript">
+	' $ io_file_read( "docs.js" ) $ '
+	</script>';
+	}
+	fullfile $= '
+</head><body>
+	<div id="_frame_">This file only works in a JavaScript-enabled HTML5 browser</div>
+	<script type="text/javascript">find( "#_frame_" ).textContent = "Loading...";</script>
+	<div id="_data_" style="display:none">
+';
+	foreach( i, ti : newtoc )
+	{
+		page = pagelist[ i ];
+		fullfile $= '
+		<page id="' $ ti[0] $ '">
+			' $ page $ '
+		</page>
+';
+	}
+	if( output_devmode )
+	{
+		fullfile $= '<logo><img src="../logo_bw.svg" /></logo>';
+	}
+	else
+	{
+		fullfile $= '<logo>' $ io_file_read( "logo_bw.svg" ) $ '</logo>';
+	}
+	fullfile $= '
+	</div>
+</body></html>';
+	return fullfile;
+}
+
+function output_data_web( name, doc_title, tags, pages )
+{
+	mdlh = function( title, link ) use( pages ){ return linkhandler_web( title, link, pages ); };
+	
+	toclist = [];
+	pagelist = [];
+	data = "";
+	foreach( P : pages )
+	{
+		if( !P.path_str )
+			continue;
+		
+		pagehtml = markdown2html( P.body, mdlh );
+		
+		tocitem_from = data.length;
+		data $= pagehtml;
+		tocitem_to = data.length;
+		
+		toclist.push([ tocitem_from, tocitem_to, string_implode( P.path, "/" ), P.title ]);
+		pagelist.push( pagehtml );
+	}
+	
+	searchdata = generate_search_data_web( pages );
+	
+	if( output_sgsweb )
+	{
+		io_file_write( "out/" $ name $ ".htm", data );
+		io_file_write( "out/" $ name $ ".toc", json_encode( toclist ) );
+		io_file_write( "out/" $ name $ ".sda", json_encode( searchdata ) );
+		println( "- wrote web docs data" );
+	}
+	
+	if( output_advdoc )
+	{
+		html = generate_advdoc_page( doc_title, toclist, pagelist, searchdata );
+		io_file_write( "adv/" $ name $ ".htm", html );
+		println( "- wrote adv. docs data" );
+	}
+}
+
+function generate_docdata( name )
+{
+	(doc_title,tags) = load_docfile( name );
+	pages = render_pages( tags );
+	println( "- parsed doc file" );
+	
+	if( output_html )
+	{
+		output_data_htm( name, doc_title, tags, pages );
+		println( "- wrote single page docs" );
+	}
+	if( output_sgsweb || output_advdoc )
+	{
+		output_data_web( name, doc_title, tags, pages );
+	}
+}
+
+function print_help()
+{
+	println( "usage: sgsvm -p docgen.sgs <args>" );
+	println( "arguments:" );
+	println( "\t<file>\tfile to generate docs for" );
+	println( "\t-p\tenable single page HTML generation" );
+	println( "\t-w\tenable website doc. file generation" );
+	println( "\t-a\tenable advanced HTML doc. generation" );
+	println( "\t-d\t(adv.doc.) enable developer mode (don't embed files)" );
+	println( "\t-e / --everything\tenable generation of all doc. types" );
+	println( "\t-h / --help\tshow this message" );
+}
+
+
+_G.
+{
+	output_html = false,
+	output_sgsweb = false,
+	output_advdoc = false,
+	output_devmode = false,
+	files = [],
+};
+
+if( @argv === null )
+{
+	println( "ERROR: docgen must be run in program mode" );
+	print_help();
+	app_exit();
+}
+
+for( i = 1; i < argv.size; ++i )
+{
+	arg = argv[ i ];
+	if( arg == "-p" ) _G.output_html = true;
+	else if( arg == "-w" ) _G.output_sgsweb = true;
+	else if( arg == "-a" ) _G.output_advdoc = true;
+	else if( arg == "-d" ) _G.output_devmode = true;
+	else if( arg == "-e" || arg == "--everything" )
+	{
+		_G.output_html = true;
+		_G.output_sgsweb = true;
+		_G.output_advdoc = true;
+	}
+	else if( arg == "-h" || arg == "--help" )
+	{
+		print_help();
+		app_exit();
+	}
+	else
+		_G.files.push( arg );
+}
+
+if( !output_html && !output_sgsweb && !output_advdoc )
+{
+	_G.output_html = true;
+}
+if( _G.output_sgsweb )
+{
+	io_dir_create( "out" );
+}
+if( _G.output_advdoc )
+{
+	io_dir_create( "adv" );
+}
+
+if( _G.files.size == 0 )
+{
+	_G.files =
+	[
+		"sgscript.docs",
+		"sgs.cppbc.docs",
+		"sgs.sockets.docs",
+		"sgs.xgmath.docs",
+		"sgs.json.docs",
+		"sgs.meta.docs",
+		"sgscript.tutorial",
+	];
+}
+
+foreach( file : _G.files )
+	generate_docdata( file );
+
+println( "done!" );
+

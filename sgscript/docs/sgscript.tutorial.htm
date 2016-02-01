@@ -1,0 +1,474 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	<html><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>SGScript tutorial</title>
+		<link rel="stylesheet" type="text/css" href="docs.css">
+		<script type="text/javascript" src="docs.js"></script>
+	</head><body>
+	<h1>SGScript tutorial</h1><div>
+<div class='item'><a name='Table-of-Contents-toc'></a><hr><h2>Table of Contents</h2><ul><li><a href="#The-language">The language</a> - learn all you need to know to write SGScript code
+<ul><li><a href="#The-basics">The basics</a> - quickly covers the basics but doesn&#39;t get into much detail
+</li><li><a href="#Data-types">Data types</a> - handling all kinds of data
+</li><li><a href="#Flow-control">Flow control</a> - how to run a part of the code, at specific moments
+</li><li><a href="#Advanced-concepts">Advanced concepts</a> - not the first necessary things, helpful nonetheless
+</li></ul><li><a href="#Building-with-SGScript">Building with SGScript</a> - find out how to build SGScript and integrate it into your project
+<ul><li><a href="#Downloading-SGScript">Downloading SGScript</a>
+</li><li><a href="#Building-with-GNU-Make">Building with GNU Make</a>
+</li><li><a href="#Building-with-IDEs">Building with IDEs</a>
+</li><li><a href="#Building-with-other-tools">Building with other tools</a>
+</li><li><a href="#Including-SGScript-into-your-project">Including SGScript into your project</a>
+</li></ul><li><a href="#Using-the-C-API">Using the C API</a> - interacting natively with the virtual machine
+<ul><li><a href="#Starting-up-and-running-code">Starting up and running code</a>
+</li><li><a href="#Making-your-own-native-functions">Making your own native functions</a>
+</li><li><a href="#Sub-item-property-index-data-access">Sub-item (property/index) data access</a>
+</li><li><a href="#Native-object-interfaces">Native object interfaces</a></li></ul></li></ul></div>
+<div class='item'><a name='The-language'></a><hr><h2>The language</h2><pre>println( &quot;Hello, world!&quot; );</pre><p>
+SGScript is a dynamic, procedural language, similar in syntax to many other programming languages, including C and JavaScript. It consists of various operations and structures that can be combined to specify operations and data that they use.
+</p><ul><li><a href="#The-basics">The basics</a> - quickly covers the basics but doesn&#39;t get into much detail
+</li><li><a href="#Data-types">Data types</a> - handling all kinds of data
+</li><li><a href="#Flow-control">Flow control</a> - how to run a part of the code, at specific moments
+</li><li><a href="#Advanced-concepts">Advanced concepts</a> - not the first necessary things, helpful nonetheless</li></ul></div>
+<div class='item'><a name='The-basics'></a><hr><h2>The basics</h2><ul><li>Functions are reusable blocks of code. To call a function means to do what&#39;s specified in the function.</li></ul><pre>function printText()
+{
+	println( &quot;text&quot; );
+}
+printText();</pre><ul><li>Basic function definitions have the following syntax: <code>function &lt;name&gt; ( &lt;argument-list&gt; ) { &lt;code&gt; }</code>
+</li><li>Argument list is a comma-separated list of names or nothing.
+</li><li>Names, also called &quot;identifiers&quot;, can have the folowing symbols: a-z, A-Z, _, 0-9, but they cannot start with a digit, because only numbers can start with a digit.
+</li><li>User-defined names cannot collide with so-called keywords - special names, like <code>function</code></li></ul><pre>y = 15.51;
+x = 3 * y + 10;
+x * y;</pre><ul><li>Each expression statement ends with &quot;;&quot;.
+</li><li>Useful expression statements include an assignment operator or a function call, or both.
+</li><li>All expression statements presented so far - except the last one - are useful.
+</li><li>The assignment operator is &quot;=&quot;. It simply assigns the value on the right side to the item on the left side.
+</li><li>Numbers use the point (&quot;.&quot;) as decimal digit separator.
+</li><li>There are arithmetic operators available that take two items at each side (called &quot;binary operators&quot;).
+</li><li>The operators used in the example are those of addition (&quot;+&quot;) and multiplication (&quot;*&quot;).</li></ul><pre>include &quot;math&quot;;
+function sinc( x )
+{
+	xpi = x * M_PI;
+	return sin( xpi ) / xpi;
+}
+sinc3 = sinc( 3 );</pre><ul><li>Functions may return with or without data. When they do return data, that data can be retrieved from the call.
+</li><li>A basic function call has the syntax <code>&lt;name&gt; &lt;subexpression&gt;</code>
+</li><li>A subexpression has the syntax <code>( &lt;expression-list&gt; )</code>
+</li><li>Expression list is a comma-separated list of expressions or nothing.
+</li><li>The <code>include</code> statement loads a library or a code file.
+</li><li><code>math</code> is one of the few built-in libraries. In this example, it defines the function <code>sin</code> and the constant <code>M_PI</code></li></ul><pre>x = 1; y = 2;
+x += y;
+++x;
+--y;</pre><ul><li>Shortcuts exist for common operations: combined assignment operators and increment/decrement operators.
+</li><li>Most non-assignment binary operators have their assignment counterparts. The difference is that they assign the calculated value to the left side of the expression.
+</li><li>Increment/decrement operators are shortcuts for <code>x += 1</code> and <code>x -= 1</code>, respectively.
+<ul><li>There are alternative versions of these operators that will be covered later.</li></ul></li></ul><pre>x = 5; y = 3;
+x *= y * ( y + x );
+y -= x + x * y;
+y += 5 * y += y;
+printvar( y );
+println( dumpvar( x ) );</pre><ul><li>There&#39;s very few limits on how the expressions can be combined so it&#39;s up to you to write them in a way the meaning is clear both to you and the compiler.
+</li><li>A very useful tool for finding out the contents of a variable are the <code>printvar</code> / <code>dumpvar</code> functions.
+</li><li><code>println</code> is a function that prints the given variables to standard output and moves write cursor to the next line.
+</li><li>Order of arithmetic operations is mathematically correct: sub-expressions <code>( .. )</code> are evaluated first, then multiplication <code>*</code> / division <code>/</code> / modulo (remainder) <code>%</code> , and then - addition <code>+</code> and subtraction <code>-</code> .</li></ul><pre>x = 5;
+global y = 6;
+function z()
+{
+	a = 7;
+	global b = 8;
+	function c(){}
+}</pre><ul><li>Variables are the currency of this language.
+</li><li>There are 4 types of variable storage, two of which are covered in the example: local and global variables.
+</li><li>In the example, variables x, a, c are local and y, z, b are global.
+<ul><li>All new variables are local by default.
+</li><li>The keyword <code>global</code> specifies a list of variables that are global and allows to assign their values.
+</li><li>A function definition creates a global function variable outside other functions, local otherwise.</li></ul></li></ul><pre>// testing the assignment operator
+a = 5;
+/* this ----------
+-- should print --
+------------- 5 */
+println( a ); ////</pre><ul><li>Code can contain comments. They can be used to communicate between various users and maybe even compilers of the code.
+<ul><li>The SGScript compiler completely ignores comments.
+</li></ul><li>There are two types of comments: single-line comments <code>// ...</code> and multiline comments <code>/<i> ... </i>/</code></li></ul></div>
+<div class='item'><a name='Data-types'></a><hr><h2>Data types</h2><pre>a = null;
+b = true;
+c = 123;
+d = 123.456;
+e = &quot;text&quot;;</pre><ul><li>There&#39;s a total of 9 data types in SGScript: null, boolean, integer, real number, string, function, C function, object and pointer.
+</li><li><code>null</code> is the &#39;no value&#39; type. There is only one value for the type.
+</li><li>Boolean is a <code>true</code>/<code>false</code> type.
+</li><li>Integers and real numbers are two ways to represent numbers in the language. Both have their uses, however generally they&#39;re interchangable.
+</li><li>The <code>string</code> type stores an array of bytes, generally meant to store text but can be used for any data.</li></ul><pre>f = function(){ return 4; };
+g = println;
+h = io_file(); // returns a file object
+i = toptr(100);</pre><ul><li>Functions and C functions are not as much data types as they are code types. One represents a function defined in SGScript code and another represents a function defined in C/C++ code.
+<ul><li>As with numbers, both function types are generally interchangable but have some major differences.
+</li></ul><li>Objects are universal, yet somewhat heavy types with a variable number of subtypes. They can represent data structures as well as interfaces and even act like functions.
+</li><li>Pointers are basically integers that have restricted manipulation capabilities and a separate processing chain, useful for passing handles and memory addresses in a safe way.</li></ul><pre>arr = [ 1, 3, 5, 7 ];
+println( arr[2] ); // prints 5
+println( arr[4] ); // warning: index out of bounds
+println( arr.size ); // prints 4</pre><ul><li>Array is a complex data type, a subtype of object. It contains a list of other variables.
+</li><li>Sub-variables can be accessed with index <code>[ .. ]</code> and property <code>.</code> operators.
+<ul><li>Be aware that not all sub-variables can be read and not all of them can be written. Systems will often report the same warnings for variables that don&#39;t exist and those that don&#39;t support the required operation.
+</li></ul><li>The array&#39;s <code>size</code> property returns the length of the array, the number of variables in it.</li></ul><pre>arr = [];
+arr.push( 5 );
+x = arr.pop();
+arr.unshift( 4 );
+y = arr.shift();</pre><ul><li>Objects can have methods. Methods can be called through property access, this compiles to a special call where the object is passed through a special channel.
+</li><li>Other sub-variable accessors don&#39;t support the method call, however it is possible to invoke in other ways, to be described in further sections.
+</li><li>Array methods shown in the example are the stack/queue interface of the array. Push/pop deals with the end of the array, shift/unshift works on the beginning.
+</li><li>More info on array and its methods can be found in the documentation: <a href="sgscript.docs.htm#array-object" target="_blank">array [object]</a></li></ul><pre>dct = { x = 5 };
+dct[ &quot;key&quot; ] = &quot;value&quot;;
+println( dct ); // {x=5,key=value}
+fnmap = map();
+fnmap[ print ] = &quot;print&quot;;</pre><ul><li>Objects can have non-numeric indices. All variable types are allowed for keys but not all maintain their value in all objects.
+</li><li>Objects of <code>dict</code> type (generated by the dict literal <code>{}</code> or function <code>dict()</code>) store string keys. Documentation: <a href="sgscript.docs.htm#dict-object" target="_blank">dict [object]</a>
+</li><li>Objects of <code>map</code> type (generated by the <code>map</code> function) store literally all kinds of keys. Documentation: <a href="sgscript.docs.htm#map-object" target="_blank">map [object]</a>
+</li><li><code>dict</code> object is expected to be the building block of most data stored because it is most accessible.</li></ul><pre>myObj = { x = 5, y = 7 };
+function myObj.moveLeft(){ --this.x; }
+myObj.moveLeft(); // method call
+function myObj_moveRight(){ ++this.x; }
+myObj!myObj_moveRight(); // compatible call</pre><ul><li>There are many ways to make and two ways to call functions that work on objects.
+</li><li>Making:
+<ul><li>1. Create a method by specifying <code>&lt;variable-name&gt; . &lt;property-name&gt;</code> for the name.
+</li><li>2. Create a plain function.
+</li><li>3. Create an anonymous method by using the following syntax: <code>&lt;variable-name&gt; . &lt;property-name&gt; = function ( ) &lt;code&gt;</code> or assigning any callable to a property.
+</li><li>Either way, <code>this</code> can be used inside the function to access the associated object.
+</li></ul><li>Calling:
+<ul><li>Method call: <code>&lt;data-source&gt; . &lt;property-name&gt; ( &lt;argument-list&gt; )</code>.
+</li><li>Compatible call: <code>&lt;data-source&gt; . &lt;callable-source&gt; ( &lt;argument-list&gt; )</code>.</li></ul></li></ul></div>
+<div class='item'><a name='Flow-control'></a><hr><h2>Flow control</h2><pre>if( a &gt; 5 )
+{
+	println( &quot;&#39;a&#39; is greater than 5&quot; );
+	if( a &lt; 10 )
+		println( &quot;...but less than 10&quot; );
+}
+else
+	println( &quot;&#39;a&#39; is not greater than 5&quot; );</pre><ul><li>It is possible to only run code if a certain condition is true, using the <code>if</code> statement.
+</li><li>If/else statement has the following syntax: <code>if ( &lt;expression&gt; ) &lt;statement&gt;</code>, optionally followed by <code>else &lt;statement&gt;</code>
+</li><li><code>{ .. }</code> is a block statement, it can be used anywhere a statement can be used
+</li><li><code>&gt;</code> (&quot;greater than&quot;) is one of 8 comparison operators. The others are:
+<ul><li><code>&lt;</code> - &quot;less than&quot;
+</li><li><code>&gt;=</code> - &quot;greater or equal&quot;
+</li><li><code>&lt;=</code> - &quot;less or equal&quot;
+</li><li><code>==</code> - &quot;equal&quot;
+</li><li><code>!=</code> - &quot;not equal&quot;
+</li><li><code>===</code> - &quot;strict equality&quot; (not only value must be equal, types must also be same)
+</li><li><code>!==</code> - &quot;strict inequality&quot; (inverse of strict equality)
+</li></ul><li>These operators are not limited to <code>if</code> and other such statements, they can be used as any other operator.
+</li><li>These operators return the type <code>bool</code>, it has only two values - <code>true</code> and <code>false</code></li></ul><pre>while( a &gt; 5 )
+{
+	println( a );
+	--a;
+}
+for( i = 0; i &lt; 5; ++i )
+	println( i );</pre><ul><li>There are 6 kinds of loops in SGScript:
+<ul><li>The &#39;while&#39; loop: <code>while ( &lt;expression&gt; ) &lt;statement&gt;</code>
+</li><li>The &#39;for&#39; loop: <code>for ( &lt;expression-list&gt; ; &lt;expression&gt; ; &lt;expression-list&gt; ) &lt;statement&gt;</code>
+<ul><li>It is a shortcut for a while loop where first expression/list is run before the loop, second - as the condition, third - before each jumpback.
+</li></ul><li>The &#39;do-while&#39; loop: <code>do &lt;statement&gt; while ( &lt;expression&gt; )</code>
+</li><li>The &#39;foreach-value&#39; loop: <code>foreach ( &lt;nvalue-ame&gt; : &lt;expression&gt; ) &lt;statement&gt;</code>
+</li><li>The &#39;foreach-key&#39; loop: <code>foreach ( &lt;key-name&gt; , : &lt;expression&gt; ) &lt;statement&gt;</code>
+</li><li>The &#39;foreach-key-value&#39; loop: <code>foreach ( &lt;key-name&gt; , &lt;value-name&gt; : &lt;expression&gt; )</code></li></ul></li></ul><pre>foreach( name : [ &quot;one&quot;, &quot;two&quot;, &quot;three&quot; ] )
+	println( name ); // prints one, two, three
+foreach( key , : _G )
+	println( key ); // prints names of all global variables
+foreach( key, value : myObject )
+{
+	if( string_part( key, 0, 2 ) == &quot;!_&quot; )
+		println( value ); // print all values for keys beginning with &quot;!_&quot;
+}</pre><ul><li><code>foreach</code> loops give read-only values (they can be written to but source will not be updated).</li></ul><pre>foreach( value : data )
+{
+	if( value === false )
+		continue;
+	if( value )
+		break;
+}</pre><ul><li>It is possible to stop loop execution with <code>break</code> or jump to the next iteration with <code>continue</code>.
+<ul><li><code>break</code> will skip to code right after the loop.
+</li><li><code>continue</code> will skip to right before the end of the loop.
+</li></ul><li>It is also possible to specify the loop number (within the function/global scope, counting from innermost, starting at 1) to go to.</li></ul></div>
+<div class='item'><a name='Advanced-concepts'></a><hr><h2>Advanced concepts</h2><h4>Bitwise operations</h4><pre>hex = 0x12400;
+bin = 0b10011010;
+b_or = hex | bin ^ hex &amp; bin;</pre><ul><li>There are constant formats and bitwise operations for dealing with integers on the bit level.
+</li><li>The following <i>integer</i> constant formats are available:
+<ul><li>Binary (base 2): begins with &quot;0b&quot;, followed by some binary digits (0,1)
+</li><li>Octal (base 8): begins with &quot;0o&quot;, followed by some octal digits (0-7)
+</li><li>Decimal (base 10): contains only decimal digits (0-9)
+</li><li>Hexadecimal (base 16): begins with &quot;0x&quot;, followed by some hexadecimal digits (0-9,a-f,A-F)
+</li></ul><li>These operators are available for doing bitwise operations:
+<ul><li>binary AND / AND-assign: <code>&amp;, &amp;=</code> - returns 1 if both sides are 1
+</li><li>binary OR / OR-assign: <code>|, |=</code> - returns 1 if any side is 1
+</li><li>binary XOR / XOR-assign: <code>^, ^=</code> - returns 1 if either side is 1, but not both
+</li><li>unary NOT: <code>~</code> - inverts bits
+</li><li>left shift / left shift-assign: <code>&lt;&lt;, &lt;&lt;=</code> - move all bits to the left (more significant positions)
+</li><li>right shift / right shift-assign: <code>&gt;&gt;, &gt;&gt;=</code> - move all bits to the right (less significant positions)</li></ul></li></ul><p>
+<em class='notice-bgr'>The main difference from other languages is that the integer type by default is 64 bits long. Left/right shift rules are equal to those of the C language. Thus, it is safe to use only shift distances between 0 and 63.</em>
+</p><p>
+Truth tables for AND/OR/XOR operations
+</p><p>
+<table>
+<tr><th>AND</th><th>0</th><th>1</th><td>&nbsp;</td><th>OR</th><th>0</th><th>1</th><td>&nbsp;</td><th>XOR</th><th>0</th><th>1</th></tr>
+<tr><th>0</th><td>0</td><td>0</td><td>&nbsp;</td><th>0</th><td>0</td><td>1</td><td>&nbsp;</td><th>0</th><td>0</td><td>1</td></tr>
+<tr><th>1</th><td>0</td><td>1</td><td>&nbsp;</td><th>1</th><td>1</td><td>1</td><td>&nbsp;</td><th>1</th><td>1</td><td>0</td></tr>
+</table>
+</p></div>
+<div class='item'><a name='Building-with-SGScript'></a><hr><h2>Building with SGScript</h2><p>
+This section describes all supported ways to compile SGScript and integrate it into your project.
+</p><ul><li><a href="#Downloading-SGScript">Downloading SGScript</a>
+</li><li><a href="#Building-with-GNU-Make">Building with GNU Make</a>
+</li><li><a href="#Building-with-IDEs">Building with IDEs</a>
+</li><li><a href="#Building-with-other-tools">Building with other tools</a>
+</li><li><a href="#Including-SGScript-into-your-project">Including SGScript into your project</a></li></ul></div>
+<div class='item'><a name='Downloading-SGScript'></a><hr><h2>Downloading SGScript</h2><p>
+There are two kinds of downloads - source and binaries. All downloads are available in the <a href="http://www.sgscript.org/download" target="_blank">download page</a>. Source files are hosted on <a href="https://github.com/snake5/sgscript" target="_blank">Github</a>.
+</p><p>
+Even though <code>master</code> branch is supposed to be the &#39;stable&#39; branch, it is highly suggested that <code>apidev</code> branch is tried first since it is the most up-to-date branch, it is expected that generally less bugs are there. <code>master</code> branch is more thoroughly tested at the time of release and <code>apidev</code> may contain recent changes that subtly break the build.
+</p></div>
+<div class='item'><a name='Building-with-GNU-Make'></a><hr><h2>Building with GNU Make</h2><h4>Required software</h4><ul><li><a href="http://www.gnu.org/software/make/" target="_blank">GNU Make</a>
+</li><li><a href="http://gcc.gnu.org/" target="_blank">GCC</a>
+</li><li>On Windows, <a href="http://www.mingw.org/" target="_blank">MinGW</a> can be used (it includes both).</li></ul><h4>Building</h4><ul><li>Open a terminal (<code>cmd</code> on Windows, <code>sh</code> on Linux/Mac) window in SGScript source root directory.
+</li><li>Run <code>make</code> (<code>mingw32-make</code> on Windows), optionally specifying targets and options.
+<ul><li>The syntax is <code>make &lt;target|option&gt;[, &lt;target|option&gt; ...]</code>
+</li><li>To build only the library, just write <code>make</code>;
+</li><li>To build all tools (VM, compiler, plug-in modules), write <code>make tools</code>.
+</li></ul><li>On Windows, a batch file can be used to enable the usage of <code>make</code> (create a file <code>make.bat</code> in <code>C:\MinGW\bin</code> directory or equivalent, add the directory to PATH if it&#39;s not there):</li></ul><pre>@ECHO OFF
+mingw32-make %*</pre><h4>Build options</h4><p>
+Targets:
+</p><ul><li>libraries &amp; tools
+<ul><li>&lt;no target&gt;: build just the library
+</li><li>xgmath: build <a href="sgs.xgmath.docs.htm" target="_blank">eXtended Game Math library</a>
+</li><li>json: build <a href="sgs.json.docs.htm" target="_blank">JSON library</a>
+</li><li>pproc: build <a href="sgs.pproc.docs.htm" target="_blank">Parallel Processing library</a>
+</li><li>sockets: build <a href="sgs.sockets.docs.htm" target="_blank">Sockets library</a>
+</li><li>meta: build <a href="sgs.meta.docs.htm" target="_blank">Metaprogramming helper library</a>
+</li><li>vm: build the <a href="sgscript.docs.htm#Virtual-Machine-sgsvm" target="_blank">virtual machine (sgsvm)</a>
+</li><li>c: build the <a href="sgscript.docs.htm#Compiler-sgsc" target="_blank">compiler (sgsc)</a>
+</li><li>sgsexe: build <a href="sgscript.docs.htm#Executable-generator-for-Windows-sgsexe" target="_blank">SGScript EXE builder</a>
+</li></ul><li>testing
+<ul><li>build_test: build <a href="sgscript.docs.htm#Language-test-application-sgstest" target="_blank">language test application</a>
+</li><li>build_apitest: build <a href="sgscript.docs.htm#API-test-application-sgsapitest" target="_blank">API test application</a>
+</li><li>build_cppbctest: build <a href="sgscript.docs.htm#C-binding-compiler-test-application-sgscppbctest" target="_blank">C++ binding compiler test application</a>
+</li><li>build_mttest: build <a href="sgscript.docs.htm#Multithreading-safety-test-application-mttest" target="_blank">multithreading safety test application</a>
+</li><li>test: build and run <a href="sgscript.docs.htm#Language-test-application-sgstest" target="_blank">language test application</a>
+</li><li>apitest: build and run <a href="sgscript.docs.htm#API-test-application-sgsapitest" target="_blank">API test application</a>
+</li><li>cppbctest: build and run <a href="sgscript.docs.htm#C-binding-compiler-test-application-sgscppbctest" target="_blank">C++ binding compiler test application</a>
+</li><li>mttest: build and run <a href="sgscript.docs.htm#Multithreading-safety-test-application-mttest" target="_blank">multithreading safety test application</a>
+</li></ul><li>other
+<ul><li>clean: clean all generated files
+</li><li>clean_obj: clean only intermediate build files
+</li><li>clean_objbin: clean intermediate build files and binaries</li></ul></li></ul><p>
+Options:
+</p><ul><li>arch=[32|64] - target architecture (x86/x64), default depends on compiler
+</li><li>mode=[debug|release] - whether it&#39;s a debug or a release build (default=debug)
+</li><li>static=[1|0] - whether to build a static library or a dynamic one (default=0: dynamic)</li></ul><h4>Additional build options &amp; platforms</h4><ul><li>To build on Android, modify the makefile according to the comment in the beginning of that file.</li></ul></div>
+<div class='item'><a name='Building-with-IDEs'></a><hr><h2>Building with IDEs</h2><p>
+All IDE-related build data is under the <code>build</code> directory.
+</p><h4>Supported IDEs</h4><ul><li>Code::Blocks (<code>build/codeblocks</code>)
+</li><li>Visual Studio 2010 (and newer versions) (<code>build/vc10</code>)</li></ul><h4>IDEs with necessary files but without support</h4><ul><li>XCode (<code>build/xcode</code>)</li></ul></div>
+<div class='item'><a name='Building-with-other-tools'></a><hr><h2>Building with other tools</h2><h4>CMake</h4><p>
+There is a file <code>CMakeLists.txt</code> in the root directory of the project. It only builds the dynamic library at the moment.
+</p><h4>File integration</h4><p>
+The code is made to support various compilers and compile under C and C++ so it is quite safe to just drag &amp; drop it into your project.
+</p></div>
+<div class='item'><a name='Including-SGScript-into-your-project'></a><hr><h2>Including SGScript into your project</h2><p>
+There are generally two ways to include SGScript: link the library or include the files directly.
+</p><p>
+<em class='notice-bgr'>Note: Including the files isn&#39;t an option if SGScript modules are to be used.</em>
+</p><p>
+For simplified inclusion of files, add <code>src/</code> and <code>ext/</code> to the include paths.
+</p><ul><li>The main SGScript API is defined in the file <code>src/sgscript.h</code>.
+<ul><li>Requires the SGScript library to be linked to the project or have the files (<code>src/*</code>) compiled in.
+</li></ul><li>Utility library is available in <code>src/sgs_util.h</code>.
+<ul><li>Requires the SGScript library to be linked to the project or have the files (<code>src/*</code>) compiled in.
+</li></ul><li>eXtended Game Math library can be found in <code>ext/sgsxgmath.h</code>.
+<ul><li>Requires the eXtended Game Math library to be linked to the project or have the files (<code>ext/sgsxgmath.c</code>) compiled in.</li></ul></li></ul></div>
+<div class='item'><a name='Using-the-C-API'></a><hr><h2>Using the C API</h2><p>
+This section describes various use cases and how to apply the SGScript C API to achieve the expected results.
+</p><ul><li><a href="#Starting-up-and-running-code">Starting up and running code</a>
+</li><li><a href="#Making-your-own-native-functions">Making your own native functions</a>
+</li><li><a href="#Sub-item-property-index-data-access">Sub-item (property/index) data access</a>
+</li><li><a href="#Native-object-interfaces">Native object interfaces</a></li></ul></div>
+<div class='item'><a name='Starting-up-and-running-code'></a><hr><h2>Starting up and running code</h2><pre>SGS_CTX = sgs_CreateEngine(); // SGS_CTX is alias to `sgs_Context* C`
+sgs_Include( C, &quot;something&quot; );
+sgs_ExecFile( C, &quot;myscript.sgs&quot; );
+sgs_DestroyEngine( C );</pre><ul><li>To do any kinds of operations with the scripting engine, it is first required to create it with <code>sgs_CreateEngine</code> or <code>sgs_CreateEngineExt</code>.
+</li><li>When it&#39;s no longer necessary, it should be destroyed with <code>sgs_DestroyEngine</code> to free all used resources.
+</li><li>Scripts can be loaded in many different ways. In this case, lookup differs:
+<ul><li><code>sgs_Include</code> tries to find the right file using the search path, and it supports loading of native libraries.
+<ul><li>The search path is a special string on SGS_PATH that contains a combination of possible locations and extensions.
+</li></ul><li><code>sgs_ExecFile</code> expects a specific file and supports only script files (both compiled and source).</li></ul></li></ul><pre>sgs_GlobalCall( C, &quot;main&quot;, 0, 0 ); // may fail but it&#39;s not important in this case</pre><ul><li>There are many ways to call functions. The easiest way is to call a global function.
+</li><li>The arguments for <code>sgs_GlobalCall</code> are:
+<ul><li>context pointer
+</li><li>global variable name
+</li><li>number of arguments to be passed (taken from the stack)
+</li><li>number of expected return values (to be pushed on stack if successfully called the function)</li></ul></li></ul><pre>sgs_PushBool( C, 1 );
+sgs_PushInt( C, 42 );
+sgs_PushReal( C, 3.14159 );
+sgs_PushString( C, &quot;some C string&quot; );
+sgs_PushStringBuf( C, &quot;not\0really\0C\0string&quot;, 19 );
+sgs_PushPtr( C, C );
+sgs_PushGlobalByName( C, &quot;main&quot; ); // assuming this does not fail
+sgs_Call( C, SGS_FSTKTOP, 6, 1 ); // calls function from global &#39;main&#39; with 6 arguments and expects 1 value in return
+// again, it&#39;s assumed that sgs_Call does not fail
+// ...but it may, so checking return value is a very good idea</pre><ul><li>Function arguments can be passed by pushing data on the stack.
+</li><li>There are many kinds of pushing functions, some of these push exact data.
+<ul><li>Others push data from internal sources - therefore they can fail..
+</li><li>..for example, PushGlobal may not find a variable with that name - in that case, nothing is pushed and SGS_ENOTFND is returned.
+</li></ul><li>There are also function-calling functions. They have certain expectations:
+<ul><li>1. Function must be the last (topmost) item on stack.
+</li><li>2. There must be at least N more items on stack - where N is total argument count.
+</li><li>3. Function argument must be callable (function type / object with &#39;call&#39; interface function)
+</li></ul><li>If a call fails...
+<ul><li>stack size issues - stack is left unchanged
+</li><li>execution errors - stack has the expected number of return values, all set to <code>null</code></li></ul></li></ul><pre>if( SGS_CALL_FAILED( sgs_GlobalCall( C, &quot;func&quot;, 0, 3 ) ) )
+    /* handle the error */; // it is important this time since stack state matters
+sgs_Int i = sgs_GetInt( C, -3 ); // first return value
+const char* string_ptr = NULL;
+sgs_SizeVal string_size = 0;
+if( sgs_ParseString( C, -2, &amp;string_ptr, &amp;string_length ) )
+    /* successfully parsed a string, deal with it */;
+sgs_Bool b = sgs_GetBool( C, -1 );
+sgs_Pop( C, 3 ); // remove all 3 returned values from top of the stack</pre><ul><li>There are various ways to validate and read back data from the engine:
+<ul><li>Get*** functions: return converted data without doing in-place conversions
+</li><li>To*** functions: convert data in-place, then return it
+</li><li>Parse*** functions: check if it&#39;s possible to convert, then return converted data
+</li></ul><li>Items are removed from top of the stack with <code>sgs_Pop</code>.</li></ul><pre>sgs_PushBool( C, 1 );
+sgs_PushInt( C, 42 );
+sgs_PushReal( C, 3.14159 );
+sgs_PushArray( C, 3 ); // pushes an array with 3 items, made from 3 topmost stack items
+
+sgs_PushString( C, &quot;some C string&quot; );
+sgs_PushStringBuf( C, &quot;not\0really\0C\0string&quot;, 19 );
+sgs_CreateDict( C, NULL, 2 ); // pushes a dictionary with one entry, made from 2 topmost stack items</pre><ul><li>Basic objects (array, dict, map) can be easily pushed on the stack too.
+</li><li><code>sgs_CreateArray</code> takes the specified number of topmost stack items, puts them into the array and removes them from the stack
+</li><li><code>sgs_CreateDict</code> and <code>sgs_CreateMap</code> take the specified number of topmost stack items, map values to keys and remove them from the stack
+<ul><li>The number of items must be a multiple of 2. First item of each pair is a key, second - value for that key.
+</li><li>Keys can be repeated, only the last value is used.</li></ul></li></ul></div>
+<div class='item'><a name='Making-your-own-native-functions'></a><hr><h2>Making your own native functions</h2><pre>int sample_func( SGS_CTX )
+{
+    char* str;
+    float q = 1;
+    SGSFN( &quot;sample_func&quot; );
+    if( sgs_LoadArgs( &quot;s|f&quot;, &amp;str, &amp;q ) )
+        return 0;
+    // ... some more code here ...
+    sgs_PushBool( C, 1 );
+    return 1; // &lt; number of return values or a negative number on failure
+}</pre><ul><li>all C functions must have the return type <code>int</code> and one <code>sgs_Context*</code> argument
+</li><li><code>SGSFN</code> is used to set the name of the function, the name will be used in:
+<ul><li>error printing
+</li><li>profiler output generation
+</li></ul><li><code>sgs_LoadArgs</code> does type-based argument parsing
+<ul><li>&#39;s&#39; requires a value that can be converted to a string, returns to passed char**
+</li><li>&#39;f&#39; requires a value that can be converted to a real value, returns to passed float*
+</li><li>&#39;|&#39; makes all arguments after it optional (always initialize data passed to those!)
+</li><li>there are many more options and features for this function, for the whole list, see <a href="sgscript.docs.htm#sgs-LoadArgsExt-VA-function" target="_blank">sgs_LoadArgs</a></li></ul></li></ul><pre>// method #1
+sgs_SetGlobalByName( C, &quot;sample_func&quot;, sgs_MakeCFunc( sample_func ) );
+// method #2
+sgs_RegFuncConst funcs[] = { { &quot;sample_func&quot;, sample_func } };
+sgs_RegFuncConsts( C, funcs, sizeof(funcs) / sizeof(funcs[0]) );
+// method #3
+sgs_RegFuncConst funcs2[] = { { &quot;sample_func&quot;, sample_func }, SGS_RC_END() };
+sgs_RegFuncConsts( C, funcs2, -1 );</pre><ul><li>Before you can access your functions from scripts, it&#39;s necessary to register them.
+</li><li>The easiest way to register functions is to set them as global variables.
+</li><li>All of these methods register the same function at the same spot.
+</li><li>The first method is the easiest (and used internally by the next two) but it expands quickly with function size.
+</li><li>The second method is for array buffer registration, the third one registers a NULL-terminated list.</li></ul></div>
+<div class='item'><a name='Sub-item-property-index-data-access'></a><hr><h2>Sub-item (property/index) data access</h2><pre>// push the &#39;print&#39; function
+// method 1
+sgs_PushGlobalByName( C, &quot;print&quot; );
+// method 2
+sgs_PushEnv( C );
+sgs_PushProperty( C, -1, &quot;print&quot; );
+sgs_PopSkip( C, 1, 1 );
+// method 3
+sgs_PushEnv( C );
+sgs_PushString( C, &quot;print&quot; );
+sgs_PushIndex( C, sgs_StackItem( C, -2 ), sgs_StackItem( C, -1 ), 1 );</pre><ul><li>Sub-items are variables that can be found inside other variables via property/index access.
+</li><li>The API offers a huge variety of functions that deal with sub-items.
+</li><li>It is important to note the cascading nature of these API functions - if one doesn&#39;t do the exact thing, there&#39;s usually a function that gives more control.
+</li><li>All of these three global property retrieval methods offer various levels of control.
+<ul><li>To take more control means also taking responsibility for stack state and error codes.
+<ul><li>This is clearly not done in the example but is highly encouraged at all times, as good practice.</li></ul></li></ul></li></ul><pre>sgs_CreateDict( C, NULL, 0 );
+sgs_PushString( C, &quot;test&quot; );
+sgs_SetIndex( C, sgs_StackItem( C, -2 ), sgs_StackItem( C, -1 ), sgs_StackItem( C, -1 ), 0 );
+// result: {test=test}</pre><ul><li>It is possible to both read and write from/to sub-items.
+</li><li>There are 4 sets of functions, each with a different prefix and behavior semantic.
+<ul><li>Get*** functions load the property/index to the specified prepared location.
+</li><li>Set*** functions save the property/index, taking it from the specified location.
+</li><li>Push*** functions load the property/index and push it at the top of the stack.</li></ul></li></ul><p>
+<em class='notice-bgr'>Prefer index access (isprop=0) to property access since the general convention is that indices provide raw access but property access can be augmented with function calls.</em>
+</p><pre>sgs_Variable dict, key;
+sgs_CreateDict( C, &amp;dict, 0 );
+sgs_InitString( C, &amp;key, &quot;test&quot; );
+sgs_PushInt( C, 5 ):
+sgs_SetIndex( C, dict, key, sgs_StackItem( C, -1 ), 0 );
+// result: {test=5}
+sgs_PushVariable( C, dict );
+sgs_Release( C, &amp;dict );
+sgs_Release( C, &amp;key );</pre><ul><li>There are pointer equivalents for many API functions. They&#39;re usually denoted with an additional uppercase P in the name.
+<ul><li>The situation is a bit different with Index functions: P denotes a pointer argument, I - a stack index/item.
+</li></ul><li>Both API parts are there to be useful at the right moment. Here&#39;s how to decide what to use:
+<ul><li>Use stack-based APIs when you need to...
+<ul><li>deal with function calls - those are stack-only;
+</li><li>want to have your variables auto-freed on function exit - locally stored variables need to be manually released, stack variables do not;
+</li></ul><li>Use pointer-based APIs when you need to...
+<ul><li>deal with object interfaces - those are pointers-only;
+</li><li>permanently store data in a manner that makes it completely unavailable to the script writer;
+</li><li>name your variables - stack items don&#39;t have names and indices might be shifting, making it hard to know what is what;</li></ul></li></ul></li></ul><pre>sgs_PushInt( C, 3 );
+sgs_PushInt( C, 4 );
+sgs_PushInt( C, 5 );
+sgs_CreateArray( C, NULL, 3 );
+sgs_PushNumIndex( C, sgs_StackItem( C, -1 ), 1 ); // pushes [int 4]
+sgs_PushPath( C, sgs_StackItem( C, -1 ), &quot;i&quot;, (sgs_SizeVal) 1 ); // pushes [int 4] too</pre><ul><li>There are a few other shortcuts like <a href="sgscript.docs.htm#sgs-PushNumIndex-function" target="_blank">sgs_PushNumIndex</a> and <a href="sgscript.docs.htm#sgs-PushPath-function" target="_blank">sgs_PushPath</a> that are worth considering when dealing with sub-items.</li></ul></div>
+<div class='item'><a name='Native-object-interfaces'></a><hr><h2>Native object interfaces</h2><pre>sgs_ObjInterface object_iface[1] =
+{{
+    &quot;object_name&quot;,          // type name
+    NULL, NULL,             // destruct, gcmark
+    NULL, NULL,             // getindex, setindex
+    NULL, NULL, NULL, NULL, // convert, serialize, dump, getnext
+    NULL, NULL              // call, expr
+}};</pre><ul><li>This is the minimal object interface definition. It defines the name and implements no callbacks.
+</li><li>The slightly unusual syntax is actually a definition of an interface array with one element.
+<ul><li>This effectively creates a pointer to interface, which is the only way the interface is requested by any API function.
+</li></ul><li>Interface must be accessible until there&#39;s at least one object using it. It can usually be defined as a global/static variable.</li></ul><pre>sgs_CreateObject( C, NULL, malloc( sizeof( mystruct ) ), object_iface );
+sgs_CreateObjectIPA( C, NULL, sizeof( mystruct ), object_iface ); // preferred method</pre><ul><li>There are two ways to create objects. Pointer to external data / in-place allocation.
+<ul><li>First way simply means that a data pointer is set to whatever value you want.
+</li><li>Second way sets the data pointer to memory space followed by internal data, for which the internal data allocation is extended by the specified number of bytes.
+<ul><li>The in-place allocated block does not need to be freed explicity.
+</li><li>This generally requires one less allocation to be performed.</li></ul></li></ul></li></ul><p>
+<em class='notice-bgr'>It is very important that all memory operations on in-place allocated blocks do not, at any time, operate beyond the boundaries of those blocks. Be especially wary of putting arrays at the beginning of a structure since accidentally applying negative indices to such arrays could create issues that are extremely hard to debug.</em>
+</p><pre>int object_destruct( SGS_CTX, sgs_VarObj* obj )
+{
+    free( obj-&gt;data );
+    return SGS_SUCCESS;
+}</pre><ul><li>This is a very basic object destruction callback. It simply assumes that the data pointer was malloc&#39;ed and frees it.
+</li><li>All callbacks return <code>int</code> and have the same first two arguments (<code>sgs_Context*</code> and <code>sgs_VarObj*</code>).
+</li><li>In all callbacks, negative return values are error codes and non-negative (&gt;= 0) imply success.</li></ul><pre>int object_getindex( SGS_CTX, sgs_VarObj* obj )
+{
+    char* str;
+    if( sgs_ParseString( C, 0, &amp;str, NULL ) )
+    {
+        if( strcmp( str, &quot;data_pointer&quot; ) == 0 ) return sgs_PushPtr( C, obj-&gt;data );
+        
+        if( strcmp( str, &quot;do_something&quot; ) == 0 ) return sgs_PushCFunc( C, object_do_something );
+        if( strcmp( str, &quot;do_smth_else&quot; ) == 0 ) return sgs_PushCFunc( C, object_do_smth_else );
+    }
+    return SGS_ENOTFND; // return that the specified key was not found in object
+}
+// a slightly cleaner but less hands-on, the macro-based version:
+int object_getindex( SGS_ARGS_GETINDEXFUNC )
+{
+    SGS_BEGIN_INDEXFUNC
+        SGS_CASE( &quot;data_pointer&quot; ) return sgs_PushPtr( C, obj-&gt;data );
+        
+        SGS_CASE( &quot;do_something&quot; ) return sgs_PushCFunc( C, object_do_something );
+        SGS_CASE( &quot;do_smth_else&quot; ) return sgs_PushCFunc( C, object_do_smth_else );
+    SGS_END_INDEXFUNC
+}</pre><ul><li>This is a very basic index/property reading callback.
+<ul><li>On request for key <code>data_pointer</code>, it returns pointer to allocated memory.
+</li><li>On requests for the other two keys, it returns the associated methods.
+</li></ul><li>Both presented versions are practically interchangeable.
+</li><li>This error code (SGS_ENOTFND), coming from this callback, has a specific behavior: it may trigger a &#39;property/index not found&#39; warning.
+<ul><li>It is <i>NOT</i> recommended to return SGS_SUCCESS and send the warning manually because return code is passed back to API functions.</li></ul></li></ul></div>
+</div>
+	</body></html>
+	

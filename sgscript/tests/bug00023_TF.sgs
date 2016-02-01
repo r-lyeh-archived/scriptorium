@@ -1,0 +1,11 @@
+
+global ERRORS = "";
+
+a = 5;
+function fn1( x ) use( a )
+{
+	printlns( this, x, a );
+}
+fn1.call( true );
+
+testEqual( ERRORS, "", "no errors on closure call(this)" );

@@ -1,0 +1,319 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	<html><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>SGScript/C++ binding compiler</title>
+		<link rel="stylesheet" type="text/css" href="docs.css">
+		<script type="text/javascript" src="docs.js"></script>
+	</head><body>
+	<h1>SGScript/C++ binding compiler</h1><div><h2>Table of Contents</h2><ul><li><a href='#SGS-CPP-BC-description'>SGS/CPP-BC description</a>
+</li><li><a href='#Common-usage-patterns'>Common usage patterns</a>
+</li><li><a href='#Tags'>Tags</a>
+</li><li><a href='#Data-type-handling'>Data type handling</a>
+</li><li><a href='#Helper-classes-functions'>Helper classes &amp; functions</a>
+</li></ul></div><div>
+<div class='item'><a name='SGS-CPP-BC-description'></a><hr><h2>SGS/CPP-BC description</h2><p>
+This is a compiler that will generate most of the binding code from a bit of markup and additional build configuration. Statistically, the gain is approximately 80% less code to write to connect your C++ code to SGScript.
+</p><p>
+The compiler can be found at &quot;ext/cppbc/cppbc.sgs&quot;.
+</p><p>
+Arguments:
+</p><ul><li><code>-o</code> - specify output file (default = &lt;input_path&gt;/cppbc_&lt;input_name&gt;.cpp)
+</li><li><code>-i</code> - specify include file (to be parsed before the source file)
+</li><li>&lt;path&gt; - specify source file; only one file can be specified
+</li><li><code>-add-timestamp</code> - add current date/time to header</li></ul><p>
+This is a basic example of how things are done with SGS/CPP-BC:
+</p><pre>struct UIFrame
+{
+	typedef sgsHandle&lt; UIFrame &gt; Handle;
+	
+	SGS_OBJECT;
+	
+	UIFrame();
+	
+	SGS_METHOD void event( UIEvent* e );
+	SGS_METHOD void render();
+	
+	SGS_METHOD void doMouseMove( float x, float y );
+	SGS_METHOD void doMouseButton( int btn, bool down );
+	SGS_METHOD void doKeyPress( int key, bool down );
+	
+	SGS_IFUNC(GCMARK) int sgs_gcmark( SGS_CTX, sgs_VarObj* obj, int );
+	
+	SGS_PROPERTY float x;
+	SGS_PROPERTY float y;
+	SGS_PROPERTY float width;
+	SGS_PROPERTY float height;
+    SGS_PROPERTY sgsString name;
+	SGS_PROPERTY sgsHandle&lt; UIControl &gt; root;
+	
+	float prevMouseX;
+	float prevMouseY;
+};</pre><p>
+The SGS_OBJECT tag marks the structs/classes that need to have the binding code. SGS_METHOD would then mark methods that require exporting and SGS_PROPERTY generates property exports. For read-only/write-only properties, all you&#39;d need to add is &quot;READ&quot; or &quot;WRITE&quot; after the tag.
+</p><p>
+<a href="#sgsVariable-class">sgsVariable</a> and <a href="#sgsHandle-class">sgsHandle</a> are classes that are used to store SGScript objects. Handles are for storing exported object pointers and variables are for everything. Handles make it easier to use the included objects, thus they are preferred to plain variable containers.
+</p><p>
+GCMARK handlers are more like the raw API but all that needs to be done in the function is calling gcmark() on each variable or handle. Due to the possibility of having many unknown kinds of containers of variables, it is unlikely that this function could ever be automatically generated, except for the most primitive of cases.
+</p></div>
+<div class='item'><a name='Common-usage-patterns'></a><hr><h2>Common usage patterns</h2><h4>declare a variable and bind it</h4><pre>SGS_PROPERTY float x;</pre><h4>bind an inherited variable</h4><pre>SGS_PROPERTY SGS_ALIAS( float x );</pre><h4>bind &amp; declare variable with post-write callback</h4><pre>SGS_PROPERTY_FUNC( READ WRITE WRITE_CALLBACK myWriteCallback ) float x;</pre><h4>bind a fake variable (based on get/set functions)</h4><pre>SGS_PROPERTY_FUNC( READ getX WRITE setX ) SGS_ALIAS( float x );</pre><h4>bind &amp; declare a variable with two different names</h4><pre>SGS_PROPERTY_FUNC( READ WRITE VARNAME sgsName ) float x;</pre><h4>bind an inherited/previously defined variable</h4><pre>SGS_PROPERTY_FUNC( READ WRITE VARNAME sgsName ) SGS_ALIAS( float x );</pre><h4>bind a related, potentially unsafe variable</h4><pre>SGS_PROPERTY_FUNC( READ WRITE VALIDATE parent SOURCE parent-&gt;name ) SGS_ALIAS( sgsString parentName );</pre><h4>declare a method and bind it</h4><pre>SGS_METHOD float calc( float x );</pre><h4>declare a differently named method</h4><pre>SGS_METHOD_NAMED( func ) void sgsFunc( int i );</pre><h4>declare a coroutine-aware method</h4><pre>// ctx is passed automatically, does not affect argument count/order
+SGS_METHOD void coroAware( sgs_Context* coroCtx, float arg0 );
+// SGS_CTX works too, but may trigger a warning about variable shadowing</pre><h4>declare a vararg method with variable return value count</h4><pre>SGS_METHOD SGS_MULTRET complexFunc();</pre><h4>handle class stub</h4><pre>typedef sgsHandle&lt; struct sgsObj &gt; sgsObjHandle;
+struct sgsObj
+{
+    SGS_OBJECT;
+    
+    static sgsObjHandle HandleFromPtr( Obj* ); // resolve the link through object&#39;s user data pointer or some similar method
+    
+    sgsObj( Obj* obj ) : m_obj( obj ){}
+    ~sgsObj(){ cleanup(); }
+    void cleanup() // this is pulled out of constructor in case it might be called by a parent object to invalidate the handle on destruction of the owning system
+    {
+        if( m_obj )
+        {
+            // *** free m_obj ***
+            m_obj = NULL;
+        }
+    }
+    Obj* m_obj;
+    
+    // declare additional properties and methods with SGS_PROPERTY(_FUNC) and SGS_METHOD, respectively
+    // most properties/methods will most likely have to include a NULL test for m_obj, like this:
+    int _getProp(){ return m_obj ? m_obj-&gt;GetProp() : 0; }
+    void _setProp( int v ){ if( m_obj ) m_obj-&gt;SetProp( v ); }
+    SGS_PROPERTY_FUNC( READ _getProp WRITE _setProp ) SGS_ALIAS( int prop );
+};</pre><h4>data struct stub</h4><pre>struct sgsData : Data
+{
+    SGS_OBJECT_LITE;
+    
+    sgsData(){}
+    sgsData( const Data&amp; t ) : Data( t ){}
+    
+    // properties with direct access (non-private)
+    SGS_PROPERTY SGS_ALIAS( item1 );
+    
+    // data struct properties (original type: SubData, wrapped type: sgsSubData)
+    sgsSubData _getSubData(){ return subData; }
+    void _setSubData( const sgsSubData&amp; sd ){ subData = sd; }
+    SGS_PROPERTY_FUNC( READ _getSubData WRITE _setSubData ) SGS_ALIAS( sgsSubData subData );
+    
+    // properties with method access
+    int _getProp(){ return GetProp(); }
+    void _setProp( int v ){ SetProp( v ); }
+    SGS_PROPERTY_FUNC( READ _getProp WRITE _setProp ) SGS_ALIAS( int prop );
+    
+    // aliases (second names) for all properties:
+    SGS_PROPERTY_FUNC( READ WRITE VARNAME item1alt ) SGS_ALIAS( bool item1 );
+    SGS_PROPERTY_FUNC( READ _getSubData WRITE _setSubData VARNAME subDataAlt ) SGS_ALIAS( sgsSubData subData );
+    SGS_PROPERTY_FUNC( READ _getProp WRITE _setProp VARNAME propAlt ) SGS_ALIAS( int prop );
+};
+SGS_DEFAULT_LITE_OBJECT_INTERFACE( sgsData ); // this line can be replaced with a modified combo of sgs_PushVar/sgs_GetVar declarations</pre></div>
+<div class='item'><a name='Tags'></a><hr><h2>Tags</h2><h3>SGS_OBJECT</h3><h3>SGS_OBJECT_LITE</h3><h3>SGS_OBJECT_INHERIT</h3><p>
+Marks the objects/structures for parsing.
+</p><p>
+SGS_OBJECT_LITE does not add helper variables (sgs_VarObj* m_sgsObject; sgs_Context* C) to the class
+</p><p>
+SGS_OBJECT_INHERIT specifies class or classes to inherit definitions from
+</p><h3>SGS_NO_EXPORT</h3><h3>SGS_NO_DESTRUCT</h3><p>
+Object binding modifiers.
+</p><ul><li>SGS_NO_EXPORT prevents C++/BC from generating the binding code for this class (but it may still be used for derived classes)
+</li><li>SGS_NO_DESTRUCT prevents C++/BC from generating destructor code for this class (helps in the definition of weak objects)</li></ul><h3>SGS_METHOD</h3><p>
+Marks the methods that should be made available to the scripting engine.
+</p><p>
+Syntax: <code>SGS_METHOD &lt;type&gt; &lt;name&gt;(&lt;arguments&gt;)</code>
+</p><p>
+Alt. syntax (bind without declaration): <code>SGS_METHOD SGS_ALIAS( &lt;type&gt; &lt;name&gt;(&lt;arguments&gt;) );</code>
+</p><ul><li>SGS_MULTRET can be used as &lt;type&gt; to allow the return value specify the number of return values pushed (like a usual SGScript C function)
+</li><li>SGS_CTX / <code>sgs_Context*</code> arguments are used for coroutine-awareness and are not counted in the SGScript argument list</li></ul><h3>SGS_METHOD_NAMED</h3><p>
+Marks the renamed methods that should be made available to the scripting engine.
+</p><p>
+Syntax: <code>SGS_METHOD_NAMED( &lt;sgsname&gt; ) &lt;type&gt; &lt;realname&gt;(&lt;arguments&gt;)</code>
+</p><p>
+See SGS_METHOD for more info.
+</p><h3>SGS_PROPERTY</h3><p>
+Marks the properties that should be made available to the scripting engine. Currently supports only one property at a time.
+</p><p>
+Syntax: <code>SGS_PROPERTY [READ|WRITE] &lt;type&gt; &lt;name&gt;;</code>
+</p><p>
+Alt. syntax (bind without declaration): <code>SGS_PROPERTY [READ|WRITE] SGS_ALIAS( &lt;type&gt; &lt;name&gt; );</code>
+</p><p>
+Modifiers:
+</p><ul><li>READ: make the property read-only
+</li><li>WRITE: make the property write-only</li></ul><h3>SGS_PROPERTY_FUNC</h3><p>
+Marks the properties that should be made available to the scripting engine. Has additional options for reading, writing and callbacks.
+</p><p>
+Syntax: <code>SGS_PROPERTY_FUNC( &lt;tag-args&gt; ) &lt;type&gt; &lt;name&gt;;</code>
+</p><p>
+Alt. syntax (bind without declaration): <code>SGS_PROPERTY_FUNC( &lt;tag-args&gt; ) SGS_ALIAS( &lt;type&gt; &lt;name&gt; );</code>
+</p><p>
+Tag arguments: a space separated list of none or more of the following constructs
+</p><ul><li>READ: allow to read from the property
+</li><li>WRITE: allow to write to the property
+</li><li>READ &lt;method&gt;: allow to read from the property, using the specified method
+</li><li>WRITE &lt;method&gt;: allow to write to the property, using the specified method
+</li><li>READ_CALLBACK &lt;method&gt;: call the specified method after reading from the variable
+</li><li>WRITE_CALLBACK &lt;method&gt;: call the specified method after writing to the variable
+</li><li>VARNAME: specify a different name for the real variable (more useful with alt. syntax)
+</li><li>VALIDATE: specify a boolean-compatible (zero=false/nonzero=true, like bool/pointers) data source to use for checking availability
+</li><li>SOURCE: specify the data source to use for this property</li></ul><h3>SGS_IFUNC</h3><p>
+Marks the method as a native object interface function that would override any generated one.
+</p><p>
+Syntax: <code>SGS_IFUNC( &lt;ifunc-type&gt; ) &lt;type&gt; &lt;name&gt;( sgs_Context*, sgs_VarObj*, int );</code>
+</p><p>
+&quot;ifunc-type&quot; must be one of object interface function defines (destruct, getindex, expr etc.).
+</p><h3>SGS_GCREF</h3><p>
+Marks objects to be marked for garbage collection.
+</p><p>
+Syntax: <code>SGS_GCREF( &lt;var1&gt; &lt;var2&gt; ... )</code>
+</p><h3>SGS_DUMP</h3><p>
+Marks member variables as available for dumping.
+</p><p>
+Syntax: <code>SGS_DUMP( &lt;var1&gt; &lt;var2&gt; ... )</code>
+</p><p>
+All readable properties are dumped by default, this is used to specify variables that are not already specified as readable properties.
+</p><p>
+To prevent certain properties from being dumped, see SGS_NODUMP
+</p><h3>SGS_NODUMP</h3><p>
+Marks readable properties as unavailable for dumping.
+</p><p>
+Syntax: <code>SGS_NODUMP( &lt;var1&gt; &lt;var2&gt; ... )</code>
+</p><p>
+All readable properties are dumped by default, this is used to disable that for certain variables.
+</p></div>
+<div class='item'><a name='Data-type-handling'></a><hr><h2>Data type handling</h2><h3>template&lt; class T &gt; void sgs_PushVar( SGS_CTX, const T&amp; );</h3><h4>Pushes the specified variable on the stack, automatically converting it to the most appropriate SGScript type.</h4><h3>template&lt; class T &gt; struct sgs_GetVar {  T operator () ( SGS_CTX, int item );  };</h3><h3>template&lt; class T &gt; struct sgs_GetVarObj {  T* operator () ( SGS_CTX, int item );  };</h3><h4>Takes the specified stack item and converts it to the required type.</h4><ul><li>Bindings exist for all basic types (except unsigned int64, since it cannot be represented properly), sgsMaybe, sgsString, sgsHandle, sgsVariable, and class pointers.</li></ul></div>
+<div class='item'><a name='Helper-classes-functions'></a><hr><h2>Helper classes &amp; functions</h2><h4>Classes</h4><ul><li><a href="#sgsScope-class">sgsScope</a> - the class used to minimally save/restore stack state
+</li><li><a href="#sgsMaybe-class">sgsMaybe</a> - the class used for handling nullable values
+</li><li><a href="#sgsArrayIterator-class">sgsArrayIterator</a> - the compatible array iterator class
+</li><li><a href="#sgsHandle-class">sgsHandle</a> - the class used for handling SGS_OBJECT classes
+</li><li><a href="#sgsString-class">sgsString</a> - the string interface and handling class
+</li><li><a href="#sgsVariable-class">sgsVariable</a> - the class used for handling all SGScript variables</li></ul><h4>Functions</h4><ul><li><a href="#sgs-Create-Lite-Class-function">sgs_Create(Lite)Class</a> - push new class instance on stack
+</li><li><a href="#sgs-Create-Lite-ClassIPA-function">sgs_Create(Lite)ClassIPA</a> - allocate new class instance, push it on stack
+</li><li><a href="#sgs-Create-Lite-ClassFrom-function">sgs_Create(Lite)ClassFrom</a> - push a copy of class instance on stack
+</li><li><a href="#sgs-InitCreatedClass-function">sgs_InitCreatedClass</a> - initialize internal class pointers
+</li><li><a href="#sgs-Create-Lite-Class-function">sgs_Create(Lite)Class</a> - push a new instance of class, using the specified arguments for constructor</li></ul></div>
+<div class='item'><a name='sgsScope-class'></a><hr><h2>sgsScope [class]</h2><h3>class sgsScope</h3><p>
+This is the class used to minimally save/restore stack state (its size).
+</p><p>
+If stack is popped too far, it is not restorable.
+</p><h4>Variables</h4><ul><li><code>SGS_CTX</code> (= <code>sgs_Context* C</code>) - the current context
+</li><li><code>sgs_StkIdx m_stackSize</code> - required stack size</li></ul><h4>Constructors</h4><ul><li><code>sgsScope( sgs_Context* c )</code> - initialize scope using current context and its stack size</li></ul><h4>Methods</h4><ul><li><code>bool is_restored()</code> - check if saved stack size matches the current one</li></ul></div>
+<div class='item'><a name='sgsMaybe-class'></a><hr><h2>sgsMaybe [class]</h2><h3>template&lt; class T &gt; class sgsMaybe</h3><p>
+This is the class used for handling nullable values.
+</p><h4>Variables</h4><ul><li><code>T data</code> - the data variable
+</li><li><code>bool isset</code> - specifies whether the data variable contains any useful data (false if value is <code>null</code>)</li></ul><h4>Constructors</h4><ul><li><code>sgsMaybe()</code> - initializes a <code>null</code> nullable value
+</li><li><code>sgsMaybe( EsgsMaybeNot )</code> - initializes a <code>null</code> nullable value, to be used in functions returning <code>sgsMaybe</code> by returning <code>sgsMaybeNot</code>
+</li><li><code>sgsMaybe( const T&amp; val )</code> - initializes a nullable value from another such value</li></ul><h4>Methods</h4><ul><li><code>void set( const T&amp; val )</code> - sets the variable to the specified (non-`null`) value
+</li><li><code>void unset()</code> - sets the variable to null</li></ul></div>
+<div class='item'><a name='sgsArrayIterator-class'></a><hr><h2>sgsArrayIterator [class]</h2><p>
+template&lt; class OwningClass &gt; class sgsArrayIterator
+</p><p>
+This is an array access iterator class for the owning class that supports array indexing and size retrieval. The owning class needs to have these specific access points:
+</p><ul><li><code>static const char* IteratorTypeName</code> - used for the object name definition
+</li><li><code>T operator [] ( sgs_SizeVal i ) const</code> - used to retrieve the specific item
+</li><li><code>sgs_SizeVal size() const</code> - used to retrieve item count</li></ul><h4>Variables</h4><ul><li><code>OwningClass* m_owner</code> - the owning class (SGS_OBJECT)
+</li><li><code>sgs_SizeVal m_origsize</code> - original item count, retrieved from object
+</li><li><code>sgs_SizeVal m_offset</code> - current item offset</li></ul><h4>Constructors</h4><ul><li><code>sgsArrayIterator( OwningClass* owner )</code> - create an iterator for a SGS_OBJECT
+</li><li><code>sgsArrayIterator( const sgsArrayIterator&amp; other )</code> - create a copy of an iterator</li></ul><h4>Methods</h4><ul><li><code>void gcmark()</code> - implements the GCMARK callback, not to be generally called directly
+</li><li><code>int convert( SGS_CTX, sgs_VarObj* obj, int to )</code> - implements the CONVERT callback, not to be generally called directly
+</li><li><code>int getnext( SGS_CTX, int mode )</code> - implements the GETNEXT callback, not to be generally called directly</li></ul></div>
+<div class='item'><a name='sgsHandle-class'></a><hr><h2>sgsHandle [class]</h2><h3>template&lt; class T &gt; class sgsHandle</h3><p>
+This is the class used for handling SGS_OBJECT classes.
+</p><h4>Variables</h4><ul><li><code>sgs_VarObj* object</code> - the pointer to object with interface equal to T::_sgs_interface or NULL
+</li><li><code>SGS_CTX</code> (<code>sgs_Context* C</code>) - associated context</li></ul><h4>Constructors</h4><ul><li><code>sgsHandle()</code> - initializes a NULL handle
+</li><li><code>sgsHandle( const sgsHandle&amp; h )</code> - initializes a handle from another handle
+</li><li><code>sgsHandle( sgs_Context* c, sgs_VarObj* obj )</code> - initializes a handle from object pointer if it has the right interface, otherwise handle is initialized to NULL
+</li><li><code>sgsHandle( sgs_Context* c, sgs_StkIdx item )</code> - initializes a handle from stack index if it has the right interface, otherwise handle is initialized to NULL
+</li><li><code>sgsHandle( sgs_Context* c, sgs_Variable* var )</code> - initializes a handle from variable pointer if it has the right interface, otherwise handle is initialized to NULL
+</li><li><code>explicit sgsHandle( T* obj )</code> - initializes a handle from class (SGS_OBJECT) instance pointer</li></ul><h4>Methods</h4><ul><li><code>void gcmark()</code> - mark the object in handle as accessible (using sgs_ObjGCMark)
+</li><li><code>void push( sgs_Context* c = NULL )</code> - push the handle on the stack as object/null
+</li><li><code>bool not_null()</code> - returns if object handle points to an instance
+</li><li><code>sgsVariable get_variable()</code> - returns this handle as <a href="#sgsVariable-class">sgsVariable</a>
+</li><li><code>void _acquire()</code> - increment reference count on variable
+</li><li><code>void _release()</code> - decrement reference count on variable, remove it from the class</li></ul><h4>Operators</h4><ul><li><code>const sgsHandle&amp; operator = ( const sgsHandle&amp; h )</code> - handle assignment
+</li><li><code>operator T*()</code>, <code>operator const T*() const</code> - implicit conversion to valid T* or NULL
+</li><li><code>T* operator -&gt; ()</code>, <code>const T* operator -&gt; () const</code> - object access
+</li><li><code>bool operator &lt;</code>, <code>bool operator ==</code>, <code>bool operator !=</code> - comparison operators</li></ul></div>
+<div class='item'><a name='sgsString-class'></a><hr><h2>sgsString [class]</h2><h3>class sgsString</h3><p>
+This is the string interface and handling class.
+</p><h4>Variables</h4><ul><li><code>sgs_iStr* str</code> - the string data pointer
+</li><li><code>SGS_CTX</code> (<code>sgs_Context* C</code>) - associated context</li></ul><h4>Constructors</h4><ul><li><code>sgsString()</code> - initializes a NULL handle
+</li><li><code>sgsString( const sgsString&amp; h )</code> - initializes a handle from another handle
+</li><li><code>sgsString( sgs_Context* c, sgs_iStr* s )</code> - initializes a handle from string data pointer
+</li><li><code>sgsString( sgs_Context* c, sgs_StkIdx item )</code> - initializes a handle from stack index if it has the right interface, otherwise handle is initialized to NULL
+</li><li><code>sgsString( sgs_Context* c, sgs_Variable* var )</code> - initializes a handle from variable pointer if it has the right interface, otherwise handle is initialized to NULL
+</li><li><code>sgsString( sgs_Context* c, const char* s, size_t sz )</code> - creates a new string buffer and sets the handle to it
+</li><li><code>sgsString( sgs_Context* c, const char* s )</code> - creates a new 0-terminated string and sets the handle to it</li></ul><h4>Methods</h4><ul><li><code>const char* c_str()</code> - returns C string pointer or NULL for NULL handles
+</li><li><code>size_t size()</code> - returns string buffer size or 0 for NULL handles
+</li><li><code>bool get_string( std::string&amp; out )</code> - creates a std::string for valid handles, returns if handle is valid (available only with <code>SGS_CPPBC_WITH_STD_STRING</code> defined)
+</li><li><code>int compare( const sgsString&amp; s ) const</code> - compare this string with another one (strcmp return rules)
+</li><li><code>bool same_as( const sgsString&amp; s ) const</code> - returns if this string is exactly the same as the other string
+</li><li><code>bool equals( const char* s ) const</code> - returns if the specified C string is equal to this string
+</li><li><code>bool equals( const char* s, size_t sz ) const</code> - returns if the specified buffer is equal to this string
+</li><li><code>void push( sgs_Context* c = NULL ) const</code> - push the handle on the stack as string/null
+</li><li><code>bool not_null()</code> - returns if string handle points to a string
+</li><li><code>sgsVariable get_variable()</code> - returns this string as <a href="#sgsVariable-class">sgsVariable</a>
+</li><li><code>void _acquire()</code> - increment reference count on variable
+</li><li><code>void _release()</code> - decrement reference count on variable, remove it from the class</li></ul><h4>Operators</h4><ul><li><code>const sgsString&amp; operator = ( const sgsString&amp; h )</code> - string assignment
+</li><li><code>bool operator &lt;</code>, <code>bool operator ==</code>, <code>bool operator !=</code> - comparison operators</li></ul></div>
+<div class='item'><a name='sgsVariable-class'></a><hr><h2>sgsVariable [class]</h2><h3>class sgsVariable</h3><p>
+This is the class used for handling all SGScript variables.
+</p><h4>Variables</h4><ul><li><code>sgs_Variable var</code> - the internal variable data
+</li><li><code>SGS_CTX</code> (<code>sgs_Context* C</code>) - associated context</li></ul><h4>Constructors</h4><ul><li><code>sgsVariable()</code> - initializes a NULL variable
+</li><li><code>sgsVariable( const sgsVariable&amp; h )</code> - initializes variable from another variable
+</li><li><code>sgsVariable( sgs_Context* c )</code> - initialize a NULL variable and associate context
+</li><li><code>sgsVariable( sgs_Context* c, sgs_StkIdx item )</code> - initialize a variable from current stack frame
+</li><li><code>sgsVariable( sgs_Context* c, EPickAndPop )</code> - initialize a variable from the topmost stack item, pop it afterwards
+</li><li><code>sgsVariable( sgs_Context* c, sgs_Variable* v )</code> - initialize a variable from data pointer
+</li><li><code>sgsVariable( const sgsString&amp; s )</code> - initialize a variable from the specified string handle
+</li><li><code>template&lt; class T &gt; sgsVariable( const sgsHandle&lt;T&gt;&amp; h )</code> - initialize a variable from the specified class handle</li></ul><h4>Methods</h4><ul><li><code>void push( sgs_Context* c = NULL ) const</code> - push the variable (optionally specify context if variable might not have it)
+</li><li><code>void gcmark()</code> - mark the variable as accessible (using sgs_GCMark)
+</li><li><code>bool not_null() const</code> - return if variable is not NULL
+</li><li><code>bool is_object( sgs_ObjInterface* iface )</code> - check if variable is an object with the specified interface
+</li><li><code>template&lt; class T &gt; bool is_handle()</code> - check if variable is an instance of the specified SGS_OBJECT class
+</li><li><code>template&lt; class T &gt; T* get_object_data()</code> - get object pointer from variable (WARNING: this method does not do any safety checks)
+</li><li><code>template&lt; class T &gt; sgsHandle&lt;T&gt; get_handle()</code> - get the class handle
+</li><li><code>int type_id() const</code> - get the type ID (one of SGS_VT_*** constants)
+</li><li><code>bool is_string() const</code> - return if this variable is a string
+</li><li><code>sgsString get_string()</code> - get the string handle
+</li><li><code>sgsVariable getsubitem( sgsVariable key, bool prop )</code> - retrieve an index/property value
+</li><li><code>sgsVariable getsubitem( const char* key, bool prop )</code> - retrieve an index/property value (string key)
+</li><li><code>sgsVariable getprop( sgsVariable key )</code> - retrieve a property value
+</li><li><code>sgsVariable getindex( sgsVariable key )</code> - retrieve an index value
+</li><li><code>sgsVariable getprop( const char* key )</code> - retrieve a property value (string key)
+</li><li><code>sgsVariable getindex( const char* key )</code> - retrieve an index value (string key)
+</li><li><code>bool setsubitem( sgsVariable key, sgsVariable val, bool prop )</code> - set an index/property value
+</li><li><code>bool setsubitem( const char* key, sgsVariable val, bool prop )</code> - set an index/property value (string key)
+</li><li><code>bool setprop( sgsVariable key, sgsVariable val )</code> - set a property value
+</li><li><code>bool setindex( sgsVariable key, sgsVariable val )</code> - set an index value
+</li><li><code>bool setprop( const char* key, sgsVariable val )</code> - set a property value (string key)
+</li><li><code>bool setindex( const char* key, sgsVariable val )</code> - set an index value (string key)
+</li><li><code>template&lt; class T &gt; T get()</code> - retrieve a C++ value from the variable
+</li><li><code>template&lt; class T &gt; T getdef( const T&amp; def )</code> - retrieve a C++ value from the variable, using <code>def</code> for <code>null</code>
+</li><li><code>sgsVariable&amp; set_null()</code> - set variable to <code>null</code>
+</li><li><code>sgsVariable&amp; set( bool v )</code> - set variable to the specified boolean value
+</li><li><code>sgsVariable&amp; set( sgs_Int v )</code> - set variable to the specified integer value
+</li><li><code>sgsVariable&amp; set( sgs_Real v )</code> - set variable to the specified real number value
+</li><li><code>sgsVariable&amp; set( sgsString v )</code> - set variable to the specified string value
+</li><li><code>sgsVariable&amp; set( sgs_CFunc v )</code> - set variable to the specified C function value
+</li><li><code>template&lt; class T &gt; sgsVariable&amp; set( sgsHandle&lt; T &gt; v )</code> - set variable to the specified class handle
+</li><li><code>template&lt; class T &gt; sgsVariable&amp; set( T* v )</code> - set variable to the specified C++/SGScript class
+</li><li><code>bool call( int args = 0, int ret = 0 )</code> - call variable as function using arguments from stack
+</li><li><code>bool thiscall( sgsVariable func, int args = 0, int ret = 0 )</code> - use variable as <code>this</code> in a method call to <code>func</code>
+</li><li><code>bool thiscall( const char* key, int args = 0, int ret = 0 )</code> - use variable as <code>this</code> in a method call to its function
+</li><li><code>void _acquire()</code> - increment reference count on variable
+</li><li><code>void _release()</code> - decrement reference count on variable, remove it from the class</li></ul><h4>Operators</h4><ul><li><code>const sgsVariable&amp; operator = ( const sgsVariable&amp; h )</code> - handle assignment
+</li><li><code>bool operator &lt;</code>, <code>bool operator ==</code> - comparison operators (the required minimum used for sorting)</li></ul></div>
+<div class='item'><a name='sgs-Create-Lite-Class-function'></a><hr><h2>sgs_Create(Lite)Class [function]</h2><h3>template&lt; class T &gt; void sgs_CreateClass( sgs_Context* C, sgs_Variable* out, T* inst )</h3><h3>template&lt; class T &gt; void sgs_CreateLiteClass( sgs_Context* C, sgs_Variable* out, T* inst )</h3><h4>Push a new instance of the class on stack.</h4><ul><li>If <code>out</code> is specified, that variable receives the class, otherwise it is pushed on the stack.</li></ul><p>
+<em class='notice-bgr'>This function should not be used with existing instances, as it would make more than one SGScript object responsible for the same data. Use <a href="#Data-type-handling">sgs_CreateVar</a> or <a href="#sgs-Create-Lite-ClassFrom-function">sgs_Create(Lite)ClassFrom</a> with existing instances.</em>
+</p></div>
+<div class='item'><a name='sgs-Create-Lite-ClassIPA-function'></a><hr><h2>sgs_Create(Lite)ClassIPA [function]</h2><h3>template&lt; class T &gt; T* sgs_CreateClassIPA( sgs_Context* C, sgs_Variable* out )</h3><h3>template&lt; class T &gt; T* sgs_CreateLiteClassIPA( sgs_Context* C, sgs_Variable* out )</h3><h4>Allocate a new class instance in-place.</h4><ul><li>To be used with placement new.
+</li><li>If <code>out</code> is specified, that variable receives the class, otherwise it is pushed on the stack.</li></ul></div>
+<div class='item'><a name='sgs-Create-Lite-ClassFrom-function'></a><hr><h2>sgs_Create(Lite)ClassFrom [function]</h2><h3>template&lt; class T &gt; T* sgs_CreateClassFrom( sgs_Context* C, sgs_Variable* out, T* inst )</h3><h3>template&lt; class T &gt; T* sgs_CreateLiteClassFrom( sgs_Context* C, sgs_Variable* out, const T* inst )</h3><h4>Create a new instance by copying <code>inst</code>.</h4><ul><li>If <code>out</code> is specified, that variable receives the class, otherwise it is pushed on the stack.</li></ul></div>
+<div class='item'><a name='sgs-InitCreatedClass-function'></a><hr><h2>sgs_InitCreatedClass [function]</h2><h3>template&lt; class T&gt; T* sgs_InitCreatedClass( T* inst, sgs_Context* C )</h3><h4>Set context / object pointers to class.</h4><ul><li>Return value is <code>inst</code>.</li></ul></div>
+<div class='item'><a name='SGS-CREATE-LITE-CLASS-function-alias'></a><hr><h2>SGS_CREATE(LITE)CLASS [function alias]</h2><h3>SGS_CREATECLASS( sgs_Context* C, sgs_Variable* out, class_name, ctor_args )</h3><h3>SGS_CREATELITECLASS( sgs_Context* C, sgs_Variable* out, class_name, ctor_args )</h3><h4>Create a new instance of the specified class, using the specified arguments for constructor.</h4><ul><li>If <code>out</code> is specified, that variable receives the class, otherwise it is pushed on the stack.
+</li><li>This is the preferred method to create class object instances.
+</li><li>Returns the pointer to class instance.</li></ul><p>
+Usage example:
+</p><pre>SGS_CREATECLASS( C, NULL, myClass, ( param1, 5.0f ) );</pre></div>
+</div>
+	</body></html>
+	

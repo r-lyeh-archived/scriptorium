@@ -1,0 +1,9 @@
+// be aware that this example is written to show how closures work
+// and that nothing beats the good old "counter++" in terms of speed
+// don't write code like this unless some interface requires it
+
+i = 1;
+counter = function( data ) use( i ){ return i++; };
+
+print( "first: ", counter(), "\n" );
+print( "second: ", counter(), "\n" );

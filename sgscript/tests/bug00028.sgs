@@ -1,0 +1,7 @@
+x = {};
+co = co_create(function(x)
+{
+	yield();
+});
+x.co = co;
+co_resume( co, x );

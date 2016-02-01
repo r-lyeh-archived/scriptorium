@@ -1,0 +1,9 @@
+x = 5;
+y = x--;
+testEqual( x, 4 );
+testEqual( y, 5 );
+
+z = 9;
+w = --z;
+testEqual( z, 8 );
+testEqual( w, 8 );

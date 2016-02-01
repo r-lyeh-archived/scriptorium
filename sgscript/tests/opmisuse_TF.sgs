@@ -1,0 +1,20 @@
+
+global ERRORS = "";
+testEqual( eval( "return 5 ! 6;" ), null, "restrict unary as binary - !" );
+testEqual( ERRORS, "[E:eval(): [line 1] Invalid expression]", "+ error message" );
+
+global ERRORS = "";
+testEqual( eval( "return 5 ~ 6;" ), null, "restrict unary as binary - ~" );
+testEqual( ERRORS, "[E:eval(): [line 1] Invalid expression]", "+ error message" );
+
+global ERRORS = "";
+testEqual( eval( "return * 6;" ), null, "restrict binary as unary - *x" );
+testEqual( ERRORS, "[E:eval(): [line 1] Invalid expression]", "+ error message" );
+
+global ERRORS = "";
+testEqual( eval( "return 6 *;" ), null, "restrict binary as unary - x*" );
+testEqual( ERRORS, "[E:eval(): [line 1] Invalid expression]", "+ error message" );
+
+global ERRORS = "";
+testEqual( eval( "return 5 + * 6;" ), null, "restrict binary as unary - a+*b" );
+testEqual( ERRORS, "[E:eval(): [line 1] Invalid expression]", "+ error message" );

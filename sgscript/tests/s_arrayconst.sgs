@@ -1,0 +1,2 @@
+var sth = [ 5.0, "things", 2, "have" ];
+print( sth );

@@ -1,0 +1,10 @@
+
+x = 5;
+
+y = function( a ) use( x )
+{
+	x += a;
+};
+
+y( 4 );
+println( x );

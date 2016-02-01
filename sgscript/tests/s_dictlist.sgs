@@ -1,0 +1,20 @@
+var x = {}; print( x, "\n" );
+var y = { sth = 'text', cnt = 5 }; print( y, "\n" );
+var z = 
+{
+	arr = [ 5, 4.0, 3, "2", 1 ],
+	dct = { that = "wow" },
+	raid = 
+	[
+		{ all = "good" }
+	]
+};
+print( z, "\n" );
+unset( z, "dct" );
+print( z, "\n" );
+print( "'isset' proximity tests (arr,farr,arrr): |", isset( z, "arr" ), "|", isset( z, "farr" ), "|", isset( z, "arrr" ), "|\n" );
+z[ "foo" ] = "blah"; print( "setindex/getindex test // z['foo']: ", z[ "foo" ], "\n" );
+z.prop = x; print( "setprop/getprop test // z.prop: ", z.prop, "\n" );
+print( "nonexistant property/index test: |", z["undef"], "|", z.undef, "|\n" );
+unset( z, "undef" );
+var w = { "spe" = "cial", }; print( w );

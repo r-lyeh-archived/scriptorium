@@ -1,0 +1,7 @@
+global x = 5;
+fn = function( a ) use( x )
+{
+	x += a;
+};
+fn( 4 );
+println(x);

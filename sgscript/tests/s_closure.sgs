@@ -1,0 +1,8 @@
+str1 = "banana";
+dafuq = function( pre ) use( str1 ){ println( pre, str1 ); };
+dafuq( "this is " );
+
+str2 = "apple";
+dafuq2 = function() use( str2 ){ println( this.text, str2 ); };
+obj = { text = "that is ", func = dafuq2 };
+obj.func();

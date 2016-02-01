@@ -1,0 +1,10 @@
+obj = 
+{
+	method = function( what ){ print( "'obj.method' says: ", this, what, "\n" ); },
+	usual = function( what ){ print( "'obj.usual' says: ", what, "\n" ); },
+};
+obj.method( " <= method output" );
+obj.usual( "same old function output" );
+obj["method"]( obj, " <= called via 'getindex'" );
+obj2 = {};
+obj["method"]( obj2, " <= crazy-ass substitution" );

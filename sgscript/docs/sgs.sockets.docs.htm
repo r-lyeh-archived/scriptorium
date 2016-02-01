@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	<html><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>SGScript Sockets library</title>
+		<link rel="stylesheet" type="text/css" href="docs.css">
+		<script type="text/javascript" src="docs.js"></script>
+	</head><body>
+	<h1>SGScript Sockets library</h1><div><h2>Table of Contents</h2><ul><li><a href='#Description'>Description</a>
+</li><li><a href='#SGScript-API'>SGScript API</a>
+<ul><li><a href='#All-SGScript-functions-A-Z'>All SGScript functions (A-Z)</a>
+</li><li><a href='#All-SGScript-constants-A-Z'>All SGScript constants (A-Z)</a>
+</li></ul><li><a href='#C-API'>C API</a>
+</li></ul></div><div>
+<div class='item'><a name='Description'></a><hr><h2>Description</h2><p>
+The main focus of support in this library was to support Internet sockets in a cross-platform way. Every other possible use of sockets currently is not supported.
+</p><p>
+The library is compiled to a &#39;sgssockets&#39; shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+</p><pre>include &quot;sgssockets&quot;;</pre></div>
+<div class='item'><a name='SGScript-API'></a><hr><h2>SGScript API</h2><h4>Objects:</h4><ul><li><a href="#socket-address-object">socket_address</a>
+</li><li><a href="#socket-object">socket</a></li></ul><h4>Functions:</h4><ul><li><a href="#socket-error-function">socket_error</a> - retrieve last error message, optionally as string
+</li><li><a href="#socket-geterrnobyname-function">socket_geterrnobyname</a> - retrieve socket errno value by name
+</li><li><a href="#socket-address-function">socket_address</a> - create socket address object from address string
+</li><li><a href="#socket-address-frombytes-function">socket_address_frombytes</a> - create socket address object from address byte buffer (sockaddr struct)
+</li><li><a href="#socket-getaddrinfo-function">socket_getaddrinfo</a> - create socket address from domain name
+</li><li><a href="#socket-gethostname-function">socket_gethostname</a> - retrieve hostname of device
+</li><li><a href="#socket-function">socket</a> - create a socket
+</li><li><a href="#socket-tcp-function">socket_tcp</a> - create a TCP socket
+</li><li><a href="#socket-udp-function">socket_udp</a> - create a UDP socket
+</li><li><a href="#socket-select-function">socket_select</a> - wait for socket state changes</li></ul><h4>Constants:</h4><ul><li><a href="#AF-PF-constants">AF_/PF_</a> - address/protocol families
+</li><li><a href="#SOCK-constants">SOCK_</a> - socket types
+</li><li><a href="#IPPROTO-constants">IPPROTO_</a> - Internet protocol types
+</li><li><a href="#MSG-constants">MSG_</a> - transfer flags
+</li><li><a href="#SHUT-constants">SHUT_</a> - shutdown flags (non-Windows version)
+</li><li><a href="#SD-constants">SD_</a> - shutdown flags (Windows version)</li></ul></div>
+<div class='item'><a name='socket-error-function'></a><hr><h2>socket_error [function]</h2><h3>socket_error( bool as_text = false )</h3><h4>returns the last error received from working with the sockets, possibly as text</h4></div>
+<div class='item'><a name='socket-geterrnobyname-function'></a><hr><h2>socket_geterrnobyname [function]</h2><h3>socket_geterrnobyname( string name )</h3><h4>returns a socket error code as integer by its name (for example, &quot;EWOULDBLOCK&quot;)</h4><ul><li>error codes can differ between platforms so it is expected to retrieve the required ones from the function for comparisons</li></ul></div>
+<div class='item'><a name='socket-address-object'></a><hr><h2>socket_address [object]</h2><ul><li>read-only properties
+<ul><li>family - the address family (AF_* constants) of this address, may be other than AF_INET or AF_INET6 but for those, feature set is severely limited
+</li></ul><li>read-write properties
+<ul><li>port - (AF_INET/AF_INET6 only)
+</li><li>addr_u32 - (AF_INET only) the address as an integer between 0 and 2^32-1
+</li><li>addr_buf - (AF_INET/AF_INET6 only) the address as a buffer of bytes of &#39;string&#39; type
+</li><li>addr_bytes - (AF_INET/AF_INET6 only) the address as an array of byte integers
+</li><li>addr_string - (AF_INET/AF_INET6 only) the address string without the port
+</li><li>full_addr_string - (AF_INET/AF_INET6 only) the address string with the port
+</li></ul><li>other features:
+<ul><li>tostring = &lt;obj&gt;.full_addr_string
+</li><li>GC-safe
+</li><li>limited content dump (full only for AF_INET/AF_INET6 addresses, for any other only <code>family</code> is dumped)
+</li><li>type identification (returns the string &quot;socket_address&quot;)</li></ul></li></ul></div>
+<div class='item'><a name='socket-address-function'></a><hr><h2>socket_address [function]</h2><h3>socket_address( int addrfamily, string addrstring[, int port ])</h3><h4>create address from string, optionally set port</h4><ul><li>only AF_INET and AF_INET6 are supported at the moment</li></ul></div>
+<div class='item'><a name='socket-address-frombytes-function'></a><hr><h2>socket_address_frombytes [function]</h2><h3>socket_address_frombytes( int addrfamily, string addrbytes[, int port ])</h3><h4>create address from byte buffer, optionally set port</h4><ul><li>only AF_INET and AF_INET6 are supported at the moment</li></ul></div>
+<div class='item'><a name='socket-getaddrinfo-function'></a><hr><h2>socket_getaddrinfo [function]</h2><h3>socket_getaddrinfo( string addrstring, string port[, int hint_socktype[, int hint_addrfamily ]])</h3><h4>resolve domain name to address, optionally specifying socket type and address family needed</h4></div>
+<div class='item'><a name='socket-gethostname-function'></a><hr><h2>socket_gethostname [function]</h2><h3>socket_gethostname()</h3><h4>return the host name of computer</h4></div>
+<div class='item'><a name='socket-object'></a><hr><h2>socket [object]</h2><ul><li>methods
+<ul><li><a href="#socket-bind-method">bind</a> - bind socket to port
+</li><li><a href="#socket-listen-method">listen</a> - wait for connection requests, return if successful
+</li><li><a href="#socket-accept-method">accept</a> - accept an incoming connection, retrieve connecting socket
+</li><li><a href="#socket-connect-method">connect</a> - connect to a remote address
+</li><li><a href="#socket-send-method">send</a> - send data over socket
+</li><li><a href="#socket-sendto-method">sendto</a> - send data to specified address over socket
+</li><li><a href="#socket-recv-method">recv</a> - receive data from socket
+</li><li><a href="#socket-recvfrom-method">recvfrom</a> - receive connectionless data and sender address from socket
+</li><li><a href="#socket-shutdown-method">shutdown</a> - shut down socket access (partially or fully)
+</li><li><a href="#socket-close-method">close</a> - close socket, disabling further operations
+</li><li><a href="#socket-getpeername-method">getpeername</a> - get hostname of connected device
+</li></ul><li>read-only properties
+<ul><li>[int] error - the last error code specifically for the socket
+</li></ul><li>write-only properties
+<ul><li>[bool] blocking - whether the socket is blocking
+</li></ul><li>read/write properties
+<ul><li>[bool] broadcast - whether the socket has broadcasting capabilities (applies to UDP sockets only)
+</li><li>[bool] reuse_addr - whether to reuse addresses (ports) when binding the socket
+</li><li>[real] send_timeout - timeout in seconds for <a href="#socket-send-method">send</a> / <a href="#socket-sendto-method">sendto</a> functions
+</li><li>[real] recv_timeout - timeout in seconds for <a href="#socket-recv-method">recv</a> / <a href="#socket-recvfrom-method">recvfrom</a> functions
+</li></ul><li>other features:
+<ul><li>tostring = &quot;socket&quot;
+</li><li>tobool = whether the socket is valid (not closed yet)
+</li><li>GC-safe
+</li><li>type identification (returns the string &quot;socket&quot;)</li></ul></li></ul></div>
+<div class='item'><a name='socket-bind-method'></a><hr><h2>socket.bind [method]</h2><h3>socket.bind( int port )</h3><h4>bind the socket to a port for listening</h4></div>
+<div class='item'><a name='socket-listen-method'></a><hr><h2>socket.listen [method]</h2><h3>socket.listen( int queuesize )</h3><h4>wait for connection requests, return if successful</h4></div>
+<div class='item'><a name='socket-accept-method'></a><hr><h2>socket.accept [method]</h2><h3>socket.accept()</h3><h4>retrieve the socket and address from the incoming connection</h4></div>
+<div class='item'><a name='socket-connect-method'></a><hr><h2>socket.connect [method]</h2><h3>socket.connect( socket_address )</h3><h4>attempt to create a connection to a specific address, return if successful</h4></div>
+<div class='item'><a name='socket-send-method'></a><hr><h2>socket.send [method]</h2><h3>socket.send( string buffer[, int flags ])</h3><h4>attempt to send data over a connected socket, return amount of data sent or false on failure</h4><ul><li>operation can take an unspecified amount of time, the limit can be controller with <code>send_timeout</code> property of the socket</li></ul></div>
+<div class='item'><a name='socket-sendto-method'></a><hr><h2>socket.sendto [method]</h2><h3>socket.sendto( string buffer, socket_address[, int flags ])</h3><h4>attempt to send data over an unconnected socket to the specified address, return amount of data sent or false on failure</h4><ul><li>operation can take an unspecified amount of time, the limit can be controller with <code>send_timeout</code> property of the socket</li></ul></div>
+<div class='item'><a name='socket-recv-method'></a><hr><h2>socket.recv [method]</h2><h3>socket.recv( int maxlength[, int flags ])</h3><h4>attempt to receive at most <code>maxlength</code> bytes of pending data</h4><ul><li>socket may block if blocking is enabled and there&#39;s no data at the moment
+<ul><li>maximum blocking time is determined by socket&#39;s <code>recv_timeout</code> property
+</li></ul><li>return values:
+<ul><li>false if there was an error
+</li><li>true if socket was closed
+</li><li>byte buffer containing 1 - <code>maxlength</code> bytes if read was successful</li></ul></li></ul></div>
+<div class='item'><a name='socket-recvfrom-method'></a><hr><h2>socket.recvfrom [method]</h2><h3>socket.recvfrom( int maxlength[, int flags ])</h3><h4>attempt to receive at most <code>maxlength</code> bytes of pending data, return address of sender with data</h4><ul><li>socket may block if blocking is enabled and there&#39;s no data at the moment
+<ul><li>maximum blocking time is determined by socket&#39;s <code>recv_timeout</code> property
+</li></ul><li>return values:
+<ul><li>false if there was an error
+</li><li>byte buffer containing 1 - <code>maxlength</code> bytes and socket_address if read was successful</li></ul></li></ul></div>
+<div class='item'><a name='socket-shutdown-method'></a><hr><h2>socket.shutdown [method]</h2><h3>socket.shutdown( int type )</h3><h4>shut down the socket, disabling the specified kind of operations</h4><ul><li>socket type is one of <a href="#SHUT-constants">SHUT_</a> or <a href="#SD-constants">SD_</a> constants</li></ul></div>
+<div class='item'><a name='socket-close-method'></a><hr><h2>socket.close [method]</h2><h3>socket.close()</h3><h4>close the socket, disabling further operations</h4></div>
+<div class='item'><a name='socket-getpeername-method'></a><hr><h2>socket.getpeername [method]</h2><h3>socket.getpeername()</h3><h4>return the host name of the device on the other end of the socket, if it&#39;s connected</h4></div>
+<div class='item'><a name='socket-function'></a><hr><h2>socket [function]</h2><h3>socket( int addrfamily, int socktype, int protocol )</h3><h4>create a socket with the specified parameters</h4><ul><li><code>addrfamily</code> requires one of <a href="#AF-PF-constants">AF_</a> constants
+</li><li><code>socktype</code> requires one of <a href="#SOCK-constants">SOCK_</a> constants
+</li><li><code>protocol</code> requires one of <a href="#IPPROTO-constants">IPPROTO_</a> constants
+</li><li>a valid socket object is returned on success</li></ul></div>
+<div class='item'><a name='socket-tcp-function'></a><hr><h2>socket_tcp [function]</h2><h3>socket_tcp([ bool ipv6 ])</h3><h4>create a TCP socket</h4><ul><li>depending on <code>ipv6</code> value, a socket uses IPv6 or IPv4 address family</li></ul></div>
+<div class='item'><a name='socket-udp-function'></a><hr><h2>socket_udp [function]</h2><h3>socket_udp([ bool ipv6 ])</h3><h4>create a UDP socket</h4><ul><li>depending on <code>ipv6</code> value, a socket uses IPv6 or IPv4 address family</li></ul></div>
+<div class='item'><a name='socket-select-function'></a><hr><h2>socket_select [function]</h2><h3>socket_select( array readscl, array writescl, array errorscl[, real timeout ])</h3><h4>check socket lists for state, optionally specifying maximum wait time</h4><ul><li><code>readscl</code> - list of sockets to be checked for readability
+</li><li><code>writescl</code> - list of sockets to be checked for writability
+</li><li><code>errorscl</code> - list of sockets to be checked for errors
+</li><li><code>timeout</code> - optional checking timeout, function waits indefinitely if not specified
+</li><li>the function returns as soon as at least one socket is in the required state or if time limit was reached
+</li><li>return values:</li></ul><p>
+	- -1 on error
+	- &gt;0 if sockets have acquired the necessary states (the total number of such sockets is returned)
+	- 0 if time limit was reached
+</p></div>
+<div class='item'><a name='AF-PF-constants'></a><hr><h2>AF_/PF_ [constants]</h2><p>
+address family / protocol family constants
+</p><ul><li>AF_INET - IPv4 address family
+</li><li>AF_INET6 - IPv6 address family
+</li><li>AF_UNIX - Unix socket address family
+</li><li>AF_IPX - IPX socket address family</li></ul><p>
+All of these constants are available with both AF_ and PF_ prefixes.
+</p></div>
+<div class='item'><a name='SOCK-constants'></a><hr><h2>SOCK_ [constants]</h2><p>
+socket type constants
+</p><ul><li>SOCK_STREAM - TCP socket type (connection-based, stream, sequential, reliable)
+</li><li>SOCK_DGRAM - UDP socket type (connectionless, datagrams, unreliable, out-of-order)
+</li><li>SOCK_RAW - raw socket (low-level network access)
+</li><li>SOCK_SEQPACKET - (connection-based, datagrams, sequential, reliable)</li></ul></div>
+<div class='item'><a name='IPPROTO-constants'></a><hr><h2>IPPROTO_ [constants]</h2><p>
+internet protocol type constants
+</p><ul><li>IPPROTO_TCP - TCP protocol
+</li><li>IPPROTO_UDP - UDP protocol</li></ul></div>
+<div class='item'><a name='MSG-constants'></a><hr><h2>MSG_ [constants]</h2><p>
+message flag constants
+</p><ul><li>MSG_CONFIRM - confirm path validity
+</li><li>MSG_DONTROUTE - bypass gateway for packet transfer
+</li><li>MSG_DONTWAIT - non-blocking I/O
+</li><li>MSG_EOR - end of record
+</li><li>MSG_MORE - sender will send more
+</li><li>MSG_NOSIGNAL - do not generate SIGPIPE
+</li><li>MSG_OOB - out-of-band data</li></ul></div>
+<div class='item'><a name='SHUT-constants'></a><hr><h2>SHUT_ [constants]</h2><p>
+shutdown type constants (non-Windows version), same as <a href="#SD-constants">SD_</a> constants
+</p><ul><li>SHUT_RD - shut down reading/receiving capability
+</li><li>SHUT_WR - shut down writing/sending capability
+</li><li>SHUT_RDWR - shut down everything</li></ul></div>
+<div class='item'><a name='SD-constants'></a><hr><h2>SD_ [constants]</h2><p>
+shutdown type constants (Windows version), same as <a href="#SHUT-constants">SHUT_</a> constants
+</p><ul><li>SD_RECEIVE - shut down reading/receiving capability
+</li><li>SD_SEND - shut down writing/sending capability
+</li><li>SD_BOTH - shut down everything</li></ul></div>
+<div class='item'><a name='All-SGScript-functions-A-Z'></a><hr><h2>All SGScript functions (A-Z)</h2><ul><li><a href="#socket-function">socket [function]</a>
+</li><li><a href="#socket-address-function">socket_address [function]</a>
+</li><li><a href="#socket-address-frombytes-function">socket_address_frombytes [function]</a>
+</li><li><a href="#socket-error-function">socket_error [function]</a>
+</li><li><a href="#socket-getaddrinfo-function">socket_getaddrinfo [function]</a>
+</li><li><a href="#socket-geterrnobyname-function">socket_geterrnobyname [function]</a>
+</li><li><a href="#socket-gethostname-function">socket_gethostname [function]</a>
+</li><li><a href="#socket-select-function">socket_select [function]</a>
+</li><li><a href="#socket-tcp-function">socket_tcp [function]</a>
+</li><li><a href="#socket-udp-function">socket_udp [function]</a></li></ul></div>
+<div class='item'><a name='All-SGScript-constants-A-Z'></a><hr><h2>All SGScript constants (A-Z)</h2><ul><li><a href="#AF-PF-constants">AF_/PF_ [constants]</a>
+</li><li><a href="#IPPROTO-constants">IPPROTO_ [constants]</a>
+</li><li><a href="#MSG-constants">MSG_ [constants]</a>
+</li><li><a href="#SD-constants">SD_ [constants]</a>
+</li><li><a href="#SHUT-constants">SHUT_ [constants]</a>
+</li><li><a href="#SOCK-constants">SOCK_ [constants]</a></li></ul></div>
+<div class='item'><a name='C-API'></a><hr><h2>C API</h2><ul><li><a href="#socket-type">socket (type)</a> - socket object
+</li><li><a href="#socket-address-type">socket_address (type)</a> - socket address object</li></ul></div>
+<div class='item'><a name='socket-type'></a><hr><h2>socket [type]</h2><h3>socket</h3><h4>a socket object contains the socket identifier directly in the data pointer</h4><ul><li>extraction of the identifier can be done this way: <code>((int)(size_t)obj-&gt;data)</code>
+</li><li>the identifier may be -1 if the socket is closed</li></ul></div>
+<div class='item'><a name='socket-address-type'></a><hr><h2>socket_address [type]</h2><h3>socket_address</h3><h4>a socket address object contains the address of any type (family), data pointer points to a sockaddr_storage struct</h4><ul><li>extraction can be done by casting the pointer to one of the sockaddr types (_in, _in6, _storage and others), depending on the value of the address family member (all structs are supposed to have it at the same place)</li></ul></div>
+</div>
+	</body></html>
+	

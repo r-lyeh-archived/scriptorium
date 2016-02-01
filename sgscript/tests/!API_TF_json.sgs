@@ -1,0 +1,105 @@
+
+global ERRORS;
+ERRORS = "";
+include "sgsjson";
+
+testEqual( typeof(json_encode), "cfunc", "sgsjson library is loaded" );
+testEqual( ERRORS, "", "sgsjson library loaded without errors" );
+
+function tostr( x )
+{
+	if( typeof( x ) == "array" )
+	{
+		out = "";
+		foreach( v : x )
+		{
+			if( out != "" ) out $= ",";
+			out $= tostr( v );
+		}
+		return "[" $ out $ "]";
+	}
+	else if( typeof( x ) == "dict" )
+	{
+		out = "";
+		foreach( k, v : x )
+		{
+			if( out != "" ) out $= ",";
+			out $= k $ "=" $ tostr( v );
+		}
+		return "{" $ out $ "}";
+	}
+	else
+		return tostring(x);
+}
+
+
+tests =
+{
+	"" = "null",
+	"[" = "null",
+	"][" = "null",
+	"[]" = "[]",
+	"null" = "null",
+	"[null]" = "[null]",
+	"[[null]" = "null",
+	"[[null]]" = "[[null]]",
+	"[null null]" = "null",
+	"[null,null]" = "[null,null]",
+	"[null,null,]" = "null",
+	"[null,,null]" = "null",
+	"[,null,null]" = "null",
+	"[[],[]]" = "[[],[]]",
+	'"wat"' = "wat",
+	'["huh","wat"]' = "[huh,wat]",
+	"{}" = "{}",
+	'{"key"}' = "null",
+	'{"key":true}' = "{key=true}",
+	'{"a":false,"b":true}' = "{a=false,b=true}",
+	'{"a":false,"b":true,}' = "null",
+	'{"a":false,,"b":true}' = "null",
+	'{,"a":false,"b":true}' = "null",
+	'["a"}' = "null",
+	'{"a"]' = "null",
+	'{"a":["b"]}' = "{a=[b]}",
+	'[{"a":"b"}]' = "[{a=b}]",
+	'"\\n\\t\\r\\f\\u2122"' = "\n\t\r\f\xe2\x84\xa2",
+	'"\\x"' = "null",
+	'"\\u123"' = "null",
+	'{\n\t"a": true\n}' = "{a=true}",
+	'[true][false]' = "null",
+	"{true:false}" = "null",
+	"5" = "5",
+	"45" = "45",
+	"12.345" = "12.345",
+	"0.234" = "0.234",
+	"00" = "null",
+	"01.23" = "null",
+	"1.23e5" = "123000",
+	"1.23e-2" = "0.0123",
+	'"\\u0065"' = "e",
+};
+
+foreach( test, expect : tests )
+{
+	out = json_decode( test );
+	str = tostr( out );
+	testEqual( str, expect );
+}
+
+
+println( "--- encoding ---" );
+
+enctests =
+{
+	"null" = null,
+	"[]" = [],
+	"{}" = {},
+	'{"a":"b"}' = { a = "b" },
+	'{"a":[]}' = { a = [] },
+};
+
+foreach( expect, test : enctests )
+{
+	out = json_encode( test );
+	testEqual( out, expect );
+}

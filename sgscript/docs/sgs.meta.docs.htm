@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	<html><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>SGScript Metaprogramming helper library</title>
+		<link rel="stylesheet" type="text/css" href="docs.css">
+		<script type="text/javascript" src="docs.js"></script>
+	</head><body>
+	<h1>SGScript Metaprogramming helper library</h1><div><h2>Table of Contents</h2><ul><li><a href='#Description'>Description</a>
+</li><li><a href='#SGScript-API'>SGScript API</a>
+</li></ul></div><div>
+<div class='item'><a name='Description'></a><hr><h2>Description</h2><p>
+The goal of this library is to provide further tools for handling the compilation part of SGScript. Specifically, this library implements bytecode parsing.
+</p><p>
+The library is compiled to a &#39;sgsmeta&#39; shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+</p><pre>include &quot;sgsmeta&quot;;</pre></div>
+<div class='item'><a name='SGScript-API'></a><hr><h2>SGScript API</h2><h4>Functions:</h4><ul><li><a href="#meta-globals-function">meta_globals</a> - load all global constants
+</li><li><a href="#meta-unpack-function">meta_unpack</a> - parse a bytecode buffer
+</li><li><a href="#meta-opname-function">meta_opname</a> - retrieve bytecode instruction name by ID</li></ul><h4>Constants:</h4><ul><li><a href="#SI-constants">SI_</a> - instruction code/ID constants</li></ul></div>
+<div class='item'><a name='meta-globals-function'></a><hr><h2>meta_globals [function]</h2><h3>meta_globals()</h3><h4>load all global constants</h4><ul><li>for now, only instruction code/ID constants are loaded (the <a href="#SI-constants">SI_</a> prefix)
+</li><li>to load them into another <code>dict</code> variable, environment can be altered by setting <code>_G</code></li></ul></div>
+<div class='item'><a name='meta-unpack-function'></a><hr><h2>meta_unpack [function]</h2><h3>meta_unpack( string bytecode_buffer )</h3><h4>parse a bytecode buffer</h4><ul><li>returns a dict containing root function or false/warning on failure</li></ul><p>
+The structure of a function:
+</p><ul><li><code>array consts</code> -- contains a list of parsed constants for the function
+</li><li><code>array code</code> -- contains a list of parsed instructions for the function
+</li><li><code>array lines</code> -- contains a list of line numbers for the instructions, array size should be equal to that of instruction array
+</li><li><code>bool gotthis</code> -- whether <code>this</code> is required (should be false for root function)
+</li><li><code>int numargs</code> -- number of input arguments (should be 0 for root function)
+</li><li><code>int numtmp</code> -- number of temporary variables in function
+</li><li><code>int numclsr</code> -- number of closures required in function
+</li><li><code>string name</code> -- name of the function (&quot;&lt;main&gt;&quot; for root function)
+</li><li><code>int line</code> -- first line number of function definition (0 for root function)</li></ul><p>
+The structure of a constant:
+</p><ul><li><code>int type</code> -- base type ID of constant, should be one of SVT_[NULL|BOOL|INT|REAL|STRING|FUNC]
+</li><li><code>var data</code> -- variable in the previously specified type or a parsed function in the case of SVT_FUNC</li></ul><p>
+The structure of an instruction:
+</p><ul><li><code>int op</code> -- operation code (ID), one of <a href="#SI-constants">SI_</a> constants, name can be retrieved with <a href="#meta-opname-function">meta_opname</a>
+</li><li><code>int a</code> -- the &quot;A&quot; argument, 0 - 255
+</li><li><code>int b</code> -- the &quot;B&quot; argument, -256 - 255
+</li><li><code>int c</code> -- the &quot;C&quot; argument, -256 - 255
+</li><li><code>int e</code> -- the &quot;E&quot; (extended) argument, -65536 - 65535 (occupies same memory space as A/B)</li></ul></div>
+<div class='item'><a name='meta-opname-function'></a><hr><h2>meta_opname [function]</h2><h3>meta_opname( int id )</h3><h4>retrieve bytecode instruction name by ID</h4><ul><li>this function is the SGScript version of C API function sgs_CodeString( SGS_CODE_OP, id )</li></ul><pre>meta_opname( 0 ); // returns &quot;nop&quot;</pre></div>
+<div class='item'><a name='SI-constants'></a><hr><h2>SI_ [constants]</h2><p>
+SGScript instruction code/type/ID constants.
+</p><p>
+<em class='notice-bgr'>These constants are only available if <a href="#meta-globals-function">meta_globals</a> is called first.</em>
+</p><ul><li>SI_NOP - no op
+</li><li>SI_PUSH - push variable to stack
+</li><li>SI_RETN - return from call with the specified number of variables off the top of the stack
+</li><li>SI_JUMP - do a relative jump from after the instruction
+</li><li>SI_JMPT - do a relative jump from after the instruction, if a register/constant is true
+</li><li>SI_JMPF - do a relative jump from after the instruction, if a register/constant is false
+</li><li>SI_CALL - do a function call with the specified function/argument list
+</li><li>SI_FORPREP - prepare for <code>foreach</code> loop, retrieving the iterator
+</li><li>SI_FORLOAD - load key/value from iterator
+</li><li>SI_FORJUMP - advance the iterator, optionally jumping if iterator reached end
+</li><li>SI_LOADCONST - load constant (extended addressing) into register
+</li><li>SI_GETVAR - retrieve global variable by key
+</li><li>SI_SETVAR - set global variable by key
+</li><li>SI_GETPROP - retrieve property from object by key
+</li><li>SI_SETPROP - set property in object by key
+</li><li>SI_GETINDEX - retrieve index from object by key
+</li><li>SI_SETINDEX - set index in object by key
+</li><li>SI_GENCLSR - generate number of closure variables, pushing them on top of stack
+</li><li>SI_PUSHCLSR - copy and push closure variable from the stack
+</li><li>SI_MAKECLSR - make function with attached closure variables
+</li><li>SI_GETCLSR - get closure value from closure variable on stack
+</li><li>SI_SETCLSR - set closure value to closure variable on stack
+</li><li>SI_SET - copy variable from register/constant to another register
+</li><li>SI_MCONCAT - concatenate range of variables
+</li><li>SI_CONCAT - concatenate two variables
+</li><li>SI_NEGATE - negate variable
+</li><li>SI_BOOL_INV - do logical inversion on variable
+</li><li>SI_INVERT - do bitwise inversion on variable
+</li><li>SI_INC - add 1 to variable
+</li><li>SI_DEC - subtract 1 from variable
+</li><li>SI_ADD - add two variables
+</li><li>SI_SUB - subtract two variables
+</li><li>SI_MUL - multiply two variables
+</li><li>SI_DIV - divide two variables
+</li><li>SI_MOD - do modulo on two variables
+</li><li>SI_AND - do bitwise AND on two variables
+</li><li>SI_OR - do bitwise OR on two variables
+</li><li>SI_XOR - do bitwise XOR on two variables
+</li><li>SI_LSH - do left bit shift
+</li><li>SI_RSH - do right bit shift
+</li><li>SI_SEQ - compare two variables for strict equality
+</li><li>SI_SNEQ - compare two variables for strict inequality
+</li><li>SI_EQ - compare two variables for (weak) equality
+</li><li>SI_NEQ - compare two variables for (weak) inequality
+</li><li>SI_LT - test if one variable is less than other
+</li><li>SI_GTE - test if one variable is greater than or equal to other
+</li><li>SI_GT - test if one variable is greater than other
+</li><li>SI_LTE - test if one variable is less than or equal to other
+</li><li>SI_RAWCMP - return variable difference as -1/0/1
+</li><li>SI_ARRAY - create an array from stack items
+</li><li>SI_DICT - create a dict from stack items</li></ul></div>
+</div>
+	</body></html>
+	

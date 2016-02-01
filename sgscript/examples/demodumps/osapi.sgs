@@ -1,0 +1,28 @@
+
+include_library( "string" );
+include_library( "os" );
+
+formats = string_explode( "a,A,b,B,c,x,X,Z,U,W,C,d,e,F,H,I,j,m,M,p,R,S,T,u,w,y,Y,f,t,%", "," );
+dateproc = {};
+foreach( fmt : formats )
+	dateproc[ fmt ] = os_date_string( "%" $ fmt );
+
+printlns
+(
+	"OS type = " $ os_gettype(),
+	"OS time =       " $ os_time(),
+	"OS time +2 =    " $ os_time(2),
+	"OS time +2:30 = " $ os_time(2.5),
+	"OS time +3 =    " $ os_time(3),
+	"",
+	"timezone (R) =  " $ os_get_timezone(),
+	"timezone (S) =  " $ os_get_timezone(true),
+	"",
+	"date formats >", dumpvar( dateproc ),
+	"",
+	"parsed time >", dumpvar( os_parse_time() ),
+	"",
+	"made time >", dumpvar( os_make_time( 30, 30, 12, 25, 5, 2013 ) ),
+	"",
+	"good!"
+);

@@ -1,0 +1,3 @@
+
+a = "success";
+print( if( 5*5>5, a, doesnotexist() ) );

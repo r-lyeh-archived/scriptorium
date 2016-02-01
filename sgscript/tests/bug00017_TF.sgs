@@ -1,0 +1,21 @@
+// incorrect "gotthis" retrieval / argument counting error
+function vec3( x, y, z ){ return {x=x,y=y,z=z}; }
+
+vec3_rotate_z = function(){
+	println(this);
+function vec3_rotate_z( v, angle )
+{
+	c = angle; s = 1 - angle;
+	printlns( "---", v.x, v.y, "--" );
+	println( v.x * c - v.y * s );
+	println( v.x * s + v.y * c );
+	r = vec3( v.x * c - v.y * s, v.x * s + v.y * c, v.z );
+	printlns( "--", r );
+	return r;
+}
+return vec3_rotate_z;}();
+
+v = {x=0,y=1,z=0};
+v2 = vec3_rotate_z( v, 0.1 );
+
+testEqual( v2.x, -0.9 );

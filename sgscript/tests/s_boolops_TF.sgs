@@ -1,0 +1,60 @@
+
+global OPS;
+var A = false, B = true, C;
+beet = "boolean test: ";
+
+function OP_FALSE()
+{
+	global OPS;
+	OPS $= "F";
+	return false;
+}
+
+function OP_TRUE()
+{
+	global OPS;
+	OPS $= "T";
+	return true;
+}
+
+function HIT()
+{
+	global OPS;
+	OPS $= "H";
+}
+
+
+print( "\n\tboolean assignment tests\n" );
+
+C = A; C &&= B; testEqual( C, false, beet$ "false &&= true" );
+C = A; C &&= A; testEqual( C, false, beet$ "false &&= false" );
+C = B; C &&= B; testEqual( C, true, beet$ "true &&= true" );
+C = B; C &&= A; testEqual( C, false, beet$ "true &&= false" );
+
+C = A; C ||= B; testEqual( C, true, beet$ "false ||= true" );
+C = A; C ||= A; testEqual( C, false, beet$ "false ||= false" );
+C = B; C ||= B; testEqual( C, true, beet$ "true ||= true" );
+C = B; C ||= A; testEqual( C, true, beet$ "true ||= false" );
+
+
+print( "\n\tboolean tests with 2 operands\n" );
+
+OPS = ""; if( OP_FALSE() && OP_TRUE() ) HIT(); testEqual( OPS, "F", beet$ "false && true" );
+OPS = ""; if( OP_FALSE() && OP_FALSE() ) HIT(); testEqual( OPS, "F", beet$ "false && false" );
+OPS = ""; if( OP_TRUE() && OP_TRUE() ) HIT(); testEqual( OPS, "TTH", beet$ "true && true" );
+OPS = ""; if( OP_TRUE() && OP_FALSE() ) HIT(); testEqual( OPS, "TF", beet$ "true && false" );
+
+OPS = ""; if( OP_FALSE() || OP_TRUE() ) HIT(); testEqual( OPS, "FTH", beet$ "false || true" );
+OPS = ""; if( OP_FALSE() || OP_FALSE() ) HIT(); testEqual( OPS, "FF", beet$ "false || false" );
+OPS = ""; if( OP_TRUE() || OP_TRUE() ) HIT(); testEqual( OPS, "TH", beet$ "true || true" );
+OPS = ""; if( OP_TRUE() || OP_FALSE() ) HIT(); testEqual( OPS, "TH", beet$ "true || false" );
+
+
+print( "\n\tboolean tests with 3 operands\n" );
+
+OPS = ""; if( OP_TRUE() && OP_FALSE() && OP_FALSE() ) HIT(); testEqual( OPS, "TF", beet$ "T&F&F" );
+OPS = ""; if( OP_TRUE() && OP_TRUE() && OP_FALSE() ) HIT(); testEqual( OPS, "TTF", beet$ "T&T&F" );
+OPS = ""; if( OP_TRUE() && OP_TRUE() || OP_FALSE() ) HIT(); testEqual( OPS, "TTH", beet$ "T&T|F" );
+OPS = ""; if( OP_TRUE() && OP_FALSE() || OP_TRUE() ) HIT(); testEqual( OPS, "TFTH", beet$ "T&F|T" );
+OPS = ""; if( OP_FALSE() || OP_TRUE() && OP_FALSE() ) HIT(); testEqual( OPS, "FTF", beet$ "F|T&F" );
+OPS = ""; if( OP_FALSE() || OP_TRUE() && OP_TRUE() ) HIT(); testEqual( OPS, "FTTH", beet$ "F|T&T" );

@@ -1,0 +1,4 @@
+
+printvar( """""" );
+printvar( '''line\n
+\nend''' );

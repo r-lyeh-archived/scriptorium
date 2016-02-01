@@ -1,0 +1,20 @@
+
+global success = false;
+pcall(function(){
+	BTN = {};
+	BTN.callback = function( event ) use( BTN )
+	{
+		if( event.type == 2 )
+		{
+			x = this.callback({ type = 1 });
+			global success = true;
+			return x;
+		}
+		return 5;
+	};
+
+	BTN.callback({ type = 2 });
+},function(x){return x;});
+
+testEqual( success, true );
+

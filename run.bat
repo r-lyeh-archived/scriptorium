@@ -221,4 +221,9 @@ rem @popd
 
 @echo .
 @echo lil
-@bench 1 lil\lil tests\fib.lil //LIL,[lil](https://github.com/badsector/lil/)
+@bench 1 tcl\lil tests\fib.lil //Tcl,[lil](https://github.com/badsector/lil/)
+
+@echo .
+@echo sgscript
+@bench 5 sgscript\sgs tests\fib.sgs //SGScript,[sgscript](https://github.com/snake5/sgscript/)
+

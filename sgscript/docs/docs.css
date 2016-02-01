@@ -1,0 +1,41 @@
+
+body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 16px; background: #EFEFEF; color: #333; }
+h1 { margin: 6px 0; background: #555; color: #EEE; padding: 2px 8px; }
+h2 { margin: 21px 0 5px 0; display: inline-block; background: #832; color: #EEE; padding: 2px 8px; }
+h3 { margin: 19px 0 4px 0; }
+p, ul { margin: 8px 0; line-height: 150%; }
+h1 a, h2 a, h3 a { color: inherit; }
+a { text-decoration: none; color: #832; }
+a:hover { text-decoration: underline; }
+.cont { margin-left: 16px; }
+.txt { line-height: 150%; }
+.toc { margin: 4px 16px; line-height: 130%; }
+.break { height: 16px; }
+.l1 { margin-left: 0px; }
+.l2 { margin-left: 16px; }
+table { box-shadow: 1px 1px 5px rgba( 0, 0, 0, 0.2 ); }
+th, td { padding: 2px 5px; }
+th { background: #FFF; }
+pre,
+code { background: #E5E5E5; display: inline-block; padding: 2px 4px; border-radius: 2px; line-height: 120%; border: 1px solid #F7F7F7; position: relative; }
+code { white-space: nowrap; }
+pre { tab-size: 4; }
+body pre { display: block; }
+code i { display: none; padding: 4px 8px; left: 120%; top: 50%; border: 1px solid #A00; background: #C21; color: #EEE; }
+code:hover i { display: inline-block; position: absolute; z-index: 2; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+.notice-bgr { background: #BCE; padding: 8px; margin: 8px; display: block; }
+.notice { background: #79C; color: #FFF; font-weight: bold; padding: 4px; margin: 4px 8px 4px 4px; display: inline-block; font-size: 16px; border: 1px solid #68B;
+	width: 20px; height: 20px; text-align: center; text-shadow: 0px 0px 5px #FFF, 0px 0px 9px #FFF, 0px 0px 13px #FFF; font-family: monospace; border-radius: 1px; }
+i.note { color: #AAA; font-size: 13px; }
+.al-pro .inner { color: #006400; }
+.al-con .inner { color: #b22222; }
+.al-pro .inner, .al-con .inner { display: inline-block; padding: 2px 0; }
+.al-pro .mark, .al-con .mark { padding: 2px 2px 2px 0; }
+dt { font-weight: bold; }
+
+.sgsCOM, pre > .sgsCOM *, code > .sgsCOM * { color: #5A3; }
+.sgsSTR, pre > .sgsSTR *, code > .sgsSTR * { color: #C21; }
+.sgsKEY { color: #13C; }
+.sgsSPC { color: #341; font-weight: bold; }
+.sgsNUM { color: #481; }
+pre a, code a { text-decoration: underline; }

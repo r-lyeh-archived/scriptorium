@@ -1,0 +1,123 @@
+
+global ERRORS = "";
+
+include "string";
+
+function testall( method2 )
+{
+	code = '
+//// -/unexp "this"
+// 0 exp. args
+(function(){ testEqual( tostring(va_get_args()), "[]"     , "0 required, 0 received" ); }());
+(function(){ testEqual( tostring(va_get_args()), "[1]"    , "0 required, 1 received" ); }(1));
+(function(){ testEqual( tostring(va_get_args()), "[1,2]"  , "0 required, 2 received" ); }(1,2));
+(function(){ testEqual( tostring(va_get_args()), "[1,2,3]", "0 required, 3 received" ); }(1,2,3));
+
+// 1 exp. arg.
+(function(a){ testEqual( tostring(va_get_args()), "[]"     , "1 required, 0 received" ); }());
+(function(a){ testEqual( tostring(va_get_args()), "[1]"    , "1 required, 1 received" ); }(1));
+(function(a){ testEqual( tostring(va_get_args()), "[1,2]"  , "1 required, 2 received" ); }(1,2));
+(function(a){ testEqual( tostring(va_get_args()), "[1,2,3]", "1 required, 3 received" ); }(1,2,3));
+
+// 2 exp. arg.
+(function(a,b){ testEqual( tostring(va_get_args()), "[]"     , "2 required, 0 received" ); }());
+(function(a,b){ testEqual( tostring(va_get_args()), "[1]"    , "2 required, 1 received" ); }(1));
+(function(a,b){ testEqual( tostring(va_get_args()), "[1,2]"  , "2 required, 2 received" ); }(1,2));
+(function(a,b){ testEqual( tostring(va_get_args()), "[1,2,3]", "2 required, 3 received" ); }(1,2,3));
+
+// 3 exp. arg.
+(function(a,b,c){ testEqual( tostring(va_get_args()), "[]"     , "3 required, 0 received" ); }());
+(function(a,b,c){ testEqual( tostring(va_get_args()), "[1]"    , "3 required, 1 received" ); }(1));
+(function(a,b,c){ testEqual( tostring(va_get_args()), "[1,2]"  , "3 required, 2 received" ); }(1,2));
+(function(a,b,c){ testEqual( tostring(va_get_args()), "[1,2,3]", "3 required, 3 received" ); }(1,2,3));
+
+//// +/unexp "this"
+// 0 exp. args
+(0!function(){ testEqual( tostring(va_get_args()), "[]"     , "0 required, 0 received, >this" ); }());
+(0!function(){ testEqual( tostring(va_get_args()), "[1]"    , "0 required, 1 received, >this" ); }(1));
+(0!function(){ testEqual( tostring(va_get_args()), "[1,2]"  , "0 required, 2 received, >this" ); }(1,2));
+(0!function(){ testEqual( tostring(va_get_args()), "[1,2,3]", "0 required, 3 received, >this" ); }(1,2,3));
+
+// 1 exp. arg.
+(0!function(a){ testEqual( tostring(va_get_args()), "[]"     , "1 required, 0 received, >this" ); }());
+(0!function(a){ testEqual( tostring(va_get_args()), "[1]"    , "1 required, 1 received, >this" ); }(1));
+(0!function(a){ testEqual( tostring(va_get_args()), "[1,2]"  , "1 required, 2 received, >this" ); }(1,2));
+(0!function(a){ testEqual( tostring(va_get_args()), "[1,2,3]", "1 required, 3 received, >this" ); }(1,2,3));
+
+// 2 exp. arg.
+(0!function(a,b){ testEqual( tostring(va_get_args()), "[]"     , "2 required, 0 received, >this" ); }());
+(0!function(a,b){ testEqual( tostring(va_get_args()), "[1]"    , "2 required, 1 received, >this" ); }(1));
+(0!function(a,b){ testEqual( tostring(va_get_args()), "[1,2]"  , "2 required, 2 received, >this" ); }(1,2));
+(0!function(a,b){ testEqual( tostring(va_get_args()), "[1,2,3]", "2 required, 3 received, >this" ); }(1,2,3));
+
+// 3 exp. arg.
+(0!function(a,b,c){ testEqual( tostring(va_get_args()), "[]"     , "3 required, 0 received, >this" ); }());
+(0!function(a,b,c){ testEqual( tostring(va_get_args()), "[1]"    , "3 required, 1 received, >this" ); }(1));
+(0!function(a,b,c){ testEqual( tostring(va_get_args()), "[1,2]"  , "3 required, 2 received, >this" ); }(1,2));
+(0!function(a,b,c){ testEqual( tostring(va_get_args()), "[1,2,3]", "3 required, 3 received, >this" ); }(1,2,3));
+
+//// -/EXP "this"
+// 0 exp. args
+(function(){ testEqual( this$tostring(va_get_args()), "null[]"     , "0 required, 0 received, this>" ); }());
+(function(){ testEqual( this$tostring(va_get_args()), "null[1]"    , "0 required, 1 received, this>" ); }(1));
+(function(){ testEqual( this$tostring(va_get_args()), "null[1,2]"  , "0 required, 2 received, this>" ); }(1,2));
+(function(){ testEqual( this$tostring(va_get_args()), "null[1,2,3]", "0 required, 3 received, this>" ); }(1,2,3));
+
+// 1 exp. arg.
+(function(a){ testEqual( this$tostring(va_get_args()), "null[]"     , "1 required, 0 received, this>" ); }());
+(function(a){ testEqual( this$tostring(va_get_args()), "null[1]"    , "1 required, 1 received, this>" ); }(1));
+(function(a){ testEqual( this$tostring(va_get_args()), "null[1,2]"  , "1 required, 2 received, this>" ); }(1,2));
+(function(a){ testEqual( this$tostring(va_get_args()), "null[1,2,3]", "1 required, 3 received, this>" ); }(1,2,3));
+
+// 2 exp. arg.
+(function(a,b){ testEqual( this$tostring(va_get_args()), "null[]"     , "2 required, 0 received, this>" ); }());
+(function(a,b){ testEqual( this$tostring(va_get_args()), "null[1]"    , "2 required, 1 received, this>" ); }(1));
+(function(a,b){ testEqual( this$tostring(va_get_args()), "null[1,2]"  , "2 required, 2 received, this>" ); }(1,2));
+(function(a,b){ testEqual( this$tostring(va_get_args()), "null[1,2,3]", "2 required, 3 received, this>" ); }(1,2,3));
+
+// 3 exp. arg.
+(function(a,b,c){ testEqual( this$tostring(va_get_args()), "null[]"     , "3 required, 0 received, this>" ); }());
+(function(a,b,c){ testEqual( this$tostring(va_get_args()), "null[1]"    , "3 required, 1 received, this>" ); }(1));
+(function(a,b,c){ testEqual( this$tostring(va_get_args()), "null[1,2]"  , "3 required, 2 received, this>" ); }(1,2));
+(function(a,b,c){ testEqual( this$tostring(va_get_args()), "null[1,2,3]", "3 required, 3 received, this>" ); }(1,2,3));
+
+//// +/EXP "this"
+// 0 exp. args
+(0!function(){ testEqual( this$tostring(va_get_args()), "0[]"     , "0 required, 0 received, >this>" ); }());
+(0!function(){ testEqual( this$tostring(va_get_args()), "0[1]"    , "0 required, 1 received, >this>" ); }(1));
+(0!function(){ testEqual( this$tostring(va_get_args()), "0[1,2]"  , "0 required, 2 received, >this>" ); }(1,2));
+(0!function(){ testEqual( this$tostring(va_get_args()), "0[1,2,3]", "0 required, 3 received, >this>" ); }(1,2,3));
+
+// 1 exp. arg.
+(0!function(a){ testEqual( this$tostring(va_get_args()), "0[]"     , "1 required, 0 received, >this>" ); }());
+(0!function(a){ testEqual( this$tostring(va_get_args()), "0[1]"    , "1 required, 1 received, >this>" ); }(1));
+(0!function(a){ testEqual( this$tostring(va_get_args()), "0[1,2]"  , "1 required, 2 received, >this>" ); }(1,2));
+(0!function(a){ testEqual( this$tostring(va_get_args()), "0[1,2,3]", "1 required, 3 received, >this>" ); }(1,2,3));
+
+// 2 exp. arg.
+(0!function(a,b){ testEqual( this$tostring(va_get_args()), "0[]"     , "2 required, 0 received, >this>" ); }());
+(0!function(a,b){ testEqual( this$tostring(va_get_args()), "0[1]"    , "2 required, 1 received, >this>" ); }(1));
+(0!function(a,b){ testEqual( this$tostring(va_get_args()), "0[1,2]"  , "2 required, 2 received, >this>" ); }(1,2));
+(0!function(a,b){ testEqual( this$tostring(va_get_args()), "0[1,2,3]", "2 required, 3 received, >this>" ); }(1,2,3));
+
+// 3 exp. arg.
+(0!function(a,b,c){ testEqual( this$tostring(va_get_args()), "0[]"     , "3 required, 0 received, >this>" ); }());
+(0!function(a,b,c){ testEqual( this$tostring(va_get_args()), "0[1]"    , "3 required, 1 received, >this>" ); }(1));
+(0!function(a,b,c){ testEqual( this$tostring(va_get_args()), "0[1,2]"  , "3 required, 2 received, >this>" ); }(1,2));
+(0!function(a,b,c){ testEqual( this$tostring(va_get_args()), "0[1,2,3]", "3 required, 3 received, >this>" ); }(1,2,3));
+	';
+	
+	if( method2 )
+	{
+		repcode = '[va_get_arg(0),va_get_arg(1),va_get_arg(2),va_get_arg(3)].resize(va_arg_count())';
+		code = string_replace( code, 'va_get_args()', repcode );
+	}
+	eval( code );
+}
+
+println( "\n\t-- VA_GET_ARGS --" );
+testall( false );
+
+println( "\n\t-- VA_GET_ARG / VA_ARG_COUNT --" );
+testall( true );
+

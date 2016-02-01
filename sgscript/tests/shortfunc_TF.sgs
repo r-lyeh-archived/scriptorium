@@ -1,0 +1,5 @@
+function sqr( x ) = x * x;
+testEqual( sqr( 5 ), 25, "external shortfunc" );
+testEqual( function(x) = x * x; (6), 36, "internal shortfunc 1" );
+testEqual( function sqr(x) = x * x; (7), 49, "internal shortfunc 2" );
+testEqual( function selfname() = sys_backtrace().last.func;(), "selfname", "internal shortfunc name" );

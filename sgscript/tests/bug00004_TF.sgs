@@ -1,0 +1,7 @@
+var tmp0;
+testEqual( tmp0 = 5, 5, 'return value of assignment 1' );
+global sys_args = ['sgs-sdl','-foo','bar baz','-lol','rofl'], sys_parsedargs = {};
+var tmp = '';
+for( var a, i = 1; i < sys_args.size; ++i )
+	tmp $= ( a = sys_args[ i ] );
+testEqual( tmp, '-foobar baz-lolrofl', 'return value of assignment 2' );

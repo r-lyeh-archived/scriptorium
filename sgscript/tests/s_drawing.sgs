@@ -1,0 +1,22 @@
+include_library( "math" );
+
+function lookup( dst )
+{
+	if( dst < 1 ) return ".";
+	else if( dst < 2 ) return "o";
+	else if( dst < 3 ) return "O";
+	else if( dst < 4 ) return "#";
+	else if( dst < 5 ) return "O";
+	else if( dst < 6 ) return "o";
+	else return ".";
+}
+
+for( var y = -7; y <= 7; ++y )
+{
+	for( var x = -7; x <= 7; ++x )
+	{
+		var dst = sqrt( x * x + y * y );
+		print( lookup( dst * 0.9 ) $ ' ' );
+	}
+	print( "\n" );
+}

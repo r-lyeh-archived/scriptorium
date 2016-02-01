@@ -1,0 +1,7 @@
+// test destruction (sgs_DestroyEngine cleanup correctness)
+global xco = co_create(function(){
+	thread_create(function(){
+		subthread_create(function(){ yield(); });
+		yield();
+	});
+});

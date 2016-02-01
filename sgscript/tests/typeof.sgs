@@ -1,0 +1,8 @@
+print( typeof( true ), "\n" );
+print( typeof( 1337 ), "\n" );
+print( typeof( 3.14 ), "\n" );
+print( typeof( "o!" ), "\n" );
+function func(){}
+print( typeof( func ), "\n" );
+print( typeof( typeof ), "\n" );
+print( typeof( array() ), "\n" );

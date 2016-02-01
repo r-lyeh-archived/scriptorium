@@ -1,0 +1,4 @@
+include "string";
+print();
+x = tostring(undef);
+test(x=="null","reading undefined variables");

@@ -1,0 +1,113 @@
+
+global ERRORS = "";
+
+global called = {};
+
+obj = {a=1,b=2};
+objcp = {a=1,b=2};
+obj2 = {a=10,b=20};
+global iface =
+{
+	__typeof = function(){ called.typeof = this; return "typeIFACE"; },
+	__clone = function(){ called.clone = this; return "cloneTest"; },
+	__tobool = function(){ called.tobool = this; return true; },
+	__toint = function(){ called.toint = this; return 8765; },
+	__toreal = function(){ called.toreal = this; return 3.14159; },
+	__tostring = function(){ called.tostring = this; return "IFACE"; },
+	__toptr = function(){ called.toptr = this; return toptr(12345); },
+	__negate = function(){ called.negate = this; return -123456; },
+	__add = function(a,b){ called.add = this; return class({a=a.a+b.a,b=a.b+b.b},iface); },
+	__sub = function(a,b){ called.sub = this; return class({a=a.a-b.a,b=a.b-b.b},iface); },
+	__mul = function(a,b){ called.mul = this; return class({a=a.a*b.a,b=a.b*b.b},iface); },
+	__div = function(a,b){ called.div = this; return class({a=a.a/b.a,b=a.b/b.b},iface); },
+	__mod = function(a,b){ called.mod = this; return class({a=a.a%b.a,b=a.b%b.b},iface); },
+	__compare = function(a,b){ called.compare = this; return a.a <=> b.a || a.b <=> b.b; },
+	__call = function(self,a,b){ called.call = this; called.callself = self; return a,b; },
+	__getindex = function(k){ called.getindex = this; m = metaobj_get(this);
+		if( isset( m, k ) ) return m[ k ];
+		return "[" $ k $ "]"; },
+	__setindex = function(k,v){ called.setindex = this; this[k] = v; this["_did_set_"$k] = true; },
+};
+class( obj, iface );
+class( obj2, iface );
+class( objcp, iface );
+cntnr = { me = obj };
+
+testEqual( metaobj_get(obj), iface, "metaobj - is set?" );
+
+testEqual( typeof(obj), "typeIFACE", "metamethod - typeof - result" );
+testEqual( @called.typeof, obj, "metamethod - typeof - correctly called" );
+
+testEqual( clone(obj), "cloneTest", "metamethod - clone - result" );
+testEqual( @called.clone, obj, "metamethod - clone - correctly called" );
+
+testEqual( tobool(obj), true, "metamethod - tobool - result" );
+testEqual( @called.tobool, obj, "metamethod - tobool - correctly called" );
+
+testEqual( toint(obj), 8765, "metamethod - toint - result" );
+testEqual( @called.toint, obj, "metamethod - toint - correctly called" );
+
+testEqual( toreal(obj), 3.14159, "metamethod - toreal - result" );
+testEqual( @called.toreal, obj, "metamethod - toreal - correctly called" );
+
+testEqual( tostring(obj), "IFACE", "metamethod - tostring - result" );
+testEqual( @called.tostring, obj, "metamethod - tostring - correctly called" );
+
+testEqual( toptr(obj), toptr(12345), "metamethod - toptr - result" );
+testEqual( @called.toptr, obj, "metamethod - toptr - correctly called" );
+
+testEqual( -obj, -123456, "metamethod - negate - result" );
+testEqual( @called.negate, obj, "metamethod - negate - correctly called" );
+
+testEqual( (obj+obj2).a, 11, "metamethod - add - result" );
+testEqual( @called.add, obj, "metamethod - add - correctly called" );
+
+testEqual( (obj-obj2).a, -9, "metamethod - sub - result" );
+testEqual( @called.sub, obj, "metamethod - sub - correctly called" );
+
+testEqual( (obj*obj2).a, 10, "metamethod - mul - result" );
+testEqual( @called.mul, obj, "metamethod - mul - correctly called" );
+
+testEqual( (obj/obj2).a, 0.1, "metamethod - div - result" );
+testEqual( @called.div, obj, "metamethod - div - correctly called" );
+
+testEqual( (obj%obj2).a, 1, "metamethod - mod - result" );
+testEqual( @called.mod, obj, "metamethod - mod - correctly called" );
+
+testEqual( obj==objcp, true, "metamethod - compare - result" );
+testEqual( @called.compare, obj, "metamethod - compare - correctly called" );
+
+testEqual( obj(5), 5, "metamethod - call/1 - result" );
+testEqual( @called.call, obj, "metamethod - call/1 - correctly called/1" );
+testEqual( @called.callself, null, "metamethod - call/1 - correctly called/2" );
+
+testEqual( cntnr.me(5), 5, "metamethod - call/2 - result" );
+testEqual( @called.call, obj, "metamethod - call/2 - correctly called/1" );
+testEqual( @called.callself, cntnr, "metamethod - call/2 - correctly called/2" );
+
+testEqual( obj.undef, "[undef]", "metamethod - getindex - result" );
+testEqual( @called.getindex, obj, "metamethod - getindex - correctly called" );
+
+obj.smth = 1;
+testEqual( obj.smth, 1, "metamethod - setindex - result" );
+testEqual( obj._did_set_smth, true, "metamethod - setindex - side effect test" );
+testEqual( @called.setindex, obj, "metamethod - setindex - correctly called" );
+
+
+array.__getindex = function(k){ return "bacon"; };
+testEqual( @array.undef, null, "metamethod - no getindex interference with arrays 1" );
+testEqual( @[][1], null, "metamethod - no getindex interference with arrays 2" );
+
+
+iface.__getindex = mm_getindex_router;
+iface.__get_testVar = function(){ called.get_var = this; return "success"; };
+testEqual( obj.testVar, "success", "metamethod - getindex router" );
+testEqual( called.get_var, obj, "metamethod - getindex router - correctly called" );
+
+iface.__setindex = mm_setindex_router;
+iface.__set_testVar = function(v){ called.set_var = this; this.subTestVar = v; };
+obj.testVar = 37;
+testEqual( obj.subTestVar, 37, "metamethod - setindex router" );
+testEqual( called.set_var, obj, "metamethod - setindex router - correctly called" );
+
+testEqual( ERRORS, "", "metamethod - no errors while accessing anything so far" );

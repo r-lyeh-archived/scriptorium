@@ -1,0 +1,18 @@
+B = true;
+I = 1;
+R = 1.0;
+S = "1";
+C = print;
+F = function(){};
+O = [1];
+print( "B-B, B-I, B-R, B-S, B-C, B-F, B-O,\nI-I, I-R, I-S, I-C, I-F, I-O,\nR-R, R-S, R-C, R-F, R-O,\nS-S, S-C, S-F, S-O, C-C, C-F, C-O, F-F, F-O, O-O\n" );
+print( "==\n" );
+print([ B==B, B==I, B==R, B==S, B==C, B==F, B==O ],"\n");
+print([ I==I, I==R, I==S, I==C, I==F, I==O ],"\n");
+print([ R==R, R==S, R==C, R==F, R==O ],"\n");
+print([ S==S, S==C, S==F, S==O, C==C, C==F, C==O, F==F, F==O, O==O ],"\n");
+print( "===\n" );
+print([ B===B, B===I, B===R, B===S, B===C, B===F, B===O ],"\n");
+print([ I===I, I===R, I===S, I===C, I===F, I===O ],"\n");
+print([ R===R, R===S, R===C, R===F, R===O ],"\n");
+print([ S===S, S===C, S===F, S===O, C===C, C===F, C===O, F===F, F===O, O===O ],"\n");

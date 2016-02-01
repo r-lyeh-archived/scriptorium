@@ -1,0 +1,1199 @@
+
+include "string", "re", "fmt", "io", "os";
+
+
+global BRACE_START_MAP = { ">" = "<", "]" = "[", "}" = "{", ")" = "(" };
+
+global ERR_OOC = "SGS_OBJECT outside class/struct";
+
+
+global DEFAULT_OBJ_IFUNCS =
+{
+	"destruct" = "_sgs_destruct",
+	"gcmark" = "_sgs_gcmark",
+	"getindex" = "_sgs_getindex",
+	"setindex" = "_sgs_setindex",
+	"dump" = "_sgs_dump",
+};
+
+global OBJ_IFUNC_POS =
+{
+	"destruct"  = 0,
+	"gcmark"    = 1,
+	"getindex"  = 2,
+	"setindex"  = 3,
+	"convert"   = 4,
+	"serialize" = 5,
+	"dump"      = 6,
+	"getnext"   = 7,
+	"call"      = 8,
+	"expr"      = 9,
+};
+
+global OBJ_IFUNC_COUNT = 10;
+
+
+function string_find_any( str, what, pos )
+{
+	if( pos === null )
+		pos = 0;
+	
+	max = str.length;
+	citem = null;
+	foreach( item : what )
+	{
+		npos = string_find( str, item, pos );
+		if( npos !== null && npos < max )
+		{
+			citem = item;
+			max = npos;
+		}
+	}
+	
+	return if( max < str.length, max, null ), citem;
+}
+
+function string_find_rev_any( str, what, pos )
+{
+	if( pos === null )
+		pos = str.length;
+	
+	min = 0;
+	foreach( item : what )
+	{
+		npos = string_find_rev( str, item, pos );
+		if( npos !== null && npos > min )
+			min = npos;
+	}
+	
+	return if( min <= pos, min, null );
+}
+
+
+function code_to_linenum( code )
+{
+	return string_count( string_replace( code, ["\r\n","\r"], "\n" ), "\n" );
+}
+function code_to_lines( code )
+{
+	return string_repeat( "\n", code_to_linenum( code ) );
+}
+
+
+global CPPBC_LINENUMBERS = [];
+function cppbc_setline_codepos( code, pos, pushrel )
+{
+	global CPPBC_LINENUMBERS;
+	code = string_part( code, 0, pos );
+	ln = code_to_linenum( code );
+	if( !pushrel )
+		CPPBC_LINENUMBERS.clear();
+	else
+		ln += CPPBC_LINENUMBERS.last + pushrel;
+	CPPBC_LINENUMBERS.push( ln );
+}
+function cppbc_setline_pop(){ CPPBC_LINENUMBERS.pop(); }
+function cppbc_getline()
+{
+	if( !CPPBC_LINENUMBERS ) return "<unknown line>";
+	return CPPBC_LINENUMBERS.last;
+}
+
+
+function cppbc_error( error ){ errprintln( " line ", cppbc_getline(), ": ERROR: ", error ); app_exit(1); }
+function cppbc_error_ext( error, code, pos ){ cppbc_setline_codepos( code, pos ); cppbc_error( error ); }
+
+
+function cppbc_preprocess( code )
+{
+	if( typeid(code) != VT_STRING )
+		cppbc_error( "cppbc_preprocess: expected string" );
+	
+	pos = 0;
+	out = "";
+	
+	for(;;)
+	{
+		(to,which) = string_find_any( code, ["/*","//","'","\""], pos );
+		if( to === null )
+		{
+			out $= string_part( code, pos );
+			break;
+		}
+		
+		out $= string_part( code, pos, to - pos );
+		
+		if( which == "/*" )
+		{
+			out $= " ";
+			pos = string_find( code, "*/", to );
+			if( pos === null )
+				cppbc_error( "error in code: unfinished comment detected" );
+			out $= code_to_lines( string_part( code, to, pos - to ) );
+			pos += 2;
+		}
+		else if( which == "//" )
+		{
+			out $= " ";
+			npos = string_find_any( code, ["\r\n","\r","\n"], to );
+			if( npos === null )
+				break;
+			pos = npos;
+		}
+		else if( which == "'" || which == "\"" )
+		{
+			regex = "#\\\\|" $ which $ "#";
+			cpos = to;
+			for(;;)
+			{
+				npos = re_match( code, regex, RE_RETURN_BOTH, cpos );
+				if( npos === false )
+					cppbc_error( "error in code: unfinished string literal detected" );
+				cpos = npos[0][2];
+				if( npos[0][0] == "\\" )
+					cpos++;
+				else
+					break;
+			}
+			out $= which;
+			pos = cpos;
+		}
+	}
+	
+	return out;
+}
+
+
+function cppbc_remove_blocks( code )
+{
+	pos = 0;
+	out = "";
+	level = 0;
+	begin = null;
+	
+	for(;;)
+	{
+		match = re_match( code, "#\\{|\\}#", RE_RETURN_BOTH, pos );
+		if( match === false )
+		{
+			out $= string_part( code, pos );
+			break;
+		}
+		
+		which = match[0][0];
+		from = match[0][1];
+		to = match[0][2];
+		
+		if( level == 0 )
+			out $= string_cut( code, pos, from - 1 );
+		
+		if( which == "{" )
+		{
+			if( level == 0 )
+				begin = from;
+			level++;
+		}
+		else // }
+		{
+			level--;
+			if( level == 0 )
+			{
+				out $= ";";
+				out $= code_to_lines( string_part( code, begin, from - begin ) );
+				begin = null;
+			}
+			else if( level < 0 )
+				cppbc_error( "error in code: curved bracket mismatch" );
+		}
+		pos = to;
+	}
+	
+	if( level > 0 )
+		cppbc_error( "error in code: curved bracket mismatch" );
+	
+	return out;
+}
+
+
+function cppbc_type_is_voidptr( type )
+{
+	return string_replace( type, [" ","\t","\n","\r"], "" ) == "void*";
+}
+
+
+function cppbc_fix_type( type )
+{
+	type = string_trim( type );
+	type = string_trim( re_replace( type, "#^const([ \t\n\r])#", "$1" ) );
+	type = string_trim( re_replace( type, "#&$#", "" ) );
+	type = string_trim( re_replace( type, "#([ \t\n\r])const$#", "$1" ) );
+	
+	if( !type )
+		return cppbc_error( "missing type detected" );
+	
+	if( type.length && type[ type.length - 1 ] == ">" )
+		type $= " ";
+	
+	return type;
+}
+
+
+/* Find boundaries of block {...} "pos" is in */
+function cppbc_block_bounds( code, pos )
+{
+	upper = null;
+	lower = null;
+	level = 0;
+	
+	// LOWER bounds
+	for(;;)
+	{
+		pa = string_find_rev( code, "{", pos );
+		pb = string_find_rev( code, "}", pos );
+		if( pa === null )
+			break;
+		if( pb !== null && pb > pa )
+		{
+			pos = pb - 1;
+			level++;
+			continue;
+		}
+		else
+		{
+			pos = pa - 1;
+			level--;
+			if( level >= 0 )
+				continue;
+			lower = pa;
+			break;
+		}
+	}
+	
+	if( lower === null )
+		cppbc_error_ext( ERR_OOC, code, pos );
+	
+	// UPPER bounds
+	for(;;)
+	{
+		pa = string_find( code, "}", pos );
+		pb = string_find( code, "{", pos );
+		if( pa === null )
+			break;
+		if( pb !== null && pb < pa )
+		{
+			pos = pb + 1;
+			level++;
+			continue;
+		}
+		else
+		{
+			pos = pa + 1;
+			level--;
+			if( level >= 0 )
+				continue;
+			upper = pa;
+			break;
+		}
+	}
+	
+	if( upper === null )
+		cppbc_error_ext( ERR_OOC, code, pos );
+	
+	return [ lower, upper ];
+}
+
+
+function cppbc_get_vdchar_type( char )
+{
+	if( fmt_charcc( char, "a-zA-Z0-9_." ) )
+		return "N";
+	if( fmt_charcc( char, " \t\v\r\n" ) )
+		return "S";
+	return char;
+}
+
+
+function cppbc_find_fp_name( scode )
+{
+	if( scode.last != ")" )
+		cppbc_error( "unrecognized sequence: \"" $ string_implode( scode, "" ) $ "\"" );
+	
+	level = 0;
+	pos = scode.size - 1;
+	skipped = false;
+	while( pos > 0 )
+	{
+		item = scode[ pos ];
+		if( item == ")" )
+		{
+			level++;
+		}
+		else if( item == "(" )
+		{
+			level--;
+			if( level == 0 )
+				skipped = true;
+		}
+		else if( re_match( item, "#^[a-zA-Z0-9_]+$#" ) && skipped )
+		{
+			return pos;
+		}
+		pos--;
+	}
+	
+	return null;
+}
+
+
+function cppbc_parse_vardecl( code, bSkipName )
+{
+	out = [];
+	
+	code = string_trim( code );
+	if( string_find( code, "SGS_ALIAS" ) === 0 )
+	{
+		inbr = string_find( code, "(" );
+		outbr = string_find_rev( code, ")" );
+		code = string_part( code, inbr + 1, outbr - inbr - 1 );
+		code = string_trim( code );
+	}
+	
+	// strip bitfield size
+	code = re_replace( code, "#[ \n\r\t]*:[ \n\r\t]*[0-9]+$#", "" );
+	
+	lct = null;
+	for( i = 0; i < code.length; ++i )
+	{
+		cct = cppbc_get_vdchar_type( code[i] );
+		if( cct !== lct || ( cct != "N" && cct != "S" ) )
+			out.push("");
+		lct = cct;
+		out[out.size-1] $= code[i];
+	}
+	
+	name = "";
+	if( lct != ")" )
+	{
+		// basic typedef - identifier at end
+		if( out.size <= 0 )
+			cppbc_error( "type not specified" );
+		if( !bSkipName || out.size != 1 )
+			name = string_trim( out.pop() );
+		type = string_trim( string_implode( out, "" ) );
+	}
+	else
+	{
+		// function pointer - identifier in right side of 2nd level-0 brackets from the end
+		pos = cppbc_find_fp_name( out );
+		if( pos === null && !bSkipName )
+			cppbc_error( "could not parse type: \"" $ string_implode( out, "" ) $ "\"" );
+		if( pos !== null )
+		{
+			name = out[ pos ];
+			out.erase( pos );
+		}
+		type = string_implode( out, "" );
+	}
+	
+	return {
+		name = name,
+		type = type,
+	};
+}
+
+
+function cppbc_split_cs( code )
+{
+	code = string_trim( code );
+	if( code == "" )
+		return [];
+	
+	out = [""];
+	stack = [];
+	
+	for( i = 0; i < code.length; ++i )
+	{
+		cc = code[i];
+		if( cc == "<" || cc == "(" || cc == "[" )
+		{
+			stack.push( cc );
+		}
+		else if( cc == ">" || cc == ")" || cc == "]" )
+		{
+			if( @BRACE_START_MAP[ cc ] )
+				tcc = BRACE_START_MAP[ cc ];
+			if( !stack.size || stack.last != tcc )
+				cppbc_error( "brace mismatch in argument list, stack: "$stack );
+			stack.pop();
+		}
+		else if( cc == "," && stack.size == 0 )
+		{
+			out.push( "" );
+			continue;
+		}
+		
+		out[out.size-1] $= cc;
+	}
+	
+	return out;
+}
+
+
+function cppbc_examine_method( code, methodname )
+{
+	code = string_trim( code );
+	if( string_find( code, "SGS_ALIAS" ) === 0 )
+	{
+		inbr = string_find( code, "(" );
+		outbr = string_find_rev( code, ")" );
+		code = string_part( code, inbr + 1, outbr - inbr - 1 );
+		code = string_trim( code );
+	}
+	
+	ispmatch = re_match( code, "#([a-zA-Z0-9_]+)[ \t\v\r\n]*\\(#", RE_RETURN_BOTH );
+	
+	if( ispmatch === false )
+		cppbc_error( "could not parse method" );
+	
+	name = ispmatch[1][0];
+	rvd = cppbc_parse_vardecl( string_part( code, 0, ispmatch[0][1] ), true );
+	
+	ptypes = [];
+	params = cppbc_split_cs( string_cut( code, ispmatch[0][2], -2 ) );
+	foreach( param : params )
+	{
+		pvd = cppbc_parse_vardecl( param, true );
+		ptypes.push( pvd.type );
+	}
+	
+	return {
+		what = "METHOD",
+		name = name,
+		varname = methodname || name,
+		type = rvd.type,
+		params = ptypes,
+	};
+}
+
+function cppbc_examine_method_named( code )
+{
+	sp = fmt_string_parser( code );
+	
+	sp.skipcc( "( \t\v\r\n" );
+	name = sp.readcc( "a-zA-Z0-9_." );
+	sp.skipcc( ") \t\v\r\n" );
+	
+	return cppbc_examine_method( sp.read( 65536 ), name );
+}
+
+
+function cppbc_examine_property( code )
+{
+	access = 0;
+	
+	sp = fmt_string_parser( code );
+	
+	sp.skipcc( " \t\v\r\n" );
+	item = sp.readcc( "a-zA-Z0-9_" );
+	begoff = sp.stream_offset;
+	
+	if( item == "READ" )
+		access = -1;
+	else if( item == "WRITE" )
+		access = 1;
+	else
+		begoff = 0;
+	
+	vd = cppbc_parse_vardecl( string_part( code, begoff ) );
+	
+	return {
+		what = "PROPERTY",
+		name = vd.name,
+		type = vd.type,
+		access = access,
+	};
+}
+
+
+function cppbc_examine_property_func( code )
+{
+	access = 0;
+	
+	sp = fmt_string_parser( code );
+	
+	sp.skipcc( " \t\v\r\n" );
+	items = [];
+	item = "";
+	bracestack = 0;
+	if( sp.getchar() != "(" )
+	{
+		cppbc_error( "PROPERTY_FUNC: '(' expected" );
+	}
+	while( sp.at_end == false )
+	{
+		prevoff = sp.stream_offset;
+		sp.skipcc( " \t\v\r\n" );
+		curoff = sp.stream_offset;
+		ch = sp.getchar();
+		at_end = bracestack == 0 && ch == ")";
+		if( ( curoff > prevoff || at_end ) && item.length )
+		{
+			items.push( item );
+			item = "";
+		}
+		if( at_end )
+			break;
+		if( ch == "(" )
+			bracestack++;
+		else if( ch == ")" )
+			bracestack--;
+		item $= ch;
+	}
+	if( sp.at_end )
+	{
+		cppbc_error( "PROPERTY_FUNC: unexpected end of file before closing brace" );
+	}
+	
+	readmethod = null;
+	writemethod = null;
+	readcallback = null;
+	writecallback = null;
+	varname = null;
+	validate = null;
+	source = null;
+	lastitem = "";
+	
+	function specitem( item )
+	{
+		return item == "READ" || item == "WRITE" ||
+			item == "READ_CALLBACK" || item == "WRITE_CALLBACK" ||
+			item == "VARNAME" || item == "VALIDATE" || item == "SOURCE";
+	}
+	
+	for( i = 0; i < items.size; i = iend )
+	{
+		istart = i + 1;
+		for( iend = istart; iend < items.size; ++iend )
+			if( specitem( items[ iend ] ) )
+				break;
+		arg = null;
+		if( iend > istart )
+		{
+			arg = string_implode( items.part( istart, iend - istart ), " " );
+		}
+		
+		item = items[ i ];
+		if( item == "READ" )
+		{
+			if( arg )
+				readmethod = arg;
+			else
+				readmethod = true;
+		}
+		else if( item == "WRITE" )
+		{
+			if( arg )
+				writemethod = arg;
+			else
+				writemethod = true;
+		}
+		else if( item == "READ_CALLBACK" )
+		{
+			if( arg )
+				readcallback = arg;
+			else
+				cppbc_error( "READ_CALLBACK: expected method name" );
+		}
+		else if( item == "WRITE_CALLBACK" )
+		{
+			if( arg )
+				writecallback = arg;
+			else
+				cppbc_error( "WRITE_CALLBACK: expected method name" );
+		}
+		else if( item == "VARNAME" )
+		{
+			if( arg )
+				varname = arg;
+			else
+				cppbc_error( "VARNAME: expected variable name" );
+		}
+		else if( item == "VALIDATE" )
+		{
+			if( arg )
+				validate = arg;
+			else
+				cppbc_error( "VALIDATE: expected data source" );
+		}
+		else if( item == "SOURCE" )
+		{
+			if( arg )
+				source = arg;
+			else
+				cppbc_error( "SOURCE: expected data source" );
+		}
+		else
+			cppbc_error( "unexpected item: " $ item );
+	}
+	
+	vd = cppbc_parse_vardecl( string_part( code, sp.stream_offset ) );
+	
+	return {
+		what = "PROPERTY_FUNC",
+		name = varname || vd.name,
+		type = vd.type,
+		read = readmethod,
+		write = writemethod,
+		readcb = readcallback,
+		writecb = writecallback,
+		varname = varname,
+		srcname = if( source, source, vd.name ),
+		validate = validate,
+	};
+}
+
+
+function cppbc_examine_ifunc( code )
+{
+	ispmatch = re_match( code, "#([a-zA-Z0-9_]+)[ \t\v\r\n]*\\(#", RE_RETURN_BOTH );
+	if( ispmatch === false )
+		cppbc_error( "could not parse method (ifunc)" );
+	
+	typematch = re_match( code, "#([a-zA-Z0-9_]+)[ \t\v\r\n)]+#", RE_RETURN_BOTH );
+	if( typematch === false )
+		cppbc_error( "could not find interface function type" );
+	
+	name = ispmatch[1][0];
+	type = typematch[1][0];
+	
+	type = string_tolower( type );
+	if( !isset( OBJ_IFUNC_POS, type ) )
+		cppbc_error( "unrecognized interface function type: " $ type );
+	
+	return {
+		what = "IFUNC",
+		name = name,
+		type = type,
+	};
+}
+
+
+function cppbc_examine_namelist( code, type )
+{
+	sp = fmt_string_parser( code );
+	
+	sp.skipcc( "( \t\v\r\n" );
+	items = [];
+	while( ( item = sp.readcc( "a-zA-Z0-9_." ) ) !== "" )
+	{
+		items.push( item );
+		sp.skipcc( " \t\v\r\n" );
+	}
+	sp.skipcc( ")" );
+	
+	out = [];
+	foreach( item : items )
+		out.push({ what = type, name = item });
+	return out;
+}
+
+
+function cppbc_examine_object( code, pos )
+{
+	// get class/struct bounds
+	bounds = cppbc_block_bounds( code, pos );
+	cppbc_setline_codepos( code, bounds[0] );
+	
+	// get class/struct name
+	class_pos = bounds[0] + 1;
+	for(;;)
+	{
+		class_pos = string_find_rev_any( code, ["class","struct"], class_pos - 1 );
+		if( class_pos === null )
+			cppbc_error_ext( ERR_OOC, code, pos );
+		if( re_match( string_part( code, class_pos - 1, 8 ), "#(^|[ \t\v\n\r])(class|struct)[ \t\v\n\r]#" ) )
+			break;
+	}
+	
+	tp = fmt_string_parser( code, class_pos );
+	tp.skipcc( "a-z" );
+	tp.skipcc( " \t\v\n\r" );
+	classname = tp.readcc( "a-zA-Z0-9_" );
+	println( "Detected '" $ classname $ "'" );
+	
+	// gather all properties/methods
+	blockcode = string_cut( code, bounds[0] + 1, bounds[1] - 1 );
+	blockcode = cppbc_remove_blocks( blockcode );
+	
+	no_export = re_match( blockcode, "#SGS_NO_EXPORT#" );
+	no_destruct = re_match( blockcode, "#SGS_NO_DESTRUCT#" );
+	inherited = {};
+	inh_matches = re_match_all( blockcode, "#SGS_OBJECT_INHERIT[ \t\v\n\r]*\\(([a-zA-Z0-9_ \t\v\n\r,]*)\\)#ms", RE_RETURN_CAPTURED );
+	foreach( match : inh_matches )
+	{
+		inhlist = match[1];
+		inhlist = string_replace( inhlist, [" ","\t","\v","\n","\r"], "" );
+		foreach( inhitem : string_explode( inhlist, "," ) )
+			inherited[ inhitem ] = true;
+	}
+	inherited = get_keys( inherited );
+	if( inherited.size > 1 )
+		cppbc_error( "multiple inheritance is not supported" );
+	
+	items = [];
+	matches = re_match_all( blockcode, "#(SGS_METHOD_NAMED|SGS_PROPERTY_FUNC|SGS_METHOD|SGS_PROPERTY|SGS_IFUNC|SGS_GCREF|SGS_DUMP|SGS_NODUMP)(.*?)[;\\{]#ms", RE_RETURN_BOTH );
+	foreach( match : matches )
+	{
+		cppbc_setline_codepos( blockcode, match[0][1], 1 );
+		if( match[1][0] == "SGS_METHOD" )
+			item = cppbc_examine_method( match[2][0] );
+		else if( match[1][0] == "SGS_METHOD_NAMED" )
+			item = cppbc_examine_method_named( match[2][0] );
+		else if( match[1][0] == "SGS_PROPERTY" )
+			item = cppbc_examine_property( match[2][0] );
+		else if( match[1][0] == "SGS_PROPERTY_FUNC" )
+			item = cppbc_examine_property_func( match[2][0] );
+		else if( match[1][0] == "SGS_IFUNC" )
+			item = cppbc_examine_ifunc( match[2][0] );
+		else if( match[1][0] == "SGS_GCREF" )
+			item = cppbc_examine_namelist( match[2][0], "GCREF" );
+		else if( match[1][0] == "SGS_DUMP" )
+			item = cppbc_examine_namelist( match[2][0], "DUMP" );
+		else if( match[1][0] == "SGS_NODUMP" )
+			item = cppbc_examine_namelist( match[2][0], "NODUMP" );
+		
+		if( typeof(item) == "array" )
+		{
+			foreach( ii : item )
+				items.push( ii );
+		}
+		else
+			items.push( item );
+		
+		cppbc_setline_pop();
+	}
+	
+	return {
+		name = classname,
+		is_lite = re_match( blockcode, "#SGS_OBJECT_LITE#" ),
+		items = items,
+		no_export = no_export,
+		no_destruct = no_destruct,
+		inherited = inherited,
+	};
+}
+
+
+function cppbc_find_objects( code )
+{
+	matches = re_match_all( code, "#SGS_OBJECT#", RE_RETURN_OFFSETS );
+	objects = [];
+	foreach( match : matches )
+	{
+		object = cppbc_examine_object( code, match[0][0] );
+		objects.push( object );
+	}
+	
+//	printvar_ext( objects, 10 );
+	return objects;
+}
+
+
+function cppbc_extend_objects( objects )
+{
+	foreach( obj : objects )
+	{
+		nitems = {};
+		foreach( inhname : obj.inherited )
+		{
+			if( inhname == obj.name )
+				cppbc_error( "cannot inherit yourself (" $ inhname $ ")" );
+			inhobj = null;
+			foreach( oo : objects )
+			{
+				if( oo.name == inhname )
+				{
+					inhobj = oo;
+					break;
+				}
+			}
+			if( inhobj === null )
+				cppbc_error( "cannot find inherited object (" $ inhname $ ")" );
+			
+			foreach( ni : inhobj.items )
+				nitems[ ni.what $ "/" $ ni.name ] = ni;
+		}
+		foreach( ni : obj.items )
+			nitems[ ni.what $ "/" $ ni.name ] = ni;
+		obj.items = get_values( nitems );
+	}
+}
+
+
+function cppbc_generate_code( objects, includes )
+{
+	// header
+	out = "// SGS/CPP-BC\n// warning: do not modify this file, it may be regenerated during any build\n";
+	if( PRINT_TIMESTAMP )
+	{
+		out $= string_format( "// generated: {1}\n", os_date_string( "%c" ) );
+	}
+	out $= "\n";
+	
+	// includes
+	foreach( include : includes )
+	{
+		out $= "#include \"" $ include $ "\"\n";
+	}
+	
+	////////////////////////
+	foreach( obj : objects )
+	{
+		if( obj.no_export )
+			continue;
+		
+		ifuncs = clone( DEFAULT_OBJ_IFUNCS );
+		
+		// context changing
+		dtorchanger = if( obj.is_lite, "", "\n\tstatic_cast<" $ obj.name $ "*>( obj->data )->C = C;" );
+		tmpchanger = if( obj.is_lite, "", "\n\t_sgsTmpChanger<sgs_Context*> _tmpchg( static_cast<" $ obj.name $ "*>( obj->data )->C, C );" );
+		mtdchanger = if( obj.is_lite, "", "\n\t_sgsTmpChanger<sgs_Context*> _tmpchg( data->C, C );" );
+		
+		// load the ifuncs
+		foreach( item : obj.items )
+		{
+			if( item.what != "IFUNC" )
+				continue;
+			
+			ifuncs[ item.type ] = item.name;
+		}
+		
+		if( obj.no_destruct )
+			ifuncs[ "destruct" ] = null;
+		
+		// method wrappers
+		foreach( item : obj.items )
+		{
+			if( item.what != "METHOD" )
+				continue;
+			
+			line = "";
+			param_id = 0;
+			foreach( i, param : item.params )
+			{
+				if( line != "" )
+					line $= ", ";
+				
+				getvar3rd = "";
+				ptype = param;
+				if( param[ param.length - 1 ] == "*" )
+				{
+					getvar3rd = "Obj";
+					ptype = string_part( param, 0, -1 );
+				}
+				fixedtype = cppbc_fix_type( ptype );
+				
+				if( fixedtype == "sgs_Context" || fixedtype == "SGS_CTX" )
+					line $= "C";
+				else
+					line $= string_format( "sgs_GetVar{3}<{1}>()(C,{2})", fixedtype, param_id++, getvar3rd );
+			}
+			line = string_format( "data->{1}( {2} )", item.name, line );
+			
+			if( item.type == "SGS_MULTRET" )
+				line = "return " $ line $ ";";
+			else if( item.type != "void" )
+				line = "sgs_PushVar(C," $ line $ "); return 1;";
+			else
+				line $= "; return 0;";
+			
+			out $= string_translate(
+"
+static int _sgs_method__%OBJ%__%NAME%( SGS_CTX )
+{
+	%OBJ%* data; if( !SGS_PARSE_METHOD( C, %OBJ%::_sgs_interface, data, %OBJ%, %NAME% ) ) return 0;"
+	$ mtdchanger $ "
+	%LINE%
+}
+"
+			, { "%OBJ%" = obj.name, "%NAME%" = item.varname, "%LINE%" = line } );
+		}
+		
+		// interface functions
+		// - OP_DESTRUCT
+		out $= string_translate(
+"
+int %OBJ%::_sgs_destruct( SGS_CTX, sgs_VarObj* obj )
+{"
+	$ dtorchanger $ "
+	static_cast<%OBJ%*>( obj->data )->~%OBJ%();
+	return SGS_SUCCESS;
+}
+"
+		, { "%OBJ%" = obj.name } );
+		
+		// - OP_GCMARK
+		out $= "\nint " $ obj.name $ "::_sgs_gcmark( SGS_CTX, sgs_VarObj* obj )\n{";
+		out $= tmpchanger;
+		foreach( item : obj.items )
+		{
+			if( item.what != "GCREF" )
+				continue;
+			out $= "\n\tsgs_GCMarkVar( C, static_cast<"$
+				obj.name$"*>( obj->data )->"$item.name$" );";
+		}
+		out $= "\n\treturn SGS_SUCCESS;\n}\n";
+		
+		// - OP_GETINDEX
+		out $=
+"
+int " $ obj.name $ "::_sgs_getindex( SGS_ARGS_GETINDEXFUNC )
+{"
+	$ tmpchanger $ "
+	SGS_BEGIN_INDEXFUNC";
+		foreach( item : obj.items )
+		{
+			itemline = null;
+			if( item.what == "METHOD" )
+				itemline = "sgs_PushCFunc( C, _sgs_method__%OBJ%__"$item.varname$" );";
+			else if( item.what == "PROPERTY" )
+			{
+				if( item.access <= 0 )
+					itemline = "%TYPEFUNC%( C, static_cast<%OBJ%*>( obj->data )->"$item.name$" );";
+			}
+			else if( item.what == "PROPERTY_FUNC" )
+			{
+				itemline = "";
+				if( item.validate !== null )
+					itemline $= "if( !( static_cast<%OBJ%*>( obj->data )->"$item.validate$" ) ){ return SGS_EINPROC; } ";
+				if( item.read === true )
+					itemline $= "%TYPEFUNC%( C, static_cast<%OBJ%*>( obj->data )->"$item.srcname$" );";
+				else if( item.read )
+					itemline $= "%TYPEFUNC%( C, static_cast<%OBJ%*>( obj->data )->"$item.read$"() );";
+				if( item.readcb )
+					itemline $= "\n\t\t\tstatic_cast<%OBJ%*>( obj->data )->"$item.readcb$"();";
+			}
+			
+			if( itemline )
+			{
+				out $= string_translate( "
+		SGS_CASE( \"%NAME%\" ){ "$itemline$" return SGS_SUCCESS; }"
+				, {
+					"%OBJ%" = obj.name,
+					"%NAME%" = if( isset( item, "varname" ), item.varname || item.name, item.name ),
+					"%TYPEFUNC%" = if( cppbc_type_is_voidptr( item.type ), "sgs_PushPtr", "sgs_PushVar" ),
+				} );
+			}
+		}
+		out $= "
+	SGS_END_INDEXFUNC;
+}
+";
+		
+		// - OP_SETINDEX
+		out $=
+"
+int " $ obj.name $ "::_sgs_setindex( SGS_ARGS_SETINDEXFUNC )
+{"
+	$ tmpchanger $ "
+	SGS_BEGIN_INDEXFUNC";
+		foreach( item : obj.items )
+		{
+			itemline = null;
+			if( item.what == "PROPERTY" )
+			{
+				if( item.access >= 0 )
+					itemline = "static_cast<%OBJ%*>( obj->data )->"$item.name$" = %TYPEFUNC%( C, 1%ISOBJ% );";
+			}
+			else if( item.what == "PROPERTY_FUNC" )
+			{
+				itemline = "";
+				if( item.validate !== null )
+					itemline $= "if( !( static_cast<%OBJ%*>( obj->data )->"$item.validate$" ) ){ return SGS_EINPROC; } ";
+				if( item.write === true )
+					itemline $= "static_cast<%OBJ%*>( obj->data )->"$item.srcname$" = %TYPEFUNC%( C, 1%ISOBJ% );";
+				else if( item.write )
+					itemline $= "static_cast<%OBJ%*>( obj->data )->"$item.write$"( %TYPEFUNC%( C, 1%ISOBJ% ) );";
+				if( item.writecb )
+					itemline $= "\n\t\t\tstatic_cast<%OBJ%*>( obj->data )->"$item.writecb$"();";
+			}
+			if( itemline )
+			{
+				out $= string_translate( "
+		SGS_CASE( \"%NAME%\" ){ "$itemline$" return SGS_SUCCESS; }"
+				, {
+					"%OBJ%" = obj.name,
+					"%NAME%" = if( isset( item, "varname" ), item.varname || item.name, item.name ),
+					"%TYPEFUNC%" = if( cppbc_type_is_voidptr( item.type ), "sgs_GetPtr", "sgs_GetVar<" $ cppbc_fix_type( item.type ) $ ">()" ),
+					"%ISOBJ%" = if( string_part( item.type, 0, 4 ) != "void" && item.type[ item.type.length - 1 ] == "*", ", true", "" ),
+				});
+			}
+		}
+		out $= "
+	SGS_END_INDEXFUNC;
+}
+";
+		
+		// - OP_DUMP
+		out $= "\nint " $ obj.name $ "::_sgs_dump( SGS_CTX, sgs_VarObj* obj, int depth )\n{";
+		out $= tmpchanger;
+		out $= "\n\tchar bfr[ "$ obj.name.length + 32 $" ];";
+		out $= "\n\tsprintf( bfr, \""$obj.name$" (%p) %s\", obj->data, depth > 0 ? \"\\n{\" : \" ...\" );";
+		out $= "\n\tsgs_PushString( C, bfr );";
+		out $= "\n\tif( depth > 0 )\n\t{";
+		// 1. compile a list
+		dumpvars = {};
+		dumpvalid = {};
+		dumpvarorder = [];
+		foreach( item : obj.items )
+		{
+			if( item.what != "DUMP" && item.what != "PROPERTY" && item.what != "PROPERTY_FUNC" )
+				continue;
+			if( item.what == "PROPERTY" && item.access > 0 ) continue;
+			if( item.what == "PROPERTY_FUNC" && !item.read ) continue;
+			
+			if( item.what == "PROPERTY_FUNC" && item.read !== true )
+			{
+				dumpvars[ item.name ] = item.read $ "()";
+				dumpvalid[ item.name ] = item.validate;
+			}
+			else
+			{
+				dumpvars[ item.name ] = @item.srcname ?? item.name;
+				dumpvalid[ item.name ] = @item.validate;
+			}
+			dumpvarorder.push( item.name );
+		}
+		foreach( item : obj.items )
+		{
+			if( item.what != "NODUMP" )
+				continue;
+			unset( dumpvars, item.name );
+			dumpvarorder.remove( item.name );
+		}
+		// 2. push it
+		foreach( name : dumpvarorder )
+		{
+			src = dumpvars[ name ];
+			vld = dumpvalid[ name ];
+			out $= "\n\t\t{ ";
+			out $= "sgs_PushString( C, \"\\n"$name$" = \" ); ";
+			if( vld !== null )
+			{
+				out $= "if( !( static_cast<"$obj.name$"*>( obj->data )->"$vld$" ) ) sgs_PushString( C, \"<inaccessible>\" ); else ";
+			}
+			out $= "sgs_DumpData( C, static_cast<"$obj.name$"*>( obj->data )->"$src$", depth ).push( C );";
+			out $= " }";
+		}
+		out $= "\n\t\tsgs_StringConcat( C, "$dict_size(dumpvars)*2$" );\n\t\tsgs_PadString( C );";
+		out $= "\n\t\tsgs_PushString( C, \"\\n}\" );";
+		out $= "\n\t\tsgs_StringConcat( C, 3 );";
+		out $= "\n\t}";
+		out $= "\n\treturn SGS_SUCCESS;\n}\n";
+		
+		// interface
+		funcnames = [].resize( OBJ_IFUNC_COUNT );
+		foreach( ifname, ifunc : ifuncs )
+			funcnames[ OBJ_IFUNC_POS[ ifname ] ] = ifunc;
+		out $=
+"
+static sgs_ObjInterface " $ obj.name $ "__sgs_interface =
+{
+	\"" $ obj.name $ "\",
+	";
+		
+		foreach( ifunc : funcnames )
+			out $= if( ifunc === null, "NULL, ", string_format( "{1}::{2}, ", obj.name, ifunc ) );
+		
+		inhptr = "";
+		if( obj.inherited )
+			inhptr $= ", &" $ obj.inherited[0] $ "::_sgs_interface";
+		
+		out $=
+"
+};
+_sgsInterface " $ obj.name $ "::_sgs_interface(" $ obj.name $ "__sgs_interface" $ inhptr $ ");
+
+";
+	}
+	
+	return out;
+}
+
+
+function cppbc_parse_file( code, inclcode, includes )
+{
+	println( "In included code:" );
+	inclcode = cppbc_preprocess( inclcode );
+	inclobjects = cppbc_find_objects( inclcode );
+	
+	println( "In processed code:" );
+	code = cppbc_preprocess( code );
+	objects = cppbc_find_objects( code );
+	
+	foreach( io : inclobjects )
+	{
+		io.no_export = true;
+	}
+	objects = get_concat( inclobjects, objects );
+	
+	cppbc_extend_objects( objects );
+	gcode = cppbc_generate_code( objects, includes );
+	return gcode;
+}
+
+
+// ignore argument 0
+argc--;
+argv.shift();
+
+
+global IN = null;
+global OUT = null;
+global INCLCODE = "";
+global PRINT_TIMESTAMP = false;
+
+for( i = 0; i < argv.size; ++i )
+{
+	if( argv[ i ] == "-add-timestamp" ){ PRINT_TIMESTAMP = false; }
+	else if( argv[ i ] == "-o" )
+	{
+		i++;
+		if( i == argv.size )
+			cppbc_error( "expected output name after -o" );
+		OUT = argv[ i ];
+	}
+	else if( argv[ i ] == "-i" )
+	{
+		i++;
+		if( i == argv.size )
+			cppbc_error( "expected include file name after -i" );
+		nic = io_file_read( argv[ i ] );
+		if( nic === null )
+			cppbc_error( "failed to read include file" );
+		INCLCODE $= nic;
+	}
+	else // input file
+	{
+		if( IN !== null )
+			cppbc_error( "expected only one input file" );
+		IN = argv[ i ];
+	}
+}
+
+if( IN === null )
+	cppbc_error( "expected at least 1 argument: source file" );
+
+IN = string_replace( IN, "\\", "/" );
+if( OUT === null )
+{
+	pathspl = string_explode( IN, "/" );
+	ofsp = string_explode( pathspl.pop(), "." );
+	ofsp.pop();
+	pathspl.push( "cppbc_" $ string_implode( ofsp, "." ) $ ".cpp" );
+	OUT = string_implode( pathspl, "/" );
+}
+
+code = cppbc_parse_file( io_file_read( IN ), INCLCODE, [IN] );
+io_file_write( OUT, code );
+

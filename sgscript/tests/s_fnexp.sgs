@@ -1,0 +1,6 @@
+global sqr;
+sqr = function( x )
+{
+	return x*x;
+};
+print( "sqr(5) = ", sqr(5) );

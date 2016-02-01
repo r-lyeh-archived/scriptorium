@@ -1,0 +1,27 @@
+include_library("io");
+
+printlns
+(
+	"FILE:         " $ ( f = io_file( "output.dir", FILE_READ ) ),
+	"REOPEN:       " $ f.open( "tmp", FILE_READ | FILE_WRITE ),
+	"SETBUF:       " $ f.setbuf( 123 ),
+	"SIZE BEFORE:  " $ f.size,
+	"WRITE 'test': " $ f.write( "test" ),
+	"FLUSH:        " $ f.flush(),
+	"SIZE AFTER:   " $ f.size,
+	"SEEK -1,end:  " $ f.seek( -1, SEEK_END ),
+	"SEEK -1,cur:  " $ f.seek( -1, SEEK_CUR ),
+	"TELL:         " $ f.offset,
+	"SEEK 1,set:   " $ f.seek( 1 ),
+	"READ:         " $ f.read( 4 ),
+	"ERROR?:       " $ f.error,
+	"EOF:          " $ f.eof,
+	"CLOSE:        " $ f.close(),
+	"CLEANUP:      " $ io_file_delete( "tmp" )
+);
+
+foreach( t, i : io_dir( "." ) )
+	printvar( t, i );
+
+foreach( t, i : io_dir( "nonexistent" ) )
+	printvar( t, i );

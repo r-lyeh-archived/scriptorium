@@ -1,0 +1,368 @@
+SGScript Sockets library
+
+
+# Description [info]
+
+
+The main focus of support in this library was to support Internet sockets in a cross-platform way. Every other possible use of sockets currently is not supported.
+
+The library is compiled to a 'sgssockets' shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+
+    include "sgssockets";
+
+
+# SGScript API [info]
+
+=== Objects:
+
+- @"socket_address"<socket_address [object]>
+- @"socket"<socket [object]>
+
+=== Functions:
+
+- @"socket_error"<socket_error [function]> - retrieve last error message, optionally as string
+- @"socket_geterrnobyname"<socket_geterrnobyname [function]> - retrieve socket errno value by name
+- @"socket_address"<socket_address [function]> - create socket address object from address string
+- @"socket_address_frombytes"<socket_address_frombytes [function]> - create socket address object from address byte buffer (sockaddr struct)
+- @"socket_getaddrinfo"<socket_getaddrinfo [function]> - create socket address from domain name
+- @"socket_gethostname"<socket_gethostname [function]> - retrieve hostname of device
+- @"socket"<socket [function]> - create a socket
+- @"socket_tcp"<socket_tcp [function]> - create a TCP socket
+- @"socket_udp"<socket_udp [function]> - create a UDP socket
+- @"socket_select"<socket_select [function]> - wait for socket state changes
+
+=== Constants:
+
+- @"AF_/PF_"<AF_/PF_ [constants]> - address/protocol families
+- @"SOCK_"<SOCK_ [constants]> - socket types
+- @"IPPROTO_"<IPPROTO_ [constants]> - Internet protocol types
+- @"MSG_"<MSG_ [constants]> - transfer flags
+- @"SHUT_"<SHUT_ [constants]> - shutdown flags (non-Windows version)
+- @"SD_"<SD_ [constants]> - shutdown flags (Windows version)
+
+
+# >>>
+
+
+# socket_error [function]
+
+== socket_error( bool as_text = false )
+=== returns the last error received from working with the sockets, possibly as text
+
+
+# socket_geterrnobyname [function]
+
+== socket_geterrnobyname( string name )
+=== returns a socket error code as integer by its name (for example, "EWOULDBLOCK")
+
+- error codes can differ between platforms so it is expected to retrieve the required ones from the function for comparisons
+
+
+# socket_address [object]
+
+- read-only properties
+-- family - the address family (AF_* constants) of this address, may be other than AF_INET or AF_INET6 but for those, feature set is severely limited
+- read-write properties
+-- port - (AF_INET/AF_INET6 only)
+-- addr_u32 - (AF_INET only) the address as an integer between 0 and 2^32-1
+-- addr_buf - (AF_INET/AF_INET6 only) the address as a buffer of bytes of 'string' type
+-- addr_bytes - (AF_INET/AF_INET6 only) the address as an array of byte integers
+-- addr_string - (AF_INET/AF_INET6 only) the address string without the port
+-- full_addr_string - (AF_INET/AF_INET6 only) the address string with the port
+- other features:
+-- tostring = <obj>.full_addr_string
+-- GC-safe
+-- limited content dump (full only for AF_INET/AF_INET6 addresses, for any other only `family` is dumped)
+-- type identification (returns the string "socket_address")
+
+
+# socket_address [function]
+
+== socket_address( int addrfamily, string addrstring[, int port ])
+=== create address from string, optionally set port
+
+- only AF_INET and AF_INET6 are supported at the moment
+
+
+# socket_address_frombytes [function]
+
+== socket_address_frombytes( int addrfamily, string addrbytes[, int port ])
+=== create address from byte buffer, optionally set port
+
+- only AF_INET and AF_INET6 are supported at the moment
+
+
+# socket_getaddrinfo [function]
+
+== socket_getaddrinfo( string addrstring, string port[, int hint_socktype[, int hint_addrfamily ]])
+=== resolve domain name to address, optionally specifying socket type and address family needed
+
+
+# socket_gethostname [function]
+
+== socket_gethostname()
+=== return the host name of computer
+
+
+# socket [object]
+
+- methods
+-- @bind<socket.bind [method]> - bind socket to port
+-- @listen<socket.listen [method]> - wait for connection requests, return if successful
+-- @accept<socket.accept [method]> - accept an incoming connection, retrieve connecting socket
+-- @connect<socket.connect [method]> - connect to a remote address
+-- @send<socket.send [method]> - send data over socket
+-- @sendto<socket.sendto [method]> - send data to specified address over socket
+-- @recv<socket.recv [method]> - receive data from socket
+-- @recvfrom<socket.recvfrom [method]> - receive connectionless data and sender address from socket
+-- @shutdown<socket.shutdown [method]> - shut down socket access (partially or fully)
+-- @close<socket.close [method]> - close socket, disabling further operations
+-- @getpeername<socket.getpeername [method]> - get hostname of connected device
+- read-only properties
+-- [int] error - the last error code specifically for the socket
+- write-only properties
+-- [bool] blocking - whether the socket is blocking
+- read/write properties
+-- [bool] broadcast - whether the socket has broadcasting capabilities (applies to UDP sockets only)
+-- [bool] reuse_addr - whether to reuse addresses (ports) when binding the socket
+-- [real] send_timeout - timeout in seconds for @send<socket.send> / @sendto<socket.sendto> functions
+-- [real] recv_timeout - timeout in seconds for @recv<socket.recv> / @recvfrom<socket.recvfrom> functions
+- other features:
+-- tostring = "socket"
+-- tobool = whether the socket is valid (not closed yet)
+-- GC-safe
+-- type identification (returns the string "socket")
+
+
+# socket.bind [method]
+
+== socket.bind( int port )
+=== bind the socket to a port for listening
+
+
+# socket.listen [method]
+
+== socket.listen( int queuesize )
+=== wait for connection requests, return if successful
+
+
+# socket.accept [method]
+
+== socket.accept()
+=== retrieve the socket and address from the incoming connection
+
+
+# socket.connect [method]
+
+== socket.connect( socket_address )
+=== attempt to create a connection to a specific address, return if successful
+
+
+# socket.send [method]
+
+== socket.send( string buffer[, int flags ])
+=== attempt to send data over a connected socket, return amount of data sent or false on failure
+
+- operation can take an unspecified amount of time, the limit can be controller with `send_timeout` property of the socket
+
+
+# socket.sendto [method]
+
+== socket.sendto( string buffer, socket_address[, int flags ])
+=== attempt to send data over an unconnected socket to the specified address, return amount of data sent or false on failure
+
+- operation can take an unspecified amount of time, the limit can be controller with `send_timeout` property of the socket
+
+
+# socket.recv [method]
+
+== socket.recv( int maxlength[, int flags ])
+=== attempt to receive at most `maxlength` bytes of pending data
+
+- socket may block if blocking is enabled and there's no data at the moment
+-- maximum blocking time is determined by socket's `recv_timeout` property
+- return values:
+-- false if there was an error
+-- true if socket was closed
+-- byte buffer containing 1 - `maxlength` bytes if read was successful
+
+
+# socket.recvfrom [method]
+
+== socket.recvfrom( int maxlength[, int flags ])
+=== attempt to receive at most `maxlength` bytes of pending data, return address of sender with data
+
+- socket may block if blocking is enabled and there's no data at the moment
+-- maximum blocking time is determined by socket's `recv_timeout` property
+- return values:
+-- false if there was an error
+-- byte buffer containing 1 - `maxlength` bytes and socket_address if read was successful
+
+
+# socket.shutdown [method]
+
+== socket.shutdown( int type )
+=== shut down the socket, disabling the specified kind of operations
+
+- socket type is one of @SHUT_ or @SD_ constants
+
+
+# socket.close [method]
+
+== socket.close()
+=== close the socket, disabling further operations
+
+
+# socket.getpeername [method]
+
+== socket.getpeername()
+=== return the host name of the device on the other end of the socket, if it's connected
+
+
+# socket [function]
+
+== socket( int addrfamily, int socktype, int protocol )
+=== create a socket with the specified parameters
+
+- `addrfamily` requires one of @AF_ constants
+- `socktype` requires one of @SOCK_ constants
+- `protocol` requires one of @IPPROTO_ constants
+- a valid socket object is returned on success
+
+
+# socket_tcp [function]
+
+== socket_tcp([ bool ipv6 ])
+=== create a TCP socket
+
+- depending on `ipv6` value, a socket uses IPv6 or IPv4 address family
+
+
+# socket_udp [function]
+
+== socket_udp([ bool ipv6 ])
+=== create a UDP socket
+
+- depending on `ipv6` value, a socket uses IPv6 or IPv4 address family
+
+
+# socket_select [function]
+
+== socket_select( array readscl, array writescl, array errorscl[, real timeout ])
+=== check socket lists for state, optionally specifying maximum wait time
+
+- `readscl` - list of sockets to be checked for readability
+- `writescl` - list of sockets to be checked for writability
+- `errorscl` - list of sockets to be checked for errors
+- `timeout` - optional checking timeout, function waits indefinitely if not specified
+- the function returns as soon as at least one socket is in the required state or if time limit was reached
+- return values:
+	- -1 on error
+	- >0 if sockets have acquired the necessary states (the total number of such sockets is returned)
+	- 0 if time limit was reached
+
+
+# AF_/PF_ [constants]
+
+address family / protocol family constants
+
+- AF_INET - IPv4 address family
+- AF_INET6 - IPv6 address family
+- AF_UNIX - Unix socket address family
+- AF_IPX - IPX socket address family
+
+All of these constants are available with both AF_ and PF_ prefixes.
+
+
+# SOCK_ [constants]
+
+socket type constants
+
+- SOCK_STREAM - TCP socket type (connection-based, stream, sequential, reliable)
+- SOCK_DGRAM - UDP socket type (connectionless, datagrams, unreliable, out-of-order)
+- SOCK_RAW - raw socket (low-level network access)
+- SOCK_SEQPACKET - (connection-based, datagrams, sequential, reliable)
+
+
+# IPPROTO_ [constants]
+
+internet protocol type constants
+
+- IPPROTO_TCP - TCP protocol
+- IPPROTO_UDP - UDP protocol
+
+
+# MSG_ [constants]
+
+message flag constants
+
+- MSG_CONFIRM - confirm path validity
+- MSG_DONTROUTE - bypass gateway for packet transfer
+- MSG_DONTWAIT - non-blocking I/O
+- MSG_EOR - end of record
+- MSG_MORE - sender will send more
+- MSG_NOSIGNAL - do not generate SIGPIPE
+- MSG_OOB - out-of-band data
+
+
+# SHUT_ [constants]
+
+shutdown type constants (non-Windows version), same as @SD_ constants
+
+- SHUT_RD - shut down reading/receiving capability
+- SHUT_WR - shut down writing/sending capability
+- SHUT_RDWR - shut down everything
+
+
+# SD_ [constants]
+
+shutdown type constants (Windows version), same as @SHUT_ constants
+
+- SD_RECEIVE - shut down reading/receiving capability
+- SD_SEND - shut down writing/sending capability
+- SD_BOTH - shut down everything
+
+
+# All SGScript functions (A-Z) [info]
+
+~!~ render = list_pages_asc
+~!~ filter_type = function,functions,function alias,function aliases
+
+
+# All SGScript constants (A-Z) [info]
+
+~!~ render = list_pages_asc
+~!~ filter_type = constant,constants
+
+
+# <<<
+
+
+# C API [info]
+
+- @"socket (type)"<socket [type]> - socket object
+- @"socket_address (type)"<socket_address [type]> - socket address object
+
+
+# >>>
+
+
+# socket [type]
+
+== socket
+=== a socket object contains the socket identifier directly in the data pointer
+
+- extraction of the identifier can be done this way: `((int)(size_t)obj->data)`
+- the identifier may be -1 if the socket is closed
+
+
+# socket_address [type]
+
+== socket_address
+=== a socket address object contains the address of any type (family), data pointer points to a sockaddr_storage struct
+
+- extraction can be done by casting the pointer to one of the sockaddr types (_in, _in6, _storage and others), depending on the value of the address family member (all structs are supposed to have it at the same place)
+
+
+# <<<
+

@@ -1,0 +1,40 @@
+
+include "string";
+
+function string_random( chars, length )
+{
+	return string_implode( chars.random( length ), "" );
+}
+
+
+srand( ftime() * 1000 );
+STRING_CHARS = string_explode( "abcdefghjiklmnopqrstuvwxyzABCDEFGHJIKLMNOPQRSTUVWXYZ"$
+	"0123456789 .,/;:<>[](){}?!@#$%^&*-=_+~`\\|", "" );
+STRING_COUNT = 100000;
+STRINGS = [];
+for( i = 0; i < STRING_COUNT; ++i )
+	STRINGS.push( string_random( STRING_CHARS, rand() % 12 + 8 ) );
+
+
+function test_hashfunc( name, strings )
+{
+	func = _G[ name ];
+	hashes = map();
+	t1 = ftime();
+	foreach( string : strings )
+		hashes[ func( string ) ] = true;
+	t2 = ftime();
+	cc = strings.size - map_size( hashes );
+	
+	printlns(
+		"Hash function '" $ name $ "'",
+		"Time: " $ t2 - t1,
+		"Collisions: " $ cc $ " / " $ strings.size $ " (" $ cc/strings.size $ ")",
+		""
+	);
+}
+
+
+test_hashfunc( "hash_fnv", STRINGS );
+test_hashfunc( "hash_crc32", STRINGS );
+

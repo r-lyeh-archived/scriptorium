@@ -1,0 +1,9 @@
+
+include_library( "string" );
+
+var iface =
+{
+	__add = function( a, b ){ string_cut( null, 0 ); }
+};
+var whoa = class( {}, iface );
+print( whoa + whoa );

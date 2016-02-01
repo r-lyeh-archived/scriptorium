@@ -1,0 +1,4 @@
+global one = 1;
+two = 2;
+dict = {one,two};
+println(dict);

@@ -1,0 +1,215 @@
+
+include "string", "re", "fmt";
+
+
+global htmlencode_repmap =
+{
+	"&" = "&amp;",
+	"<" = "&lt;",
+	">" = "&gt;",
+	"'" = "&#39;",
+	"\"" = "&quot;"
+};
+function htmlencode( text )
+{
+	global htmlencode_repmap;
+	return string_translate( text, htmlencode_repmap );
+}
+
+function uladjust( prev, cur )
+{
+	if( prev == cur )
+		return "</li><li>";
+	else if( prev < cur )
+		return string_repeat( "<ul><li>", cur - prev );
+	else // prev > cur
+		return string_repeat( "</li></ul>", prev - cur ) $ ["","<li>"][ cur > 0 ];
+}
+
+function re_replace_callback( text, pattern, callback )
+{
+	matches = re_match_all( text, pattern, RE_RETURN_BOTH );
+	matches.reverse();
+	foreach( match : matches )
+	{
+		str = callback( match );
+		text = string_part( text, 0, match[0][1] ) $ str $ string_part( text, match[0][2] );
+	}
+	return text;
+}
+
+function markdown2html( text, linkhandler )
+{
+	linkhandler ||= function( title, link ){ return link || title; };
+	
+	function mdinline( text, linkhandler )
+	{
+		// HTML HIDING
+		text = string_translate( text, {
+			"\"" = "\xFF",
+			"<" = "\xFD",
+			">" = "\xFE",
+			"'" = "\xFC"
+		} );
+		
+		text = htmlencode( text );
+		bdcc = "(^|[ \xFF\xFC\n\r\t,.;:/()])";
+		edcc = "($|[ \xFF\xFC\n\r\t,.;:/()])";
+		text = re_replace( text,
+			"#"$bdcc$"\\*\\*([^*]+)\\*\\*"$edcc$"#",
+			"$1<b>$2</b>$3" );
+		text = re_replace( text,
+			"#"$bdcc$"\\*([^*]+)\\*"$edcc$"#",
+			"$1<i>$2</i>$3" );
+		text = re_replace( text,
+			"#"$bdcc$"`([^`]+)`"$edcc$"#",
+			"$1<code>$2</code>$3" );
+		
+		text = re_replace_callback( text, "#"$bdcc$"@\xFF([^\xFF\xFD]+)\xFF(\xFD([^\xFE]+)\xFE)?"$edcc$"#",
+		function( match ) use( linkhandler )
+		{
+			if( !re_match( match[0][0], "#[a-zA-Z0-9]#" ) )
+				return match[0][0];
+			return match[1][0] $ linkhandler( match[2][0], match[4][0] ) $ match[5][0];
+		});
+		text = re_replace_callback( text, "#"$bdcc$"@([^ \xFF\xFD\n\r\t,.]+)(\xFD([^\xFE]+)\xFE)?"$edcc$"#",
+		function( match ) use( linkhandler )
+		{
+			if( !re_match( match[0][0], "#[a-zA-Z0-9]#" ) )
+				return match[0][0];
+			return match[1][0] $ linkhandler( match[2][0], match[4][0] ) $ match[5][0];
+		});
+		
+		// HTML UNHIDING
+		text = string_translate( text, {
+			"\xFF" = "&quot;",
+			"\xFD" = "&lt;",
+			"\xFE" = "&gt;",
+			"\xFC" = "&#39;"
+		} );
+		
+		return text;
+	}
+	
+	text = string_replace( text, ['\r\n','\r'], '\n' );
+	
+	lines = string_explode( text, "\n" );
+	for( i = 0; i < lines.size; ++i )
+	{
+		L = lines[ i ];
+		
+		if( !string_compare( L, "---", 3 ) )
+		{
+			if( i + 1 < lines.size &&
+				( !string_compare( lines[ i + 1 ], "| ", 2 ) ||
+				!string_compare( lines[ i + 1 ], "! ", 2 ) ) )
+			{
+				lines[ i ] = "<table>";
+				i++;
+				while( string_part( lines[ i ], 0, 3 ) != "---" )
+				{
+					L = lines[ i ];
+					lout = "";
+					
+					while( ( nL = re_replace( L, "#(`.*)\\|(.*`)#", "$1-~OR~-$2" ) ) != L )
+						L = nL;
+					while( ( nL = re_replace( L, "#(`.*)\\!(.*`)#", "$1-~EXCL~-$2" ) ) != L )
+						L = nL;
+					
+					strparser = fmt_string_parser( L );
+					strparser.skipcc( "^|!" );
+					while( !strparser.at_end )
+					{
+						tag = if( strparser.getchar() == "!", "th", "td" );
+						s = strparser.readcc( "^!|" );
+						if( !s )
+							continue;
+						s = string_trim( s );
+						s = string_replace( s, "-~OR~-", "|" );
+						s = string_replace( s, "-~EXCL~-", "!" );
+						s = mdinline( s, linkhandler );
+						if( !s )
+							s = "&nbsp;";
+						lout $= string_format( 5 + tag.length * 2 + s.length, "<{1}>{2}</{1}>", tag, s );
+					}
+					lines[ i ] = "<tr>" $ lout $ "</tr>";
+					
+					i++;
+				}
+				lines[ i ] = "</table>";
+			}
+			else
+				lines[ i ] = "</p><hr /><p>";
+		}
+		else if( !string_compare( L, "- ", 2 ) )
+		{
+			lines[ i ] = "</p><ul><li>" $ mdinline( string_trim( L, "- ", STRING_TRIM_LEFT ), linkhandler );
+			i++;
+			ulevel = 1;
+			while( i < lines.size )
+			{
+				L = lines[ i ];
+				tr = string_trim( L, "-", STRING_TRIM_LEFT );
+				tr2 = string_trim( tr, " ", STRING_TRIM_LEFT );
+				dashcnt = L.length - tr.length;
+				spacecnt = tr.length - tr2.length;
+				if( !dashcnt || !spacecnt )
+				{
+					i--;
+					break;
+				}
+				lines[ i ] = uladjust( ulevel, dashcnt ) $ mdinline( string_trim( L, "- ", STRING_TRIM_LEFT ), linkhandler );
+				ulevel = dashcnt;
+				i++;
+			}
+			if( i >= lines.size ) i--;
+			lines[ i ] $= uladjust( ulevel, 0 ) $ "<p>";
+		}
+		else if( !string_compare( L, "! ", 2 ) )
+		{
+			lines[ i ] = "<em class='notice-bgr'>" $ mdinline( string_trim( L, "! ", STRING_TRIM_LEFT ), linkhandler ) $ "</em>";
+		}
+		else if( !string_compare( L, "    ", 4 ) )
+		{
+			lines[ i ] = "</p><pre>" $ htmlencode( string_part( L, 4 ) );
+			i++;
+			while( i < lines.size )
+			{
+				L = lines[ i ];
+				if( string_compare( L, "    ", 4 ) )
+				{
+					i--;
+					break;
+				}
+				lines[ i ] = htmlencode( string_part( L, 4 ) );
+				i++;
+			}
+			if( i >= lines.size ) i--;
+			lines[ i ] $= "</pre><p>";
+		}
+		else if( !string_compare( L, "==", 2 ) )
+		{
+			cnt = L.length - string_trim( L, "=", STRING_TRIM_LEFT ).length + 1;
+			if( cnt > 6 ) cnt = 6;
+			L = string_trim( L, "= \t\v\r\n" );
+			lines[ i ] = "</p><h"$cnt$">" $ mdinline( L, linkhandler ) $ "</h"$cnt$"><p>";
+		}
+		else if( !string_compare( L, "[+] ", 4 ) || !string_compare( L, "[-] ", 4 ) )
+		{
+			prepart = string_part( L, 0, 3 );
+			lines[ i ] = "<div class='al-" $ if( prepart == "[+]", "pro", "con" ) $ "'><span class='inner'>"
+				$ "<span class='mark'>" $ prepart $ "</span>"
+				$ string_part( L, 3 ) $ "</span></div>";
+		}
+		else if( string_trim( L ) == "" )
+		{
+			lines[ i ] = "</p><p>";
+		}
+		else
+			lines[ i ] = mdinline( L, linkhandler );
+	}
+	
+	out = "<p>" $ string_implode( lines, "\n" ) $ "</p>";
+	out = re_replace( out, "#<([a-zA-Z]+)>[ \n\r\t]*</\\1>#", "" );
+	return out;
+}

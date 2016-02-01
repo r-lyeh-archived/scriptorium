@@ -1,0 +1,42 @@
+SGScript JSON library
+
+
+# Description [info]
+
+The goal of this library is to provide a simple method to encode/decode a limited-size JSON string/data set. More info about the JSON format can be found here: @"json.org"<http://json.org/>
+
+The library is compiled to a 'sgsjson' shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+
+    include "sgsjson";
+
+
+# SGScript API [info]
+
+=== Functions:
+
+- @json_encode - encode SGScript variable structure as JSON string
+- @json_decode - decode JSON string to SGScript variable structure
+
+
+# >>>
+
+
+# json_encode [function]
+
+== json_encode( var )
+=== encode SGScript variable structure as JSON string
+
+    json_encode( { a = 5, text = "something" } ) // returns {"a":5,"text":"something"}
+
+
+# json_decode [function]
+
+== json_decode( string jsondata )
+=== decode JSON string to SGScript variable structure
+
+    json_decode( '{"a":5,"text":"something"}' ) // returns { a = 5, text = "something" }
+
+
+# <<<
+
+

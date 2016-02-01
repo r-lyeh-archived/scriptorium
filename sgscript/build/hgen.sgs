@@ -1,0 +1,95 @@
+
+// libraries
+include "io", "re", "string";
+
+// configuration
+global OUT = null;
+global MICRO = false;
+
+global argv;
+if( @argv )
+{
+	for( i = 0; i < argv.size; ++i )
+	{
+		arg = argv[i];
+		if( arg == "-m" || arg == "--micro" ) MICRO = true;
+		if( arg == "-o" || arg == "--out" ) OUT = @argv[++i];
+	}
+}
+
+if( !OUT )
+{
+	errprintln( "SGS header generator - no output file (-o) specified" );
+	return;
+}
+
+orig_io_file_read = io_file_read;
+function io_file_read( src ) use( orig_io_file_read )
+{
+	println( "reading " $ src );
+	return orig_io_file_read( src );
+}
+orig_io_file_write = io_file_write;
+function io_file_write( src, data ) use( orig_io_file_write )
+{
+	println( "writing "$data.length$" bytes to " $ src );
+	return orig_io_file_write( src, data );
+}
+
+// concatenate source files
+SRC = sys_curfiledir() $ "/../src/";
+FILES =
+[
+	"sgs_bcg.c",
+	"sgs_ctx.c",
+	"sgs_fnt.c",
+	"sgs_proc.c",
+	"sgs_regex.c",
+	"sgs_std.c",
+	"sgs_util.c",
+	"sgs_tok.c",
+	"sgs_xpc.c",
+];
+REPLACED = [];
+NL = "\n";
+BLOB = NL$"#define SGS_INTERNAL_STRINGTABLES"$NL;
+if( !MICRO )
+{
+	BLOB $= "#define SGS_USE_FILESYSTEM"$NL;
+	FILES.push( "sgs_stdL.c" );
+}
+else
+{
+	BLOB $= "#define SGS_NO_STDLIB 1"$NL;
+	REPLACED.push( "sgs_msvc_dirent.h" );
+}
+
+foreach( file : FILES )
+	BLOB $= io_file_read( SRC $ file );
+
+// replace local includes (only the first, just remove repeated ones)
+
+for(;;)
+{
+	incl = re_match( BLOB, "/#[ \t]*include[ \t]*[\"<](sgs[a-z0-9_.]+)[>\"]/i", RE_RETURN_BOTH );
+	if( !incl )
+		break;
+	
+	file = incl[1][0];
+	from = incl[0][1];
+	to = incl[0][2];
+	
+//	printvar( file, from, to );
+	if( REPLACED.find( file ) !== null )
+	{
+		BLOB = string_part( BLOB, 0, from ) $ string_part( BLOB, to );
+	}
+	else
+	{
+		incfile = io_file_read( SRC $ file );
+		BLOB = string_part( BLOB, 0, from ) $ incfile $ string_part( BLOB, to );
+		REPLACED.push( file );
+	}
+}
+
+io_file_write( OUT, BLOB );

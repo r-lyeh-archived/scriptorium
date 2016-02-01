@@ -1,0 +1,9 @@
+global ERRORS = "";
+
+d = { a = 1, b = 2 };
+printlns( @undef, @d.c, @d["e"] );
+@undef( d );
+@"wat".length = 3;
+@_G = 4;
+
+testEqual( ERRORS, "", "all errors were suppressed" );

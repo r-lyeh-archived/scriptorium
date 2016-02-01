@@ -1,0 +1,157 @@
+
+// Must be run with root as the current directory
+
+include "io", "os", "string", "re";
+
+
+if( !@get_make_cmd )
+{
+	function get_make_cmd( os )
+	{
+		cmd = "clean_objbin tools";
+		if( os == "windows" )
+			cmd $= " sgsexe";
+		return cmd;
+	}
+}
+if( !@get_clean_cmd )
+{
+	function get_clean_cmd( os )
+	{
+		return "clean_obj";
+	}
+}
+if( !@get_buildstrip_cmd )
+{
+	function get_buildstrip_cmd(){}
+}
+if( !@get_version_text )
+{
+	function get_version_text()
+	{
+		mainheader = io_file_read( "src/sgscript.h" );
+		match = re_match( mainheader, "%major[ \t]+([0-9]+).*?minor[ \t]+([0-9]+).*?"$
+			"incr[ \t]+([0-9]+)%msi", RE_RETURN_CAPTURED );
+		return string_format( '{1}.{2}.{3}', match[1], match[2], match[3] );
+	}
+}
+
+
+// OS config
+global OSNAMES_TR = { "mac os x" = "osx" };
+global OSNAME = string_tolower( os_gettype() );
+global OSNAME = @OSNAMES_TR[ OSNAME ] || OSNAME;
+global DS = if( OSNAME == "windows", "\\", "/" ); // only necessary for os_command
+global ROOT = "bin" $ DS;
+if( OSNAME == "windows" || OSNAME == "osx" )
+{
+	// .ZIP
+	function os_make_archive( archname, folder )
+	{
+		if( OSNAME == "osx" )
+			os_command( string_format( "zip -r -9 -X {1}.zip {2}", archname, folder ) );
+		else
+		{
+			locations_7z =
+			[
+				"""C:\Program Files\7-Zip\7z.exe""",
+				"""C:\Program Files (x86)\7-Zip\7z.exe"""
+			];
+			done = false;
+			foreach( bin7z : locations_7z )
+			{
+				if( !io_file_exists( bin7z ) )
+					continue;
+				
+				// try to run 7-zip
+				os_command( string_format( '"{1}" a -mx9 -tzip {2}.zip {3}', bin7z, archname, folder ) );
+				
+				done = true;
+				break;
+			}
+			if( !done )
+				ERROR( "could not find 7-Zip" );
+		}
+	}
+}
+else
+{
+	// .TAR.GZ
+	function os_make_archive( archname, folder )
+	{
+		os_command( string_format( "tar -zcvf {1}.tar.gz {2}", archname, folder ) );
+	}
+}
+
+// build variation config
+VARIATIONS =
+[
+	{ debug = "mode=debug", release = "mode=release" },
+];
+if( OSNAME == "windows" || OSNAME == "linux" || OSNAME == "unix" || OSNAME == "osx" )
+	VARIATIONS.unshift({ "x86" = "target=" $ OSNAME $ "-x86", "x64" = "target=" $ OSNAME $ "-x64" });
+
+// build command config
+CPBIN = if( OSNAME == "windows", "copy /b", "cp" );
+RMBIN = if( OSNAME == "windows", "del /F /S /Q", "rm -rf" );
+MAKEBIN = if( OSNAME == "windows", "mingw32-make", "make" );
+MAKECMD = get_make_cmd( OSNAME );
+
+// --------------------------------------------
+
+buildlist = {};
+buildlist[ OSNAME ] = "";
+
+foreach( variation : VARIATIONS )
+{
+	nbl = {};
+	foreach( var_name, var_flags : variation )
+	{
+		foreach( oldvar, oldvarflags : buildlist )
+		{
+			nbl[ oldvar $ "-" $ var_name ] = oldvarflags $ " " $ var_flags;
+		}
+	}
+	buildlist = nbl;
+}
+
+versiontext = get_version_text();
+
+cwd = io_getcwd();
+foreach( blfolder, blflags : buildlist )
+{
+	blflags = string_trim( blflags );
+	printlns
+	(
+		"",
+		"",
+		"//////////////////////////////",
+		"// build type: " $ blfolder,
+		"// build flags: " $ blflags,
+		"//////////////////////////////",
+		""
+	);
+	
+	// build
+	DIR = ROOT $ blfolder;
+	io_dir_create( DIR );
+	os_command( MAKEBIN$" OUTDIR="$DIR$" "$blflags$" "$MAKECMD );
+	os_command( CPBIN $ " src" $ DS $ "sgscript.h " $ DIR $ DS $ "sgscript.h" );
+	rmpaths = get_buildstrip_cmd( DIR, blflags );
+	if( rmpaths !== null )
+	{
+		if( OSNAME == "windows" )
+			rmpaths = string_replace( rmpaths, "/", "\\" );
+		os_command( RMBIN$" "$rmpaths );
+	}
+	
+	// generate archive
+	io_setcwd( cwd $ "/bin" );
+	os_make_archive( "sgscript_" $ versiontext $ "_" $ blfolder, blfolder );
+	io_setcwd( cwd );
+	
+	// write version info
+//	io_file_write( DIR $ "/version", versioninfo_plain );
+//	io_file_write( DIR $ "/version.json", versioninfo_json );
+}
+os_command( MAKEBIN$" "$get_clean_cmd( OSNAME ) );

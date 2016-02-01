@@ -1,0 +1,11 @@
+
+function m(){ printvar( "M0----", va_arg_count(), va_get_args() ); }
+function m2(a,b){ printvar( "M2----", va_arg_count(), va_get_args() ); }
+
+m();
+m( "a", 5 );
+m( {}, [], map(), "!" );
+
+m2();
+m2( "a", 5 );
+m2( {}, [], map(), "!" );

@@ -1,0 +1,342 @@
+
+global ERRORS, tests_failed, tests_ran;
+
+//
+section = function section( x ){ print( "\n\t<< ", x, " >>\n" ); };
+mostempty = function(){};
+print( "\n\n-- CORE FUNCTIONS --\n" );
+include "os", "string";
+//
+
+var asz = [ 10, "huh", {}, 0.25, "end!" ];
+var arr = [ 9, 3, 6, 2, 8 ];
+function customSort( a, b ){ return a - b + ( a % 2 - b % 2 ) * 5000; } // even before odd
+var mapping = [ 1, 3, 2, 5, 4 ];
+var arr2 = [ 1, 5, 7, 3, 9 ];
+
+	section( "conversions (to*)" );
+convars =
+[
+	null, 0, 573, 3.14, 0.001, true, false,
+	"", "abc..", "\0\0", "\0wat\0is\0this\0\0", print, section,
+	[], [1,2], {}, map(), class({a=1},{__tostring=function(){return "claZZ";}}),
+];
+boolvars =
+[
+	false, false, true, true, true, true, false,
+	false, true, true, true, true, true,
+	false, true, false, false, true,
+];
+intvars =
+[
+	0, 0, 573, 3, 0, 1, 0,
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+];
+realvars =
+[
+	0.0, 0.0, 573.0, 3.14, 0.001, 1.0, 0.0,
+	0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+	0.0, 0.0, 0.0, 0.0, 0.0,
+];
+stringvars =
+[
+	"null", "0", "573", "3.14", "0.001", "true", "false",
+	"", "abc..", "\0\0", "\0wat\0is\0this\0\0", "C function", "function",
+	"[]", "[1,2]", "{}", "[map]{}", "claZZ"
+];
+ERRORS = "";
+for( i = 0; i < convars.size; ++i )
+	testEqual( tobool( convars[i] ), boolvars[i], "tobool - variable #"$i );
+for( i = 0; i < convars.size; ++i )
+	testEqual( toint( convars[i] ), intvars[i], "toint - variable #"$i );
+for( i = 0; i < convars.size; ++i )
+	testEqual( toreal( convars[i] ), realvars[i], "toreal - variable #"$i );
+for( i = 0; i < convars.size; ++i )
+	testEqual( tostring( convars[i] ), stringvars[i], "tostring - variable #"$i );
+testEqual( ERRORS, "", "conversions - no errors" );
+
+	section( "includes" );
+ERRORS = "";
+include "s_for.sgs";
+testEqual( ERRORS, "", "include - basic file load, no errors" );
+include "sgsjson";
+testEqual( ERRORS, "", "include - basic dyn.lib. load, no errors" );
+ERRORS = "";
+include "filedoesnotexist.sgs";
+testEqual( ERRORS, "[W:include(): could not find 'filedoesnotexist.sgs' with include path "$
+	"'" $ SGS_PATH $ "']", "include - errors when file doesn't exist" );
+ERRORS = "";
+include "f_cutwhile.sgs";
+testEqual( ERRORS, "[E:tests/f_cutwhile.sgs - include(): [line 3] Unexpected token '}' found!]", "include - errors when there's a syntax error" );
+
+	section( "globals/registry" );
+ERRORS = "";
+tR = _R;
+_R[ 5 ] = 6;
+testEqual( _R[ 5 ], 6, "_R - readback" );
+testEqual( ERRORS, "", "_R - access - no errors" );
+oriG = _G;
+_G = tG = class( {}, oriG ); testEqual( _G, tG, "_G - set to new dict" ); _G = oriG;
+_G = tG = class( map(), oriG ); testEqual( _G, tG, "_G - set to new map" ); _G = oriG;
+_G = serialize; testEqual( _G, oriG, "_G - set to function" );
+testEqual( ERRORS, "[E:_G only accepts 'map'/'dict' values]" );
+ERRORS = "";
+_G[ serialize ] = "serialize";
+testEqual( _G[ serialize ], "serialize", "_G - map name to function" );
+_G[ null ] = 1;
+_G[ true ] = 1;
+_G[ false ] = 1;
+testEqual( ERRORS, "", "_G - trying to map to null/true/false keys" );
+testEqual( _G[ unserialize ], null, "_G - reading unmapped function key" );
+testEqual( ERRORS, "[W:Cannot find readable value by index: \"C function\"]" );
+
+	section( "helper globals" );
+ERRORS = "";
+printvar(_F);
+printvar(_T);
+function test__f()
+{
+	testEqual( _F, test__f, "_F - correct value" );
+}
+test__f();
+testEqual( ERRORS, "", "_F/_T - no access errors" );
+
+	section( "serialization - mode 1" );
+ERRORS = "";
+testEqual( serialize(null), "P\x00", "serialize - null" );
+testEqual( unserialize(serialize(null)), null, "[un]-serialize - null" );
+testEqual( serialize(true), "P\x01\x01", "serialize - bool" );
+testEqual( unserialize(serialize(true)), true, "[un]-serialize - bool" );
+testEqual( unserialize(serialize(-14328)), -14328, "[un]-serialize - int" );
+testEqual( unserialize(serialize(-143.28)), -143.28, "[un]-serialize - real" );
+testEqual( unserialize(serialize("test")), "test", "[un]-serialize - string" );
+testEqual( string_part(serialize(mostempty),0,2), "P\x05", "serialize - function - first bytes" );
+testEqual( typeof(unserialize(serialize(mostempty))), "func", "[un]-serialize - function (no errors)" );
+testEqual( string_part(serialize(section),0,2), "P\x05", "serialize - function 2 - first bytes" );
+testEqual( typeof(unserialize(serialize(section))), "func", "[un]-serialize - function 2 (no errors)" );
+testEqual( typeof(unserialize(serialize([]))), "array", "[un]-serialize - empty array (no errors)" );
+testEqual( typeof(unserialize(serialize({}))), "dict", "[un]-serialize - empty dict (no errors)" );
+testEqual( typeof(unserialize(serialize(map()))), "map", "[un]-serialize - empty map (no errors)" );
+testEqual( typeof(unserialize(serialize([1,true]))), "array", "[un]-serialize - used array (no errors)" );
+testEqual( typeof(unserialize(serialize({a=1,b=2}))), "dict", "[un]-serialize - used dict (no errors)" );
+testEqual( typeof(unserialize(serialize(map("a",1,"b",2)))), "map", "[un]-serialize - used map (no errors)" );
+usedarray = [1,2,3,4,1,2,3,4];
+sstruct = {
+	"0" = null,
+	a = false, b = true,
+	c = 0, d = 12124, e = -89235,
+	f = 0.0, g = 12.346,
+	h = "", i = "abc..",
+	j = section,
+	k = [], l = [1,2,3],
+	m = { a = 1, b = 2 }, n = {},
+	o = map( 1, 2, 3, 4 ),
+	p = usedarray, q = usedarray,
+};
+sstruct_string = "{0=null,a=false,b=true,c=0,d=12124,e=-89235,f=0,g=12.346,"
+	$"h=,i=abc..,j=function,k=array,l=array,m=dict,n=dict,o=map,p=array,q=array}";
+testEqual( typeof(serialize(sstruct)), "string", "serialize - no errors" );
+testEqual( ''$unserialize(serialize(sstruct)), sstruct_string, "(un)serialize - roundtrip" );
+ssstr =
+	"P\x04\x01\x00\x00\x00k"$
+	"P\x04\x05\x00\x00\x00pcallS"$
+	"P\x04\x01\x00\x00\x00m"$
+	"P\x04\x05\x00\x00\x00arrayS"$
+	"C\x04\x00\x00\x00\x04dict\x00";
+testEqual( serialize({k=pcall,m=array}), ssstr, "serialize symbols - no errors" );
+testEqual( ''$unserialize(serialize({k=pcall,m=array})), "{k=C function,m=dict}", "(un)serialize symbols - roundtrip" );
+testEqual( ERRORS, "", "serialization - errors" );
+
+	section( "serialization - mode 2" );
+ERRORS = "";
+testEqual( serialize2(null), "P\x00", "serialize2 - null" );
+testEqual( unserialize2(serialize2(null)), null, "[un]-serialize2 - null" );
+testEqual( serialize2(true), "P\x01\x01", "serialize2 - bool" );
+testEqual( unserialize2(serialize2(true)), true, "[un]-serialize2 - bool" );
+testEqual( unserialize2(serialize2(-14328)), -14328, "[un]-serialize2 - int" );
+testEqual( unserialize2(serialize2(-143.28)), -143.28, "[un]-serialize2 - real" );
+testEqual( unserialize2(serialize2("test")), "test", "[un]-serialize2 - string" );
+testEqual( string_part(serialize2(mostempty),0,2), "P\x05", "serialize2 - function - first bytes" );
+testEqual( typeof(unserialize2(serialize2(mostempty))), "func", "[un]-serialize2 - function (no errors)" );
+testEqual( string_part(serialize2(section),0,2), "P\x05", "serialize2 - function 2 - first bytes" );
+testEqual( typeof(unserialize2(serialize2(section))), "func", "[un]-serialize2 - function 2 (no errors)" );
+testEqual( typeof(serialize2([])), "string", "serialize2 - empty array (no errors)" );
+testEqual( typeof(unserialize2(serialize2([]))), "array", "[un]-serialize2 - empty array (no errors)" );
+testEqual( typeof(unserialize2(serialize2({}))), "dict", "[un]-serialize2 - empty dict (no errors)" );
+testEqual( typeof(unserialize2(serialize2(map()))), "map", "[un]-serialize2 - empty map (no errors)" );
+testEqual( typeof(unserialize2(serialize2([1,true]))), "array", "[un]-serialize2 - used array (no errors)" );
+testEqual( typeof(unserialize2(serialize2({a=1,b=2}))), "dict", "[un]-serialize2 - used dict (no errors)" );
+testEqual( typeof(unserialize2(serialize2(map("a",1,"b",2)))), "map", "[un]-serialize2 - used map (no errors)" );
+testEqual( typeof(serialize2(sstruct)), "string", "serialize2 - no errors" );
+testEqual( ''$unserialize2(serialize2(sstruct)), sstruct_string, "(un)serialize2 - roundtrip" );
+testEqual( serialize(sstruct).length > serialize2(sstruct).length, true, "serialize > serialize2 (output size)" );
+ssstr =
+	"P\x04\x01\x00\x00\x00k"$
+	"P\x04\x05\x00\x00\x00pcallS\x01\x00\x00\x00"$
+	"P\x04\x01\x00\x00\x00m"$
+	"P\x04\x05\x00\x00\x00arrayS\x04\x00\x00\x00"$
+	"C\x04\x00\x00\x00\x04\x00\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x05\x00\x00\x00dict\x00";
+testEqual( serialize2({k=pcall,m=array}), ssstr, "serialize symbols - no errors" );
+testEqual( ''$unserialize2(serialize2({k=pcall,m=array})), "{k=C function,m=dict}", "(un)serialize symbols - roundtrip" );
+testEqual( ERRORS, "", "serialization - errors" );
+
+	section( "array basic ops" );
+testEqual( clone(arr).insert(0,1,4)$'', '[1,4,9,3,6,2,8]', "insert at beginning" );
+testEqual( clone(arr).insert(-1,1,4)$'', '[9,3,6,2,8,1,4]', "insert at end" );
+testEqual( clone(arr).insert(3,1,4)$'', '[9,3,6,1,4,2,8]', "insert at middle" );
+ERRORS = ""; testEqual( clone(arr).insert(6,5), null, "insert - out of bounds" );
+testEqual( ERRORS, "[W:array.insert(): index out of bounds]" );
+testEqual( clone(arr).erase(0)$'', '[3,6,2,8]', "erase one at beginning" );
+testEqual( clone(arr).erase(2)$'', '[9,3,2,8]', "erase one at middle" );
+testEqual( clone(arr).erase(-1)$'', '[9,3,6,2]', "erase one at end" );
+testEqual( clone(arr).erase(0,2)$'', '[2,8]', "erase many at beginning" );
+testEqual( clone(arr).erase(1,3)$'', '[9,8]', "erase many at middle" );
+testEqual( clone(arr).erase(-3,-1)$'', '[9,3]', "erase many at end" );
+ERRORS = ""; testEqual( clone(arr).erase(4,7), null, "erase - out of bounds" );
+testEqual( ERRORS, "[W:array.erase(): index out of bounds]" );
+ERRORS = ""; testEqual( clone(arr).erase(4,-2), null, "erase - invalid range" );
+testEqual( ERRORS, "[W:array.erase(): after resolving, index #1 must be smaller or equal than index #2]" );
+
+	section( "array sizing" );
+testEqual( clone(asz).resize(2)$'', '[10,huh]', "resize - 5 to 2" );
+testEqual( clone(asz).resize(2).resize(5)$'', '[10,huh,null,null,null]', "resize - 5 to 2 to 5" );
+testEqual( clone(asz).reserve(16).capacity, 16, "reserve - capacity check" );
+testEqual( clone(asz).reserve(1).capacity, 5, "reserve - less than current" );
+
+	section( "array.sort" );
+testEqual( clone(arr).sort()$'', '[2,3,6,8,9]', "sort - basic integer sorting" );
+testEqual( clone(arr).sort(true)$'', '[9,8,6,3,2]', "sort - reversed integer sorting" );
+
+testEqual( clone(arr).sort_custom( customSort )$'', '[2,6,8,3,9]', "sort_custom" );
+testEqual( clone(arr).sort_custom( customSort, true )$'', '[9,3,8,6,2]', "sort_custom (reversed)" );
+
+testEqual( clone(arr).sort_mapped( mapping )$'', '[9,6,3,8,2]', "sort_mapped" );
+testEqual( clone(arr).sort_mapped( mapping, true )$'', '[2,8,3,6,9]', "sort_mapped (reversed)" );
+
+	section( "array utils" );
+testEqual( clone(arr2).reverse()$'', '[9,3,7,5,1]', "reverse - odd" );
+testEqual( clone(arr2).resize(4).reverse()$'', '[3,7,5,1]', "reverse - even" );
+testEqual( [].reverse()$'', '[]', "reverse - none" );
+
+testEqual( arr.find( "3" ), 1, "find - basic" );
+testEqual( arr.find( "3", true ), null, "find - strict, empty" );
+testEqual( arr.find( 3, true, 1 ), 1, "find - strict, matching offset" );
+testEqual( arr.find( 3, true, 2 ), null, "find - strict, offset, empty" );
+
+TA = [false,0,1,2,3,[],{},[4]];
+testEqual( ''$TA.part( 2, 3 ), "[1,2,3]", "part - indices 2 to 4" );
+testEqual( ''$TA.part( -11, 5 ), "[false,0]", "part - from -11, 5 items" );
+testEqual( ''$TA.part( -11 ), "[false,0,1,2,3,array,dict,array]", "part - from -11 fwd (all)" );
+testEqual( ''$TA.part( 11 ), "[]", "part - from 11 fwd (empty)" );
+
+	section( "more array utils" );
+testEqual( [1,2,3,3,4].unique()$'', "[1,2,3,4]", "unique - basic" );
+testEqual( [1,2,3,"3",4].unique()$'', "[1,2,3,3,4]", "unique - mixed types" );
+testEqual( [1,2,3,"3",4].unique(true)$'', "[1,2,3,4]", "unique - string comparison" );
+testEqual( typeof([1,2,"3",3,4].unique(true)[2]), "string", "unique - string comparison, swapped" );
+
+testEqual( [1,2,3,4].random(3).size, 3, "random - 3 of 4" );
+testEqual( [1,2,3,4].random(4).size, 4, "random - 4 of 4" );
+testEqual( [1,2,3,4].random(7).size, 7, "random - 7 of 4" );
+
+	section( "misc." );
+ERRORS = "";
+testEqual( dict_size({ a = 1, b = 2 }), 2, "dict_size" );
+testEqual( map_size(map{ a = 1, b = 2 }), 2, "map_size" );
+
+TA = [false,0,1,2,3,[],{},[4]];
+testEqual( ''$array_filter( TA ), "[1,2,3,array]", "array_filter - basic" );
+testEqual( ''$array_filter( TA, function(x){return x>=1&&x<=3;} ), "[1,2,3]", "array_filter - 1 to 3" );
+testEqual( ''$array_filter( TA, function(x){return !x;} ), "[false,0,array,dict]", "array_filter - inverted" );
+
+testEqual( ''$array_process( clone(TA), function(x){return if(x>=1&&x<=3,1,0);} ), "[0,0,1,1,1,0,0,0]", "array_process - 1 to 3" );
+testEqual( ''$array_process( clone(TA), function(x){return toint(x) + 10;} ), "[10,10,11,12,13,10,10,10]", "array_process - add 10" );
+testEqual( ''$array_process( clone(TA), tostring ), "[false,0,1,2,3,[],{},[4]]", "array_process - convert to string" );
+testEqual( ERRORS, "", "dict_size/array_filter/array_process - no errors" );
+
+ERRORS = "";
+TD = { a = 3, b = false, c = "4", "5" = 0 };
+testEqual( ''$dict_filter( TD ), "{a=3,c=4}", "dict_filter - basic" );
+testEqual( ''$dict_filter( TD, function(x){ return x >= 1 && x <= 5; } ), "{a=3,c=4}", "dict_filter - 1 to 5" );
+testEqual( ''$dict_filter( TD, function(x){return !x;} ), "{b=false,5=0}", "dict_filter - inverted" );
+testEqual( ''$dict_filter( TD, function(x,k){ return toint(k); } ), "{5=0}", "dict_filter - key-based" );
+
+testEqual( ''$map_process( clone(TD), function(x){ return if(x>=1&&x<=5,1,0); } ), "{a=1,b=0,c=1,5=0}", "map_process - 1 to 5" );
+testEqual( ''$map_process( clone(TD), function(x){return toint(x) + 10;} ), "{a=13,b=10,c=14,5=10}", "map_process - add 10" );
+testEqual( ''$map_process( clone(TD), tostring ), "{a=3,b=false,c=4,5=0}", "map_process - convert to string" );
+testEqual( ''$map_process( clone(TD), function(x,k){ return k; } ), "{a=a,b=b,c=c,5=5}", "map_process - set from key" );
+
+TD = map{ a = 3, b = false, c = "4", "5" = 0 };
+testEqual( ''$map_filter( TD ), "[map]{a=3,c=4}", "map_filter - basic" );
+testEqual( ''$map_filter( TD, function(x){ return x >= 1 && x <= 5; } ), "[map]{a=3,c=4}", "map_filter - 1 to 5" );
+testEqual( ''$map_filter( TD, function(x){return !x;} ), "[map]{b=false,5=0}", "map_filter - inverted" );
+testEqual( ''$map_filter( TD, function(x,k){ return toint(k); } ), "[map]{5=0}", "map_filter - key-based" );
+
+testEqual( ''$map_process( clone(TD), function(x){ return if(x>=1&&x<=5,1,0); } ), "[map]{a=1,b=0,c=1,5=0}", "map_process - 1 to 5" );
+testEqual( ''$map_process( clone(TD), function(x){return toint(x) + 10;} ), "[map]{a=13,b=10,c=14,5=10}", "map_process - add 10" );
+testEqual( ''$map_process( clone(TD), tostring ), "[map]{a=3,b=false,c=4,5=0}", "map_process - convert to string" );
+testEqual( ''$map_process( clone(TD), function(x,k){ return k; } ), "[map]{a=a,b=b,c=c,5=5}", "map_process - set from key" );
+testEqual( ERRORS, "", "[dict/map]_[filter/process] - no errors" );
+
+testEqual( hash_fnv( "something" ), 2118605163, "fnv hash - as int" );
+testEqual( hash_fnv( "something", true ), "7e47596b", "fnv hash - as string" );
+testEqual( hash_fnv( "something" ) == hash_fnv( "somethjng" ), false, "fnv hash - collisions" );
+testEqual( hash_crc32( "something" ), 165294587, "crc32 hash - as int" );
+testEqual( hash_crc32( "something", true ), "09da31fb", "crc32 hash - as string" );
+testEqual( hash_crc32( "something" ) == hash_crc32( "somethjng" ), false, "crc32 hash - collisions" );
+
+testEqual( tostring(multiply_path_ext_lists( "A;B", "/", "C;D" )), "[A/C,A/D,B/C,B/D]", "multiply_path_ext_lists - basic multiplication" );
+testEqual( tostring(multiply_path_ext_lists( ";;", "/", ";;" )), "[/,/,/,/,/,/,/,/,/]", "multiply_path_ext_lists - empty multiplication" );
+testEqual( tostring(multiply_path_ext_lists( "", ".", "" )), "[.]", "multiply_path_ext_lists - empty multiplication once" );
+
+
+	section( "include_file" );
+f2inc = "tests/s_fnexp.sgs";
+testEqual( include_file( f2inc ), true, "include_file - basic inclusion" );
+global sqr;
+testEqual( typeof( sqr ), "func", "include_file - received the variable?" );
+sqr = null;
+include_file( f2inc );
+testEqual( typeof( sqr ), "null", "include_file - didn't rewrite the variable?" );
+include_file( f2inc, true );
+testEqual( typeof( sqr ), "func", "include_file - did force-rewrite the variable?" );
+
+
+var libfile = "bin/sgsjson";
+if( os_gettype() == "Windows" )
+	libfile $= ".dll";
+else
+	libfile $= ".so";
+	section( "include_shared ("$libfile$", OS="$os_gettype()$")" );
+testEqual( include_shared( libfile ), true, "include_shared - sgscript_main call [1]" );
+testEqual( json_decode$'', 'C function', "include_shared - sgscript_main call [2]" );
+
+	section( "import_cfunc" );
+testEqual( typeof( import_cfunc( libfile, "sgscript_main" ) ), "cfunc", "import_cfunc - retrieval of entry point" );
+ERRORS = ""; testEqual( import_cfunc( "bin/nosuchfile", "sgscript_main" ), null, "import_cfunc - invalid file name" ); testEqual( ERRORS, "[W:import_cfunc(): file 'bin/nosuchfile' was not found]" );
+ERRORS = ""; testEqual( import_cfunc( libfile, "nosuchfunc" ), null, "import_cfunc - invalid function name" ); testEqual( ERRORS, "[W:import_cfunc(): procedure 'nosuchfunc' was not found]" );
+
+	section( "class" );
+ERRORS = "";
+global printer = {};
+sym_register("printer",printer);
+function printer.create(name){ function wat(){} return class({name,printer},printer); }
+function printer.print(wat){ println("Printer '",this.name,"' says:",wat); }
+printer.create("ONE").print("hello");
+testEqual( sym_get( "printer" ), printer, "symbol for string 'printer'" );
+testEqual( sym_get( "printer.create" ), printer.create, "symbol for string 'printer.create'" );
+testEqual( sym_get( printer ), "printer", "symbol for function 'printer'" );
+testEqual( sym_get( printer.create ), "printer.create", "symbol for function 'printer.create'" );
+testEqual( sym_get( "wat" ), null, "no symbol with name 'wat' for function inside 'printer.create'" );
+testEqual( ERRORS, "[W:sym_get(): symbol not found]", "classes/symbols - errors" );
+
+	section( "errors" );
+ERRORS = "";
+testEqual( isset( {}, "wat" ), false, "isset - works" );
+testEqual( ERRORS, "", "isset - no error" );
+
+
+//
+print( "\n\nTesting finished!\nRan ", tests_ran, " tests of which ", tests_failed, " failed.\n" );
+//

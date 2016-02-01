@@ -1,0 +1,63 @@
+/* SOME DATA 15 TO READ 26 BY THE PARSER 43 */
+global ERRORS, tests_failed, tests_ran;
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+print( "\n\n-- FMT FUNCTIONS --\n" );
+include "io", "fmt";
+//
+
+
+	section( "fmt_pack*" );
+testEqual( fmt_pack( "3s4c", "numbers", 51, 52, 53, 54 ), "num\x33\x34\x35\x36", "fmt_pack - basic string/char encoding" );
+testEqual( ''$fmt_unpack("3s4c",fmt_pack("3s4c","numbers",51,52,53,54)), "[num,51,52,53,54]", "(un)pack roundtrip - 3s4c" );
+testEqual( ''$fmt_unpack("wfxd",fmt_pack("wfxd",1024,13.37,13.37)), "[1024,13.37,13.37]", "(un)pack roundtrip - wfxd" );
+
+	section( "fmt_base64*" );
+testEqual( fmt_base64_encode( "Man" ), "TWFu", "base64 encode - 'Man'=>'TWFu'" );
+testEqual( fmt_base64_decode( "TWFu" ), "Man", "base64 decode - 'TWFu'=>'Man'" );
+testEqual( fmt_base64_decode( fmt_base64_encode( "the red fo" ) ), "the red fo", "base64 roundtrip - 10 chars" );
+testEqual( fmt_base64_decode( fmt_base64_encode( "the red fox" ) ), "the red fox", "base64 roundtrip - 11 chars" );
+testEqual( fmt_base64_decode( fmt_base64_encode( "the red foxx" ) ), "the red foxx", "base64 roundtrip - 12 chars" );
+
+	section( "fmt_file_parser" );
+f = io_file( "tests/!API_TF_fmt.sgs", FILE_READ );
+testEqual( typeof(f), "file", "file was loaded?" );
+fp = fmt_file_parser( f );
+testEqual( typeof(fp), "fmtstream", "file-reading input stream was created?" );
+testEqual( fp.check( "QQQ" ), false, "check - fail" );
+testEqual( fp.check( "/* SOME DATA 15" ), true, "check - success" );
+testEqual( fp.read( 11 ), " TO READ 26", "read 11 more bytes" );
+testEqual( fp.read( 20 ), " BY THE PARSER 43 */", "read 20 more bytes" );
+
+	section( "fmt_string_parser / number parsing" );
+fp = fmt_string_parser( " 17, 5.3, -124.1412, 12.3e+2 "
+	$" -2358, 0x012834aef, 0o371324, 0b0101010110110101100011 "
+	$" 010101001, 1010101010011, 10100101000, 0101010101010101001010101010101010010101010100101 "
+	$" 0777, 122124671, 1263712, 131674145121 "
+	$" -18792, +89014214, 09812647182, 128941+ "
+	$" 9024acbdef, 1de4bacf81924, fff, abad1dea " );
+fp.skipcc(", "); testEqual( fp.read_real(), 17.0, "real 1" );
+fp.skipcc(", "); testEqual( fp.read_real(), 5.3, "real 2" );
+fp.skipcc(", "); testEqual( fp.read_real(), -124.1412, "real 3" );
+fp.skipcc(", "); testEqual( fp.read_real(), 12.3e+2, "real 4" );
+fp.skipcc(", "); testEqual( fp.read_int(), -2358, "int 1" );
+fp.skipcc(", "); testEqual( fp.read_int(), 0x012834aef, "int 2" );
+fp.skipcc(", "); testEqual( fp.read_int(), 0o371324, "int 3" );
+fp.skipcc(", "); testEqual( fp.read_int(), 0b0101010110110101100011, "int 4" );
+fp.skipcc(", "); testEqual( fp.read_binary_int(), 0b010101001, "binary_int 1" );
+fp.skipcc(", "); testEqual( fp.read_binary_int(), 0b1010101010011, "binary_int 2" );
+fp.skipcc(", "); testEqual( fp.read_binary_int(), 0b10100101000, "binary_int 3" );
+fp.skipcc(", "); testEqual( fp.read_binary_int(), 0b0101010101010101001010101010101010010101010100101, "binary_int 4" );
+fp.skipcc(", "); testEqual( fp.read_octal_int(), 0o0777, "octal_int 1" );
+fp.skipcc(", "); testEqual( fp.read_octal_int(), 0o122124671, "octal_int 2" );
+fp.skipcc(", "); testEqual( fp.read_octal_int(), 0o1263712, "octal_int 3" );
+fp.skipcc(", "); testEqual( fp.read_octal_int(), 0o131674145121, "octal_int 4" );
+fp.skipcc(", "); testEqual( fp.read_decimal_int(), -18792, "decimal_int 1" );
+fp.skipcc(", "); testEqual( fp.read_decimal_int(), +89014214, "decimal_int 2" );
+fp.skipcc(", "); testEqual( fp.read_decimal_int(), 09812647182, "decimal_int 3" );
+fp.skipcc(", "); testEqual( fp.read_decimal_int(), 128941, "decimal_int 4" );
+fp.skipcc(", "); testEqual( fp.read_hex_int(), 0x9024acbdef, "hex_int 1" );
+fp.skipcc(", "); testEqual( fp.read_hex_int(), 0x1de4bacf81924, "hex_int 2" );
+fp.skipcc(", "); testEqual( fp.read_hex_int(), 0xfff, "hex_int 3" );
+fp.skipcc(", "); testEqual( fp.read_hex_int(), 0xabad1dea, "hex_int 4" );

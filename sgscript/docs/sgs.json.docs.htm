@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	<html><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>SGScript JSON library</title>
+		<link rel="stylesheet" type="text/css" href="docs.css">
+		<script type="text/javascript" src="docs.js"></script>
+	</head><body>
+	<h1>SGScript JSON library</h1><div><h2>Table of Contents</h2><ul><li><a href='#Description'>Description</a>
+</li><li><a href='#SGScript-API'>SGScript API</a>
+</li></ul></div><div>
+<div class='item'><a name='Description'></a><hr><h2>Description</h2><p>
+The goal of this library is to provide a simple method to encode/decode a limited-size JSON string/data set. More info about the JSON format can be found here: <a href="http://json.org/" target="_blank">json.org</a>
+</p><p>
+The library is compiled to a &#39;sgsjson&#39; shared library so it can be included this way (assuming that, on Linux and similar systems, LD_LIBRARY_PATH is set correctly):
+</p><pre>include &quot;sgsjson&quot;;</pre></div>
+<div class='item'><a name='SGScript-API'></a><hr><h2>SGScript API</h2><h4>Functions:</h4><ul><li><a href="#json-encode-function">json_encode</a> - encode SGScript variable structure as JSON string
+</li><li><a href="#json-decode-function">json_decode</a> - decode JSON string to SGScript variable structure</li></ul></div>
+<div class='item'><a name='json-encode-function'></a><hr><h2>json_encode [function]</h2><h3>json_encode( var )</h3><h4>encode SGScript variable structure as JSON string</h4><pre>json_encode( { a = 5, text = &quot;something&quot; } ) // returns {&quot;a&quot;:5,&quot;text&quot;:&quot;something&quot;}</pre></div>
+<div class='item'><a name='json-decode-function'></a><hr><h2>json_decode [function]</h2><h3>json_decode( string jsondata )</h3><h4>decode JSON string to SGScript variable structure</h4><pre>json_decode( &#39;{&quot;a&quot;:5,&quot;text&quot;:&quot;something&quot;}&#39; ) // returns { a = 5, text = &quot;something&quot; }</pre></div>
+</div>
+	</body></html>
+	

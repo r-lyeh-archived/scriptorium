@@ -1,0 +1,45 @@
+
+global ERRORS;
+global tests_failed, tests_ran;
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+print( "\n\n-- DAMAGE RESILIENCE TESTING --\n" );
+//
+
+	section( "non-callables" );
+ERRORS = "";
+call = section.call;
+apply = section.apply;
+testEqual( ERRORS, "", "call/apply retrieval - no errors" );
+
+null!call();
+testEqual( ERRORS, "[W:call(): 'this' - expected callable, got null]", "using 'call' with 'null' - errors" );
+
+ERRORS = "";
+null!apply();
+testEqual( ERRORS, "[W:apply(): 'this' - expected callable, got null]", "using 'apply' with 'null' - errors" );
+
+ERRORS = "";
+iface = {};
+inst = class( {}, iface );
+iface.__getindex = mm_getindex_router;
+iface.__setindex = mm_setindex_router;
+iface.__get_testVar = null;
+iface.__set_testVar = null;
+testEqual( inst.testVar, null, "using mm_getindex_router with null getter - ret.val." );
+testEqual( ERRORS, "[E:mm_getindex_router(): Variable of type 'null' cannot be called]", "using mm_getindex_router with null getter - error" );
+ERRORS = "";
+testEqual( inst.testVar2, null, "using mm_getindex_router with nonexistent getter - ret.val." );
+testEqual( ERRORS, "[W:Readable property not found: \"testVar2\"]", "using mm_getindex_router with nonexistent getter - error" );
+ERRORS = "";
+inst.testVar = 1;
+testEqual( ERRORS, "[E:mm_setindex_router(): Variable of type 'null' cannot be called]", "using mm_setindex_router with null setter - error" );
+
+ERRORS = "";
+thread_create(null);
+testEqual( ERRORS, "[W:thread_create(): argument 1 - expected callable, got null]", "thread_create with null function" );
+ERRORS = "";
+subthread_create(null);
+testEqual( ERRORS, "[W:subthread_create(): argument 1 - expected callable, got null]", "subthread_create with null function" );
+

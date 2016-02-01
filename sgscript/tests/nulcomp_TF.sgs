@@ -1,0 +1,10 @@
+
+testEqual( null < 5, true, "null < 5 " );
+testEqual( null > -5, true, "null > -5" );
+
+testEqual( null < -5, false, "null < -5" );
+testEqual( null > 5, false, "null > 5" );
+
+testEqual( null == "wat", false, "null == \"wat\"" );
+testEqual( null < "wat", true, "null < \"wat\"" );
+testEqual( null > "wat", false, "null > \"wat\"" );

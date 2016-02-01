@@ -1,0 +1,6 @@
+foreach( a : [] )
+{
+	if( !false )
+		continue;
+	foreach( b : [] ){}
+}

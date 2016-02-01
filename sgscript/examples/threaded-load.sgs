@@ -1,0 +1,94 @@
+
+include_library( "fmt" );
+include_library( "string" );
+include_shared( "sgspproc" );
+
+
+global PPROC = pproc_create();
+
+function _stream_threadproc()
+{
+	include_library( "io" );
+	
+	function lock(){ while( !_T.set_if( "lock", true, false ) ); }
+	function unlock(){ _T.set( "lock", false ); }
+	
+	while( !_T.get( "stop" ) )
+	{
+		file = null;
+		
+		lock();
+		queue = _T.get( "queue" );
+		if( queue.size )
+		{
+			file = queue.pop();
+			_T.set( "queue", queue );
+		}
+		unlock();
+		
+		if( file !== null )
+		{
+			_T.set( "file:" $ file, io_file_read( file ) );
+		}
+		
+		sleep( 100 );
+	}
+}
+
+function stream_init()
+{
+	global FS = PPROC.add_job( _stream_threadproc );
+	
+	FS.set( "lock", false );
+	FS.set( "stop", false );
+	FS.set( "queue", [] );
+	
+	global FS_lock = function(){ while( !FS.set_if( "lock", true, false ) ); };
+	global FS_unlock = function(){ FS.set( "lock", false ); };
+	
+	FS.start();
+}
+
+function stream_close()
+{
+	FS.set( "stop", true );
+	FS.wait();
+}
+
+function stream_file( file )
+{
+	if( stream_loaded( file ) )
+		return;
+	FS_lock();
+	queue = FS.get( "queue" );
+	if( queue.find( file ) === null )
+	{
+		queue.unshift( file );
+		FS.set( "queue", queue );
+	}
+	FS_unlock();
+}
+
+function stream_loaded( file )
+{
+	return FS.has( "file:" $ file );
+}
+
+
+stream_init();
+
+print( "=====\n> " );
+while( ( ff = string_trim(read_stdin()) ) != '' )
+{
+	print( "! streaming: " $ ff $ " " );
+	stream_file( ff );
+	while( !stream_loaded( ff ) )
+	{
+		print( "." );
+		sleep( 1 );
+	}
+	println( "done!" );
+	print( "=====\n> " );
+}
+
+stream_close();

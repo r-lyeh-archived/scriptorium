@@ -1,0 +1,72 @@
+
+global ERRORS, CURFN;
+global tests_failed, tests_ran;
+
+ERRORS = "";
+include "math", "sgsmeta";
+
+testEqual( typeof(meta_unpack), "cfunc", "meta library is loaded" );
+testEqual( ERRORS, "", "meta library loaded without errors" );
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+
+function testCode( code )
+{
+	global ERRORS = "";
+	ccode = compile_sgs( code );
+	testEqual( typeof(ccode), "string", CURFN $ " - code compiled successfully" );
+	if( ccode === null )
+		println( ERRORS );
+	global ERRORS = "";
+	ucode = meta_unpack( ccode );
+	testEqual( typeof(ucode), "dict", CURFN $ " - unpacked successfully?" );
+	if( ucode === null )
+		println( ERRORS );
+	return ucode;
+}
+
+function testFunction( fn, name, line, gotthis, numargs )
+{
+	testEqual( fn.name, name, CURFN $ " - name ("$name$")" );
+	testEqual( fn.line, line, CURFN $ " - line num. ("$line$")" );
+	testEqual( fn.gotthis, gotthis, CURFN $ " - is a method? ("$gotthis$")" );
+	testEqual( fn.numargs, numargs, CURFN $ " - arg. count ("$numargs$")" );
+}
+
+function testFindFunction( fn, name )
+{
+	foreach( const : fn.consts )
+	{
+		if( const.type == VT_FUNC && const.data.name == name )
+			return const.data;
+	}
+	return null;
+}
+
+
+	section( "meta_unpack" );
+
+CURFN = "empty 'main'";
+testFunction( testCode( "" ), "<main>", 0, false, 0 );
+
+CURFN = "simple 'main'";
+testFunction( testCode( "println(null,true,5,3.14,'wat');" ), "<main>", 0, false, 0 );
+
+CURFN = "simple functions";
+code = testCode( "function f1(a,b,c){}\nX = {};\nfunction X.f2(a){}\nfunction f3(a,b){print this,a,b;}" );
+testFunction( code, "<main>", 0, false, 0 );
+subfn = testFindFunction( code, "f1" );
+testFunction( subfn, "f1", 1, false, 3 );
+subfn = testFindFunction( code, "X.f2" );
+testFunction( subfn, "X.f2", 3, false, 1 );
+subfn = testFindFunction( code, "f3" );
+testFunction( subfn, "f3", 4, true, 2 );
+
+CURFN = "3-deep function";
+code = testCode( "function f1(){\nfunction f2(){}}" );
+subfn = testFindFunction( code, "f1" );
+testFunction( subfn, "f1", 1, false, 0 );
+subfn = testFindFunction( subfn, "f2" );
+testFunction( subfn, "f2", 2, false, 0 );
+

@@ -1,0 +1,4 @@
+for( var i = 0; i < 5; ++i )
+	for( var j = 0; j < 5; ++j )
+		break 2;
+print( i, j, 7 );

@@ -1,0 +1,2 @@
+print( "cube(5) = ", function(x){ return x*x*x; }(5) );
+print( "cube(5) = ", (function(x){ return x*x*x; })(5) );

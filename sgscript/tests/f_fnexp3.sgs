@@ -1,0 +1,5 @@
+print(
+	"NOT function: ",
+	functino( x )
+	{ return x; }
+);

@@ -1,0 +1,12 @@
+global a = 1, b = 2;
+var c = 3, d = 4;
+e = "A", f = "B";
+function x()
+{
+	var a = 5, c = 7;
+	global b = 6, d = 8;
+	e = "C", f = "D";
+	print( a, b, c, d, e, f, "--" );
+}
+x();
+print( a, b, c, d, e, f, " |  result\n5678CD--1634AB |  expected" );

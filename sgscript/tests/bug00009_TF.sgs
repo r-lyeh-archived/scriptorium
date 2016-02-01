@@ -1,0 +1,12 @@
+global x = 0;
+function a()
+{
+	function b()
+	{
+		global x = 1;
+	}
+	print( x );
+	b();
+}
+a();
+testEqual( x, 1 );

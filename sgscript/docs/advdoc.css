@@ -1,0 +1,45 @@
+
+mark { background: #FDB; padding: 2px 4px; }
+html { height: 100%; }
+body { padding: 0; height: 100%; }
+introtext { display: block; margin: 32px; font-size: 24px; }
+#_frame_ { height: 100%; }
+docframe { display: flex; flex-direction: row; min-height: 100%; max-height: 100%; }
+toc { display: flex; flex-direction: column; min-height: 100%; box-sizing: border-box; padding: 12px 12px 0 12px;
+		width: 300px; border-right: 2px solid #BBB; position: absolute; top: 0; left: 0; bottom: 0; }
+toc logo { display: block; margin: -12px 0 0 -4px; height: 80px; }
+toc header { margin: 0 0 12px 0; }
+toc header subtitle { display: block; background: #333; padding: 8px; color: #EEE;
+	font-family: Verdana, sans-serif; border-radius: 3px; font-size: 12px; }
+toc header search { display: block; margin: 12px 0 0 0; border: 1px solid #999; }
+toc header search input { width: 100%; box-sizing: border-box; border: 1px solid #EEE; background: #DDD; padding: 2px 4px; }
+toc header search input::-webkit-input-placeholder { color: #777; opacity: 1; }
+toc header search input:-moz-placeholder { color: #777; opacity: 1; }
+toc header search input::-moz-placeholder { color: #777; opacity: 1; }
+toc header search input:-ms-input-placeholder { color: #777; opacity: 1; }
+toc header search input:placeholder-shown { color: #777; opacity: 1; }
+toc cont { position: relative; flex: auto; box-shadow: inset -2px 1px 2px rgba(0,0,0,0.2); }
+toc cont entrylist { position: absolute; overflow-y: scroll; top: 0; left: 0; right: 0; bottom: 0; padding: 2px 0; }
+entryset { display: block; }
+entrych { display: block; padding: 0 0 0 16px; }
+toc cont entry { display: block; padding: 2px 4px; cursor: pointer; border-radius: 3px; font-size: 14px; }
+toc cont entry:hover { background: rgba(254,124,4,0.5); color: #FFF; box-shadow: 0 0 5px rgba(254,124,4,0.5); }
+toc entry.active { background: rgba(200,8,4,0.5); color: #FFF; }
+toc entry.active:hover { background: rgba(228,66,4,0.5); }
+view { display: block; padding: 12px; flex: 1; overflow-y: auto; position: absolute; left: 300px; top: 0; right: 0; bottom: 0; }
+view ptitle { display: block; font-family: Verdana, sans-serif; font-weight: bold; font-size: 24px; }
+view searchresult { display: block; margin: 24px 0; }
+view searchresult srttl { display: block; margin: 8px 0; }
+view searchresult .title { font-size: 18px; }
+view searchresult desc { display: block; }
+view dbglog { display: block; }
+view dbglog:nth-child(odd) { background: #EED; }
+view dbglog:nth-child(even) { background: #DEE; }
+breadcrumbs { display: block; padding: 8px; margin: 0 0 16px 0; font-size: 14px; opacity: 0.7;
+	border: 1px solid #EEE; outline: 1px solid #AAA; background: #DDD; }
+breadcrumbs:hover { opacity: 1; }
+breadcrumbs .sep { padding: 0 10px; }
+relatedlinks content { display: block; padding: 8px; margin: 32px 0 0 0; font-size: 14px;
+	border: 1px solid #EEE; outline: 1px solid #AAA; background: #DDD; }
+relatedlinks content subtitle { font-family: Verdana, sans-serif; }
+relatedlinks content ul { margin: 4px 0 0 0; padding: 0 0 0 16px; }

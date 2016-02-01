@@ -1,0 +1,32 @@
+
+function memusage()
+{
+	println( "Memory usage: ", sys_stat( 3 ) / 1024, " kB" );
+}
+
+numobjs = 16384;
+interval = 1024;
+
+memusage();
+data = [];
+
+println( "--- LOADING ---" );
+for( i = 0; i < numobjs; ++i )
+{
+	data.push({ two = "cool", four = "school" });
+	if( i % interval == interval - 1 )
+		memusage();
+}
+
+println( "--- unLOADING ---" );
+for( i = 0; i < numobjs; ++i )
+{
+	data.pop();
+	if( i % interval == interval - 1 )
+		memusage();
+}
+
+println( "--- done! ---" );
+data = null;
+memusage();
+

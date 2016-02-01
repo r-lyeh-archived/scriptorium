@@ -1,0 +1,21 @@
+var i = 5;
+do
+{
+	print( i-- );
+}
+while( i > 0 )
+print( "\n" );
+do
+{
+	print( "multi-level break test... " );
+	for( i = 0; i < 5; ++i )
+	{
+		if( i > 3 )
+			break 2;
+	}
+	print( "ERROR" );
+	break;
+}
+while( true )
+if( i == 4 )
+	print( "SUCCESS" );

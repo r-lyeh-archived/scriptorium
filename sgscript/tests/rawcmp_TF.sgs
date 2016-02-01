@@ -1,0 +1,7 @@
+testEqual( "one" <=> "two", -1, "string comparison 1" );
+testEqual( "three" <=> "four", 1, "string comparison 2" );
+testEqual( "five" <=> "five", 0, "string comparison 3" );
+testEqual( 5 <=> 7, -1, "integer comparison 1" );
+testEqual( 5.1 <=> 6.9, -1, "real comparison 1" );
+testEqual( 6.9 <=> 5.1 == 1, true, "operator precedence 1" );
+testEqual( 1 == 6.9 <=> 5.1, true, "operator precedence 2" );

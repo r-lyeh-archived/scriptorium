@@ -1,0 +1,6 @@
+a = { b = { c = {} } };
+a.b.c[]{
+	prop1 = 1,
+	prop2 = 2
+};
+printvar(a);

@@ -1,0 +1,45 @@
+
+include_library( "string" );
+include_library( "fmt" );
+
+function hexit( data )
+{
+	tbl = "0123456789ABCDEF";
+	out = "";
+	for( i = 0; i < data.length; ++i )
+	{
+		if( out.length )
+			out $= " ";
+		cc = string_charcode( data, i );
+		out $= tbl[ cc >> 4 ];
+		out $= tbl[ cc & 15 ];
+	}
+	return out;
+}
+
+printlns
+(
+	"",
+	"3s4c : numbers,51,52,53,54 = " $ fmt_pack( "3s4c", "numbers", 51, 52, 53, 54 ),
+	"+REV = " $ fmt_unpack( "3s4c", fmt_pack( "3s4c", "numbers", 51, 52, 53, 54 ) ),
+	"",
+	"w : 1024 = " $ hexit( fmt_pack( "w", 1024 ) ),
+	"+REV = " $ fmt_unpack( "w", fmt_pack( "w", 1024 ) ),
+	"",
+	" fxd : 13.37, 13.37 = " $ hexit( fmt_pack( "fxd", 13.37, 13.37 ) ),
+	"+REV = " $ fmt_unpack( "fxd", fmt_pack( "fxd", 13.37, 13.37 ) ),
+	"",
+	">fxd : 13.37, 13.37 = " $ hexit( fmt_pack( ">fxd", 13.37, 13.37 ) ),
+	"+REV = " $ fmt_unpack( ">fxd", fmt_pack( ">fxd", 13.37, 13.37 ) ),
+	"",
+	"b64 Man = " $ fmt_base64_encode( "Man" ),
+	"b64 A = " $ fmt_base64_encode( "the red fo" ),
+	"b64 B = " $ fmt_base64_encode( "the red fox" ),
+	"b64 C = " $ fmt_base64_encode( "the red foxx" ),
+	"b64 +R A = " $ fmt_base64_decode( fmt_base64_encode( "the red fo" ) ),
+	"b64 +R B = " $ fmt_base64_decode( fmt_base64_encode( "the red fox" ) ),
+	"b64 +R C = " $ fmt_base64_decode( fmt_base64_encode( "the red foxx" ) ),
+	"",
+	"good!"
+);
+

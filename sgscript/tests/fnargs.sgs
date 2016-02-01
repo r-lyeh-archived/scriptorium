@@ -1,0 +1,17 @@
+function twoargs(x,y){print(x,y);}
+function twoargs_m(x,y){print(this,"|",x,y);}
+obj = { func = twoargs, method = twoargs_m };
+
+print( "calling 2 arg func with 3 args: " );	twoargs( "1", "2", "3" );	print( "\n" );
+print( "calling 2 arg func with 1 arg: " );		twoargs( "1" );				print( "\n" );
+
+print( "calling 2 arg obj func with 3 args: " );	obj.func( "1", "2", "3" );	print( "\n" );
+print( "calling 2 arg obj func with 1 arg: " );		obj.func( "1" );			print( "\n" );
+
+print( "calling 2 arg method with 3 args: " );	obj.method( "1", "2", "3" );	print( "\n" );
+print( "calling 2 arg method with 1 arg: " );	obj.method( "1" );				print( "\n" );
+
+print( "calling 2 arg method v2 with 3 args: " );	obj["method"].call( "1", "2", "3" );	print( "\n" );
+print( "calling 2 arg method v2 with 1 arg: " );	obj["method"].call( "1" );				print( "\n" );
+print( "calling 2 arg method v2 with 4 args: " );	obj["method"].call( "1", "2", "3", "4" );	print( "\n" );
+print( "calling 2 arg method v2 with 2 args: " );	obj["method"].call( "1", "2" );				print( "\n" );

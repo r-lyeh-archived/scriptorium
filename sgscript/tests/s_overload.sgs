@@ -1,0 +1,36 @@
+global vec2_iface = 
+{
+	__add = function( a, b ){ return vec2( a.x + b.x, a.y + b.y ); },
+	__sub = function( a, b ){ return vec2( a.x - b.x, a.y - b.y ); },
+	__mul = function( a, b ){ return vec2( a.x * b.x, a.y * b.y ); },
+	__div = function( a, b ){ return vec2( a.x / b.x, a.y / b.y ); },
+	__mod = function( a, b ){ return vec2( a.x % b.x, a.y % b.y ); },
+	__negate = function(){ return vec2( -this.x, -this.y ); },
+	__compare = function( a, b ){ var out = a.x - b.x; if( out ) return a.y - b.y; else return out; },
+	__call = function( self, something ){ print( "THIS IS VEC2[", this.x, ",", this.y, "]... in other news: ", something, "!\n" ); }, 
+	__tostr = function(){ return "vec2(" $ this.x $ "," $ this.y $ ")"; },
+	__typeof = function(){ return "vec2"; },
+};
+function vec2( x, y )
+{
+	return class( { x = x, y = y }, vec2_iface );
+}
+
+print( "NOTICE: do not try this at home unless it's a placeholder for the real, native code stuff that's about to be implemented soon.\n" );
+print( "Vector addition test:\n" );
+A = vec2( 1.0, 2.0 );
+print( "A: ", A, "\n" );
+B = vec2( 3.0, 3.0 );
+print( "B: ", B, "\n" );
+print( "A + B: ", A + B, "\n" );
+print( "A - B: ", A - B, "\n" );
+print( "A * B: ", A * B, "\n" );
+print( "A / B: ", A / B, "\n" );
+print( "B % A: ", B % A, "\n" );
+print( "-A: ", -A, "\n" );
+print( "A == B: ", A == B, "\n" );
+print( "A < B: ", A < B, "\n" );
+print( "A == A: ", A == A, "\n" );
+print( "A < A: ", A < A, "\n" );
+A( "cheese" );
+print( typeof( A ) );

@@ -1,0 +1,59 @@
+
+global ERRORS;
+global tests_failed, tests_ran;
+
+//
+function section( x ){ print( "\n\t<< ", x, " >>\n" ); }
+
+
+//
+print( "\n\n-- TYPES --\n" );
+//
+
+var a = "random string";
+var b = "WHAT";
+var c = "banana";
+var d = " \t\r\n \t\r\n spacy \t\r\n \t\r\n ";
+
+
+var _N = null, _B = true, _I = 1, _R = 1.0, _S = "1", _F = section, _C = print, _O = [], _O2 = {}, _O3 = map();
+
+	section( "is_* - generic" );
+testEqual( !is_numeric( _N ) && is_numeric( _B ) && is_numeric( _I ) && is_numeric( _R ) &&
+	!is_numeric( _F ) && !is_numeric( _C ) && !is_numeric( _O ), true, "is_numeric - basic tests" );
+testEqual( is_numeric( _S ), true, "is_numeric - numeric string" );
+testEqual( is_numeric( c ), false, "is_numeric - non-numeric string" );
+testEqual( is_numeric( "1E+2" ) && is_numeric( "-123.456" ) && is_numeric( "0x7f" ) &&
+	is_numeric( "0b101" ) && is_numeric( "01234" ) && is_numeric( "0o427" ), true, "is_numeric - extra numeric formats" );
+testEqual( !is_callable( _N ) && !is_callable( _B ) && !is_callable( _I ) && !is_callable( _R ) &&
+	!is_callable( _S ) && is_callable( _F ) && is_callable( _C ), true, "is_callable - basic tests" );
+testEqual( is_callable( _O ), false, "is_callable - non-callable object" );
+testEqual( is_callable( function()use(a){} ), true, "is_callable - callable object" );
+
+	section( "is_* - specific" );
+testEqual( !is_array( _N ) && !is_array( _B ) && !is_array( _I ) && !is_array( _R ) && !is_array( _S ) &&
+	!is_array( _F ) && !is_array( _C ) && is_array( _O ) && !is_array( _O2 ) && !is_array( _O3 ), true, "is_array" );
+testEqual( !is_dict( _N ) && !is_dict( _B ) && !is_dict( _I ) && !is_dict( _R ) && !is_dict( _S ) &&
+	!is_dict( _F ) && !is_dict( _C ) && !is_dict( _O ) && is_dict( _O2 ) && !is_dict( _O3 ), true, "is_dict" );
+testEqual( !is_map( _N ) && !is_map( _B ) && !is_map( _I ) && !is_map( _R ) && !is_map( _S ) &&
+	!is_map( _F ) && !is_map( _C ) && !is_map( _O ) && !is_map( _O2 ) && is_map( _O3 ), true, "is_map" );
+function is_iterable( x ){ return @get_iterator(x) !== null; }
+testEqual( !is_iterable( _N ) && !is_iterable( _B ) && !is_iterable( _I ) && !is_iterable( _R ) && !is_iterable( _S ) &&
+	!is_iterable( _F ) && !is_iterable( _C ) && is_iterable( _O ) && is_iterable( _O2 ) && is_iterable( _O3 ), true, "is_iterable" );
+
+	section( "type_*" );
+testEqual( typeid( _N ) == VT_NULL && typeid( _B ) == VT_BOOL && typeid( _I ) == VT_INT &&
+	typeid( _R ) == VT_REAL && typeid( _S ) == VT_STRING && typeid( _F ) == VT_FUNC &&
+	typeid( _C ) == VT_CFUNC && typeid( _O ) == VT_OBJECT, true, "typeid - basic tests" );
+
+	section( "typeptr*" );
+testEqual( typeptr( _N ) || typeptr( _B ) || typeptr( _I ) || typeptr( _R ) || typeptr( _S ) ||
+	typeptr( _F ) || typeptr( _C ), toptr(0), "typeptr - basic types" );
+testEqual( typeptr( _O ), typeptr_by_name( "array" ), "typeptr/_by_name - array" );
+testEqual( typeptr( _O2 ), typeptr_by_name( "dict" ), "typeptr/_by_name - dict" );
+testEqual( typeptr( _O3 ), typeptr_by_name( "map" ), "typeptr/_by_name - map" );
+
+
+//
+print( "\n\nTesting finished!\nRan ", tests_ran, " tests of which ", tests_failed, " failed.\n" );
+//

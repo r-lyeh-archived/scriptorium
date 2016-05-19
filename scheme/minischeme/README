@@ -1,0 +1,252 @@
+This is Cat's Eye Technologies' fork of the original Mini-Scheme
+implementation, miniscm, by Atsushi Moriwaki.  The original README can
+be found below, following the first line of equals signs in this file.
+
+My understanding is that Akira KIDA is no longer actively maintaining
+this project, and that the Mini-Scheme language and miniscm reference
+implementation effectively have no maintainer.  It is not my objective
+to become the new maintainer of the language or implementation; rather,
+it is simply to provide a modernized and generally backwards-compatible
+source base for miniscm.
+
+This code was forked from version 0.85k4.  The current version of this
+fork is 0.85ce1.  (I elected to use "ce" for "Cat's Eye" because "p" for
+"Pressey" is too easily confused with "patchlevel".)
+
+Some improvements that have been made:
+
+- modernized Makefile (defaults to 4.3 BSD, which works for Linux)
+- removed compiler warnings (under 4.3 BSD)
+- made compilable under AmigaOS 1.3 with DICE C
+- added -q command line option to suppress all non-explicit output
+  (this includes the prompt; if you want output, use (display))
+- added -e command line option to cause all errors to be treated
+  as fatal errors (exit interpreter immediately with error code 1)
+
+Some further improvements I might consider:
+
+- add -i command line option to specify the location of init.scm
+- add -l command line option to disable abbreviated quote output
+- allow source file(s) to be specified on command line
+
+If you are interested in a more developed and actively maintained
+Scheme implementation which started as a fork of miniscm, check out
+the BSD-licensed TinyScheme: http://tinyscheme.sourceforge.net/
+
+There is also another fork of miniscm on Sourceforge with the name
+"minischeme", although at 2 megabytes, I'm not sure it deserves the
+appelation "mini" any more: http://sourceforge.net/projects/minischeme/
+
+-Chris
+
+ =====================================================================
+
+      ---------- Mini-Scheme Interpreter Version 0.85 ----------
+
+                coded by Atsushi Moriwaki (11/5/1989)
+
+            E-MAIL :  moriwaki@kurims.kurims.kyoto-u.ac.jp
+            MIX    :  riemann
+            NIFTY  :  PBB01074
+	    (Note that these addresses are now obsolete, see below)
+
+ =====================================================================
+
+		Revised by Akira KIDA
+
+		Version 0.85k4  (17 May 1994)
+		Version 0.85k3  (30 Nov 1989)
+		Version 0.85k2  (28 Nov 1989)
+		Version 0.85k1  (14 Nov 1989)
+
+	Mini-Scheme is now maintained by Akira KIDA.
+
+	E-Mail	: SDI00379@niftyserve.or.jp
+
+	Most part of this document is written by Akira KIDA.
+	Send comments/requests/bug reports to Akira KIDA at the above
+	email address.
+	
+ =====================================================================
+
+ This Mini-Scheme Interpreter is based on "SCHEME Interpreter in
+ Common Lisp" in Appendix of T.Matsuda & K.Saigo, Programming of LISP,
+ archive No5 (1987) p6 - p42 (published in Japan).
+
+
+ Copyright Notice:
+	THIS SOFTWARE IS PLACED IN THE PUBLIC DOMAIN BY THE AUTHOR.
+
+ This software is completely free to copy, modify and/or re-distribute.
+ But I (Atsushi Moriwaki) would appreciate it if you left my name on the
+ code as the author.
+
+ DISCLAIMER:
+    THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+    IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE.
+
+
+ Supported features (or, NOT supported features :-)
+	1) Lists, symbols, strings.
+	   However, strings have very limited capability.
+	   For instance, there is *NO* string-ref, string-set!, ... etc.
+	2) Numbers are limited to FIXNUM only.
+	   There is *NO* complex, real, rational and even bignum.
+	3) Macro feature is supported, though not the one defined in R4RS.
+
+ Known problems:
+	1) Poor error recovery from illegal use of syntax and procedure.
+	2) Certain procedures do not check its argument type.
+
+ Installation:
+	1) Select system declaration and configuration options by editing
+	   source file.
+
+	   You may choose one of the following systems by #define'ing
+	   the preprocessor symbol.
+
+	   Supported systems are:
+	     Macintosh:
+		LSC	-- LightSpeed C (3.0) for Macintosh
+		LSC4	-- LightSpeed C (4.0) for Macintosh
+			   They are different in #include header only.
+			   I (kida) think THINK C 5.0, 6.0, 7.0 may be OK
+			   with LSC4 configuration, though not tested.
+		MPW2	-- Macintosh Programmer's Workshop v2.0x
+			   I don't tested v3.x or later.
+	     DOS:
+		MSC4	-- Microsoft C v4.0 (use /AL)
+			   MSC v5.1, v6.0, v7.0 are all OK.
+		TURBO2	-- Bolarnd's Turbo C v2.0 (use -ml)
+			   Turbo C++ 1.0 is OK.
+	     UNIX:
+		BSD	-- UNIX of BSD flavor, ex. SuOS 4.x
+		SYSV	-- UNIX of System-V flavor, ex. Sun/Solaris 2.x
+
+	     VAX/VMS:
+		VAXC	-- VAX-C v3.x (this symbol may be defined by the 
+                           compiler automatically).
+
+	2) Configure some preprocessor symbols by editing source files.
+
+	   Configurable #define's are:
+
+	#define VERBOSE
+		-- if defined, GC messages is verbose on default.
+
+	#define AVOID_HACK_LOOP
+		-- if defined, do _NOT_ use loop construction in the
+		   form
+			do { ... } while (0)
+		   This form is used in macro expansion, since this is
+		   the best "safety" blocking construct when used in
+		   macro definition.
+		   However, some compiler (including SunPRO CC 2.0.1)
+		   is silly enough to warning this construct, like
+		   "warning: end-of-loop code not reached", etc.
+		   If you dislike such warning, please define this symbol.
+		   NOTE: You may get some "statement not reached" warning
+		   even if you have define this symbol. Please be patient,
+		   or, use more smart compiler.
+		   In short if you use GCC, undefine this and forget it
+		   at all.
+
+	#define USE_SETJMP
+		-- if defined, use setjmp to global jump on error.
+		   if not defined, avoid to use it. Compiled with
+		   this symbol defined, the interpreter issue fatal
+		   error and return to the operating system immediately
+		   when we run out of free cells. By default, i.e.,
+		   compiled with this symbol is not defined, the
+		   interpreter will just return to the top level in
+		   such a case.
+		   May not be used except for compiling as Mac DA.
+
+	#define USE_MACRO
+		-- if defined, macro features are enabled.
+
+	#define	USE_QQUOTE
+		-- if defined, you can use quasi-quote "`" in macro.
+		   You can use macro even if this symbol is undefined.
+
+	3) Compile!
+
+	  I think there is virtually no problem about how to compile.
+	  Since there is exactly one C source file. :-)
+	  If you are on UNIX boxes with some BSD flavors, instead of
+	  using make command, it's enough to type:
+
+		cc -DBSD -O -o miniscm miniscm.c
+
+	  You may have additional warnings like 'function should
+	  return value'. This is due to omitting 'void' keyword
+	  from the source in order to get pre-ANSI compatibility.
+
+
+ Usage : miniscm
+
+	Sorry, no command line argnumet is allowed.
+
+
+ Special procedures of this system:
+
+   gc             : (gc) -- force garbage collection
+
+   gc-verbose     : (gc-verbose bool) -- GC verbose on/off
+			Argument #f turnes off the GC message.
+			Enything else turn on the GC message.
+
+   quit           : (quit) -- quit to the operating system
+
+   put            : (put sym prop expr)
+                     -- set the value of a property of a symbol.
+   get            : (get sym prop)
+                     -- get the value of a property of a symbol.
+
+   new-segment    : (new-segment n)
+                     -- allocate n new cell segments.
+
+   print-width	  : (print-width list)
+		     -- returns 'printed' width of list.
+
+   closure?	  : (closure? obj)
+		     -- test if obj is a closure or not.
+
+   macro?	  : (macro? obj)
+		     -- test if obj is a macro or not.
+		        note that a macro is also a closure.
+
+  get-closure-code
+		 : (get-closure-code closure-obj)
+		     -- extract S-expr from closure-obj.
+
+ Scheme files:
+    init.scm	-- Automatically loaded at invocation.
+		   Default setting assumes that this file is in the current
+		   working directory.
+		   Change #define InitFile if you don't like it.
+
+    tools.scm	-- This is a sample file. Contains very tiny pretty-print
+		   procedure.
+		   After invoking miniscm, type:
+				(load "tools.scm")
+		   and try
+				(pp getd)
+				(pp do)
+
+ Documents?:
+
+  Sorry, there is no other documents.
+  Do not ask one for me, please see the source instead. :-)
+
+  But if you _absolutely_ need help, please email to me at:
+	<SDI00379@niftyserve.or.jp>
+
+  Enjoy!
+
+ -- Akira KIDA
+	Sysop for FPL in NIFTY-Serve in JAPAN.
+	(FPL stands for 'Forum for Program-Language')
+

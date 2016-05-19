@@ -227,3 +227,7 @@ rem @popd
 @echo sgscript
 @bench 5 sgscript\sgs tests\fib.sgs //SGScript,[sgscript](https://github.com/snake5/sgscript/)
 
+@echo .
+@echo minischeme
+@bench 1 scheme\minischeme\miniscm.exe tests\fib.scm //MiniScheme,[MiniScheme](https://github.com/catseye/minischeme)
+

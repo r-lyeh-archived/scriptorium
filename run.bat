@@ -108,6 +108,10 @@ rem @popd
 @bench 5 lua\luajit-2.0\src\luajit tests\fib.lua //Lua,[luajit](https://github.com/LuaDist/luajit)
 
 @echo.
+@echo lua/luajit-nojit
+@bench 5 lua\luajit-2.0\src\luajit -joff tests\fib.lua //Lua,[luajit-nojit](https://github.com/LuaDist/luajit)
+
+@echo.
 @echo neko/nekovm
 @neko\bin\nekoc tests\fib.neko
 @bench 5 neko\neko tests\fib.n //Neko,[nekovm](https://github.com/HaxeFoundation/neko)

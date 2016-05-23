@@ -35,10 +35,10 @@ Scriptorium :scroll:
 |25|QuakeC|[gmqcc](https://github.com/graphitemaster/gmqcc)| 3.060 s.|![43.806%](http://progressed.io/bar/43)|43 pt|
 |26|ObjectScript|[objectscript](https://github.com/unitpoint/objectscript)| 3.108 s.|![43.1278%](http://progressed.io/bar/43)|43 pt|
 |27|SGScript|[sgscript](https://github.com/snake5/sgscript/)| 4.620 s.|![29.0163%](http://progressed.io/bar/29)|29 pt|
-|28|Java|[Jog](https://code.google.com/p/jog-interpreter)| 4.675 s.|![28.672%](http://progressed.io/bar/28)|28 pt|
+|28|Java|[Jog](https://code.google.com/p/jog-interpreter/)| 4.675 s.|![28.672%](http://progressed.io/bar/28)|28 pt|
 |29|JetScript|[JetScript](https://github.com/matt-attack/JetScript)| 4.810 s.|![27.8671%](http://progressed.io/bar/27)|27 pt|
 |30|Lisp|[minilisp](https://github.com/rui314/minilisp)| 6.951 s.|![19.2855%](http://progressed.io/bar/19)|19 pt|
-|31|Lisp|[aria](http://github.com/rxi/aria)| 8.010 s.|![16.7366%](http://progressed.io/bar/16)|16 pt|
+|31|Lisp|[aria](https://github.com/rxi/aria)| 8.010 s.|![16.7366%](http://progressed.io/bar/16)|16 pt|
 |32|JavaScript|[duktape](https://github.com/svaarala/duktape)| 9.544 s.|![14.0463%](http://progressed.io/bar/14)|14 pt|
 |33|Tcl|[jim](https://github.com/antirez/Jim)|12.280 s.|![10.9162%](http://progressed.io/bar/10)|10 pt|
 |34|GML|[gml](https://github.com/graphitemaster/gml)|16.443 s.|![8.15268%](http://progressed.io/bar/8)|8 pt|
@@ -110,12 +110,12 @@ Scriptorium :scroll:
 ### To evaluate (someday... maybe)
 - http://catpad.net/michael/jvm/
 - http://jamvm.sourceforge.net/
-- http://oss.readytalk.com/avian/
-- http://qore.org/downloads ?
+- https://oss.readytalk.com/avian/
+- https://qore.org/downloads ?
 - http://www.codeproject.com/Articles/24029/Home-Made-Java-Virtual-Machine
 - http://www.harbaum.org/till/nanovm/index.shtml
 - http://www.kiffer.be/open-mika.html
-- https://code.google.com/p/tart/
+- https://code.google.com/archive/p/tart
 - https://github.com/aardappel/lobster
 - https://github.com/andyfischer/circa
 - https://github.com/chameco/Solid
@@ -143,10 +143,10 @@ Scriptorium :scroll:
 - http://www.mono-project.com/
 - https://en.wikipedia.org/wiki/P-code
 - http://www.dwheeler.com/6502/oneelkruns/qforth.html
-- http://robovm.com/
+- https://robovm.com/
 - http://www.lejos.org/ (or http://tinyvm.sourceforge.net/)
 - http://dmitry.gr/index.php?r=05.Projects&proj=12.%20uJ%20-%20a%20micro%20JVM 
-- https://github.com/dart-lang/fletch
+- https://github.com/dartino/sdk
 - https://github.com/RuntimeCompiledCPlusPlus/RuntimeCompiledCPlusPlus
 - https://github.com/NETMF/netmf-interpreter
 

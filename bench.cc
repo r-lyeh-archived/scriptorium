@@ -37,6 +37,7 @@ struct timing {
 #include <map>
 #include <vector>
 #include <sstream>
+#include <stdexcept>
 
 #include <Shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
@@ -58,7 +59,7 @@ std::string base( const std::string &app = std::string() ) {
     return std::string() + dest + "/" + app;
 }
 
-int main( int argc, const char **argv ) {
+int main( int argc, const char **argv ) try {
     int ret = 0;
 
     // benchmark
@@ -194,4 +195,13 @@ int main( int argc, const char **argv ) {
     }
 
     return ret;
+}
+catch( std::exception &e ) {
+    puts( "error: exception caught" );
+    puts( e.what() );
+    return -1;
+}
+catch(...) {
+    puts( "error: exception caught" );
+    return -1;
 }
